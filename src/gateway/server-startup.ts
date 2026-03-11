@@ -22,6 +22,7 @@ import {
   scheduleRestartSentinelWake,
   shouldWakeFromRestartSentinel,
 } from "./server-restart-sentinel.js";
+import { getSuperclaw, isInitialized as isSuperclawInitialized } from "../superclaw/init.js";
 
 export async function startGatewaySidecars(params: {
   cfg: ReturnType<typeof loadConfig>;
@@ -44,6 +45,19 @@ export async function startGatewaySidecars(params: {
     browserControl = await startBrowserControlServerIfEnabled();
   } catch (err) {
     params.logBrowser.error(`server failed to start: ${String(err)}`);
+  }
+
+  // Start SuperClaw bridge (multi-agent swarm, task routing, governance).
+  // Enabled by default in NicholsBot; can be disabled via NICHOLSBOT_SKIP_SUPERCLAW=1.
+  if (!isTruthyEnvValue(process.env.NICHOLSBOT_SKIP_SUPERCLAW)) {
+    try {
+      const bridge = await getSuperclaw();
+      if (isSuperclawInitialized()) {
+        params.log.warn("superclaw bridge initialized (swarm + routing + learning)");
+      }
+    } catch (err) {
+      params.log.warn(`superclaw bridge failed to start: ${String(err)} (non-fatal, continuing)`);
+    }
   }
 
   // Start Gmail watcher if configured (hooks.gmail.account).
