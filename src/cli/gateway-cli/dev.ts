@@ -61,7 +61,7 @@ async function ensureDevWorkspace(dir: string) {
   const [agents, soul, tools, identity, user] = await Promise.all([
     loadDevTemplate(
       "AGENTS.dev.md",
-      `# AGENTS.md - OpenClaw Dev Workspace\n\nDefault dev workspace for openclaw gateway --dev.\n`,
+      `# AGENTS.md - NicholsBot Dev Workspace\n\nDefault dev workspace for nicholsbot gateway --dev.\n`,
     ),
     loadDevTemplate(
       "SOUL.dev.md",

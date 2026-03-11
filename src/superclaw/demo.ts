@@ -7,7 +7,7 @@
 import { SuperClawBridge } from "./bridge.js";
 
 async function demo() {
-  console.log("🦞 SuperClaw Demo\n");
+  console.log("🦊 SuperClaw Demo\n");
 
   // Initialize bridge
   const bridge = new SuperClawBridge();

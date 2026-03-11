@@ -47,7 +47,7 @@ export function registerDirectoryCli(program: Command) {
       () =>
         `\n${theme.muted("Docs:")} ${formatDocsLink(
           "/cli/directory",
-          "docs.openclaw.ai/cli/directory",
+          "nicholsbot-docs.vercel.app/cli/directory",
         )}\n`,
     )
     .action(() => {

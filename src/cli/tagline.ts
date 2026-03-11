@@ -1,4 +1,4 @@
-const DEFAULT_TAGLINE = "All your chats, one OpenClaw.";
+const DEFAULT_TAGLINE = "Your AI agent. Independent. Local. Powerful.";
 
 const HOLIDAY_TAGLINES = {
   newYear:
@@ -60,7 +60,7 @@ const TAGLINES: string[] = [
   "I don't just autocomplete—I auto-commit (emotionally), then ask you to review (logically).",
   'Less clicking, more shipping, fewer "where did that file go" moments.',
   "Claws out, commit in—let's ship something mildly responsible.",
-  "I'll butter your workflow like a lobster roll: messy, delicious, effective.",
+  "Built different. Runs local. Answers to you.",
   "Shell yeah—I'm here to pinch the toil and leave you the glory.",
   "If it's repetitive, I'll automate it; if it's hard, I'll bring jokes and a rollback plan.",
   "Because texting yourself reminders is so 2024.",
