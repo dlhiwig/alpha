@@ -1,11 +1,12 @@
 {
-  "name": "openclaw",
-  "version": "2026.1.30",
-  "description": "WhatsApp gateway CLI (Baileys web) with Pi RPC agent",
+  "name": "nicholsbot",
+  "version": "0.1.0",
+  "description": "NicholsBot — personal AI agent gateway (MIT, forked from OpenClaw)",
   "keywords": [],
   "license": "MIT",
   "author": "",
   "bin": {
+    "nicholsbot": "nicholsbot.mjs",
     "openclaw": "openclaw.mjs"
   },
   "files": [
@@ -51,6 +52,7 @@
     "extensions/**",
     "assets/**",
     "openclaw.mjs",
+    "nicholsbot.mjs",
     "skills/**",
     "patches/**",
     "README.md",
