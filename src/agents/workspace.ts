@@ -12,9 +12,11 @@ export function resolveDefaultAgentWorkspaceDir(
 ): string {
   const profile = env.OPENCLAW_PROFILE?.trim();
   if (profile && profile.toLowerCase() !== "default") {
-    return path.join(homedir(), ".openclaw", `workspace-${profile}`);
+    const stateBase = env.NICHOLSBOT_STATE_DIR?.trim() || path.join(homedir(), ".nicholsbot");
+    return path.join(stateBase, `workspace-${profile}`);
   }
-  return path.join(homedir(), ".openclaw", "workspace");
+  const stateDir = env.NICHOLSBOT_STATE_DIR?.trim() || path.join(homedir(), ".nicholsbot");
+  return path.join(stateDir, "workspace");
 }
 
 export const DEFAULT_AGENT_WORKSPACE_DIR = resolveDefaultAgentWorkspaceDir();
