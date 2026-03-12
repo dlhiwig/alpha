@@ -1,16 +1,20 @@
 /**
- * SuperClaw Initialization
- * Global singleton for the SuperClaw bridge
+ * SuperClaw + SKYNET Initialization
+ * Global singletons for the SuperClaw bridge and SKYNET governance
  */
 
 import { SuperClawBridge } from "./bridge.js";
+import { getSkynet, shutdownSkynet, type Skynet, type SkynetConfig } from "./skynet.js";
 import type { SuperClawConfig } from "./types.js";
+import * as os from "node:os";
+import * as path from "node:path";
 
 let globalBridge: SuperClawBridge | null = null;
 let initPromise: Promise<SuperClawBridge> | null = null;
+let skynetInstance: Skynet | null = null;
 
 /**
- * Get or create the global SuperClaw bridge instance
+ * Get or create the global SuperClaw bridge instance + SKYNET
  */
 export async function getSuperclaw(config?: Partial<SuperClawConfig>): Promise<SuperClawBridge> {
   if (globalBridge) {
@@ -25,6 +29,25 @@ export async function getSuperclaw(config?: Partial<SuperClawConfig>): Promise<S
     const bridge = new SuperClawBridge(config);
     await bridge.initialize();
     globalBridge = bridge;
+
+    // Initialize SKYNET governance layer
+    try {
+      const stateDir =
+        globalThis.process.env.NICHOLSBOT_STATE_DIR ?? path.join(os.homedir(), ".nicholsbot");
+      const skynetConfig: SkynetConfig = {
+        stateDir,
+        dbPath: path.join(stateDir, "skynet-audit.db"),
+        pulseIntervalMs: 30_000,
+        sentinelEnabled: true,
+        oracleEnabled: true,
+      };
+      skynetInstance = getSkynet(skynetConfig);
+      await skynetInstance.initialize();
+      console.log("[SKYNET] Governance layer active — Laws I/II/III enforced");
+    } catch (err) {
+      console.warn("[SKYNET] Failed to initialize (non-fatal):", (err as Error).message);
+    }
+
     return bridge;
   })();
 
@@ -46,9 +69,18 @@ export function getBridge(): SuperClawBridge | null {
 }
 
 /**
- * Shutdown SuperClaw
+ * Get the SKYNET instance (if initialized)
+ */
+export function getSkynetInstance(): Skynet | null {
+  return skynetInstance;
+}
+
+/**
+ * Shutdown SuperClaw + SKYNET
  */
 export async function shutdown(): Promise<void> {
+  shutdownSkynet();
+  skynetInstance = null;
   if (globalBridge) {
     await globalBridge.shutdown();
     globalBridge = null;

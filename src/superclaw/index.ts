@@ -56,7 +56,29 @@ export {
 export { createGatewayHook, wrapAgentHandler, type GatewayHookConfig } from "./gateway-hook.js";
 
 // Global instance management
-export { getSuperclaw, isInitialized, getBridge, shutdown, classify, process } from "./init.js";
+export {
+  getSuperclaw,
+  isInitialized,
+  getBridge,
+  getSkynetInstance,
+  shutdown,
+  classify,
+  process,
+} from "./init.js";
+
+// SKYNET governance + self-evolution
+export {
+  Skynet,
+  getSkynet,
+  shutdownSkynet,
+  type SkynetConfig,
+  type PulseStatus,
+  type SentinelMetrics,
+  type OracleInsight,
+  type ThresholdViolation,
+  type GovernanceDecision,
+  type ThresholdConfig,
+} from "./skynet.js";
 
 // Agent tools
 export {
