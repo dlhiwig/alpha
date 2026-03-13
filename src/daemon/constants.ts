@@ -1,11 +1,16 @@
 // Default service labels (canonical + legacy compatibility)
 export const GATEWAY_LAUNCH_AGENT_LABEL = "ai.nicholsbot.gateway";
 export const GATEWAY_SYSTEMD_SERVICE_NAME = "nicholsbot-gateway";
+<<<<<<< HEAD
 export const GATEWAY_WINDOWS_TASK_NAME = "NicholsBot Gateway";
+=======
+export const GATEWAY_WINDOWS_TASK_NAME = "OpenClaw Gateway";
+>>>>>>> sync/upstream-20260313
 export const GATEWAY_SERVICE_MARKER = "nicholsbot";
 export const GATEWAY_SERVICE_KIND = "gateway";
 export const NODE_LAUNCH_AGENT_LABEL = "ai.nicholsbot.node";
 export const NODE_SYSTEMD_SERVICE_NAME = "nicholsbot-node";
+<<<<<<< HEAD
 export const NODE_WINDOWS_TASK_NAME = "NicholsBot Node";
 export const NODE_SERVICE_MARKER = "nicholsbot";
 export const NODE_SERVICE_KIND = "node";
@@ -13,6 +18,18 @@ export const NODE_WINDOWS_TASK_SCRIPT_NAME = "node.cmd";
 export const LEGACY_GATEWAY_LAUNCH_AGENT_LABELS: string[] = ["ai.openclaw.gateway"];
 export const LEGACY_GATEWAY_SYSTEMD_SERVICE_NAMES: string[] = ["openclaw-gateway"];
 export const LEGACY_GATEWAY_WINDOWS_TASK_NAMES: string[] = ["OpenClaw Gateway"];
+=======
+export const NODE_WINDOWS_TASK_NAME = "OpenClaw Node";
+export const NODE_SERVICE_MARKER = "nicholsbot";
+export const NODE_SERVICE_KIND = "node";
+export const NODE_WINDOWS_TASK_SCRIPT_NAME = "node.cmd";
+export const LEGACY_GATEWAY_LAUNCH_AGENT_LABELS: string[] = [];
+export const LEGACY_GATEWAY_SYSTEMD_SERVICE_NAMES: string[] = [
+  "clawdbot-gateway",
+  "moltbot-gateway",
+];
+export const LEGACY_GATEWAY_WINDOWS_TASK_NAMES: string[] = [];
+>>>>>>> sync/upstream-20260313
 
 export function normalizeGatewayProfile(profile?: string): string | null {
   const trimmed = profile?.trim();
@@ -73,6 +90,20 @@ export function formatGatewayServiceDescription(params?: {
     return "NicholsBot Gateway";
   }
   return `NicholsBot Gateway (${parts.join(", ")})`;
+}
+
+export function resolveGatewayServiceDescription(params: {
+  env: Record<string, string | undefined>;
+  environment?: Record<string, string | undefined>;
+  description?: string;
+}): string {
+  return (
+    params.description ??
+    formatGatewayServiceDescription({
+      profile: params.env.OPENCLAW_PROFILE,
+      version: params.environment?.OPENCLAW_SERVICE_VERSION ?? params.env.OPENCLAW_SERVICE_VERSION,
+    })
+  );
 }
 
 export function resolveNodeLaunchAgentLabel(): string {

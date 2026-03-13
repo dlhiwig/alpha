@@ -84,7 +84,7 @@ export class SuperClawBridge extends EventEmitter {
    * Initialize the bridge
    */
   async initialize(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {return;}
 
     console.log("[SuperClaw] Initializing bridge...");
 
@@ -281,8 +281,8 @@ export class SuperClawBridge extends EventEmitter {
    * Record an outcome for learning
    */
   private async recordOutcome(outcome: LearningOutcome): Promise<void> {
-    if (!this.config.learning.storePatterns) return;
-    if (!outcome.success && outcome.wasSwarm) return; // Don't learn from swarm failures
+    if (!this.config.learning.storePatterns) {return;}
+    if (!outcome.success && outcome.wasSwarm) {return;} // Don't learn from swarm failures
 
     // Store pattern
     const pattern: PatternMatch = {

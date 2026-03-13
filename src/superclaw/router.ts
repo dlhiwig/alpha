@@ -157,22 +157,22 @@ export class TaskRouter {
     let complexityScore = 0;
 
     // Word count factor
-    if (wordCount > 100) complexityScore += 0.3;
-    else if (wordCount > 50) complexityScore += 0.2;
-    else if (wordCount > 20) complexityScore += 0.1;
+    if (wordCount > 100) {complexityScore += 0.3;}
+    else if (wordCount > 50) {complexityScore += 0.2;}
+    else if (wordCount > 20) {complexityScore += 0.1;}
 
     // Keyword factors
-    if (hasComplexKeywords) complexityScore += 0.3;
-    if (hasCodeKeywords) complexityScore += 0.15;
-    if (hasSimpleKeywords) complexityScore -= 0.2;
+    if (hasComplexKeywords) {complexityScore += 0.3;}
+    if (hasCodeKeywords) {complexityScore += 0.15;}
+    if (hasSimpleKeywords) {complexityScore -= 0.2;}
 
     // Explicit swarm request is always complex
-    if (normalized.includes("swarm")) complexityScore += 0.25;
+    if (normalized.includes("swarm")) {complexityScore += 0.25;}
 
     // Structure factors
-    if (hasCodeBlocks) complexityScore += 0.1;
-    if (hasMultipleSteps) complexityScore += 0.15;
-    if (hasNumberedList) complexityScore += 0.1;
+    if (hasCodeBlocks) {complexityScore += 0.1;}
+    if (hasMultipleSteps) {complexityScore += 0.15;}
+    if (hasNumberedList) {complexityScore += 0.1;}
 
     // Pattern matching boost
     if (context?.patterns?.length) {
@@ -215,7 +215,7 @@ export class TaskRouter {
     // Keep cache size bounded
     if (this.recentClassifications.size > 100) {
       const firstKey = this.recentClassifications.keys().next().value;
-      if (firstKey) this.recentClassifications.delete(firstKey);
+      if (firstKey) {this.recentClassifications.delete(firstKey);}
     }
 
     return classification;
@@ -256,7 +256,7 @@ export class TaskRouter {
 
     if (this.config.routing.strategy === "cost") {
       // Always prefer cheaper/local models
-      if (complexity === "simple") return SPECIALIZED_MODELS.bulk;
+      if (complexity === "simple") {return SPECIALIZED_MODELS.bulk;}
       return complexity === "complex"
         ? "anthropic/claude-sonnet-4-20250514"
         : SPECIALIZED_MODELS.bulk;
@@ -307,14 +307,14 @@ export class TaskRouter {
     const factors: string[] = [];
     const wordCount = task.split(/\s+/).length;
 
-    if (wordCount > 50) factors.push(`long task (${wordCount} words)`);
+    if (wordCount > 50) {factors.push(`long task (${wordCount} words)`);}
     if (this.hasKeywords(task.toLowerCase(), COMPLEX_KEYWORDS))
-      factors.push("complex keywords detected");
-    if (this.hasKeywords(task.toLowerCase(), CODE_KEYWORDS)) factors.push("code-related task");
+      {factors.push("complex keywords detected");}
+    if (this.hasKeywords(task.toLowerCase(), CODE_KEYWORDS)) {factors.push("code-related task");}
     if (this.hasKeywords(task.toLowerCase(), SIMPLE_KEYWORDS))
-      factors.push("simple query keywords");
-    if (/```[\s\S]*```/.test(task)) factors.push("contains code blocks");
-    if (/\b(then|after|next|finally)\b/i.test(task)) factors.push("multi-step task");
+      {factors.push("simple query keywords");}
+    if (/```[\s\S]*```/.test(task)) {factors.push("contains code blocks");}
+    if (/\b(then|after|next|finally)\b/i.test(task)) {factors.push("multi-step task");}
 
     const factorStr = factors.length > 0 ? factors.join(", ") : "general characteristics";
 
@@ -346,9 +346,9 @@ export class TaskRouter {
    * Check if task should use swarm based on classification
    */
   shouldUseSwarm(classification: TaskClassification): boolean {
-    if (!this.config.swarm.enabled) return false;
-    if (classification.complexity !== "complex") return false;
-    if (classification.confidence < 0.6) return false; // Too uncertain
+    if (!this.config.swarm.enabled) {return false;}
+    if (classification.complexity !== "complex") {return false;}
+    if (classification.confidence < 0.6) {return false;} // Too uncertain
     return true;
   }
 

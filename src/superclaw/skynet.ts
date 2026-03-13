@@ -149,8 +149,8 @@ class Sentinel {
   recordRequest(latencyMs: number, error: boolean, tokens?: number, cost?: number): void {
     const now = Date.now();
     this.requests.push({ timestamp: now, latencyMs, error });
-    if (tokens) this.tokensUsed += tokens;
-    if (cost) this.estimatedCost += cost;
+    if (tokens) {this.tokensUsed += tokens;}
+    if (cost) {this.estimatedCost += cost;}
 
     // Keep only last hour of data
     const oneHourAgo = now - 3_600_000;
@@ -203,7 +203,7 @@ class Oracle {
   recordMistake(description: string): void {
     this.mistakes.push(description);
     // Keep last 100
-    if (this.mistakes.length > 100) this.mistakes.shift();
+    if (this.mistakes.length > 100) {this.mistakes.shift();}
   }
 
   analyze(): OracleInsight[] {
@@ -391,7 +391,7 @@ export class Skynet extends EventEmitter {
   }
 
   async initialize(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {return;}
 
     // Initialize audit DB
     const dbPath = this.config.dbPath ?? path.join(this.config.stateDir, "skynet-audit.db");

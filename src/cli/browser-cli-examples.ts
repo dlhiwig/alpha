@@ -20,11 +20,19 @@ export const browserActionExamples = [
   "nicholsbot browser resize 1280 720",
   "nicholsbot browser click 12 --double",
   'openclaw browser type 23 "hello" --submit',
+<<<<<<< HEAD
   "nicholsbot browser press Enter",
   "nicholsbot browser hover 44",
   "nicholsbot browser drag 10 11",
   "nicholsbot browser select 9 OptionA OptionB",
   "nicholsbot browser upload /tmp/file.pdf",
+=======
+  "openclaw browser press Enter",
+  "openclaw browser hover 44",
+  "openclaw browser drag 10 11",
+  "openclaw browser select 9 OptionA OptionB",
+  "openclaw browser upload /tmp/openclaw/uploads/file.pdf",
+>>>>>>> sync/upstream-20260313
   'openclaw browser fill --fields \'[{"ref":"1","value":"Ada"}]\'',
   "nicholsbot browser dialog --accept",
   'openclaw browser wait --text "Done"',

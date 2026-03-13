@@ -1,5 +1,4 @@
 import type { Command } from "commander";
-
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
@@ -9,7 +8,11 @@ import type { PluginLogger } from "./types.js";
 
 const log = createSubsystemLogger("plugins");
 
-export function registerPluginCliCommands(program: Command, cfg?: OpenClawConfig) {
+export function registerPluginCliCommands(
+  program: Command,
+  cfg?: OpenClawConfig,
+  env?: NodeJS.ProcessEnv,
+) {
   const config = cfg ?? loadConfig();
   const workspaceDir = resolveAgentWorkspaceDir(config, resolveDefaultAgentId(config));
   const logger: PluginLogger = {
@@ -21,6 +24,7 @@ export function registerPluginCliCommands(program: Command, cfg?: OpenClawConfig
   const registry = loadOpenClawPlugins({
     config,
     workspaceDir,
+    env,
     logger,
   });
 

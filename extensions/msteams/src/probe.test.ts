@@ -1,6 +1,5 @@
+import type { MSTeamsConfig } from "openclaw/plugin-sdk/msteams";
 import { describe, expect, it, vi } from "vitest";
-
-import type { MSTeamsConfig } from "openclaw/plugin-sdk";
 
 const hostMockState = vi.hoisted(() => ({
   tokenError: null as Error | null,

@@ -45,7 +45,7 @@ export function createGatewayHook(
       shouldUseSwarm?: boolean;
       classification?: ProcessResult["classification"];
     } | null> {
-      if (!hookConfig.enabled) return null;
+      if (!hookConfig.enabled) {return null;}
 
       try {
         // Check for explicit /swarm command
@@ -105,7 +105,7 @@ export function createGatewayHook(
       tokensUsed?: number;
       model?: string;
     }): Promise<void> {
-      if (!hookConfig.enabled) return;
+      if (!hookConfig.enabled) {return;}
 
       try {
         // Bridge handles learning internally through recordOutcome

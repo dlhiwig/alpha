@@ -1,73 +1,22 @@
-import { confirm, isCancel, select, spinner } from "@clack/prompts";
-import fs from "node:fs/promises";
-import os from "node:os";
-import path from "node:path";
 import type { Command } from "commander";
-
-import { readConfigFileSnapshot, writeConfigFile } from "../config/config.js";
-import { resolveOpenClawPackageRoot } from "../infra/openclaw-root.js";
-import {
-  checkUpdateStatus,
-  compareSemverStrings,
-  fetchNpmTagVersion,
-  resolveNpmChannelTag,
-} from "../infra/update-check.js";
-import { parseSemver } from "../infra/runtime-guard.js";
-import {
-  runGatewayUpdate,
-  type UpdateRunResult,
-  type UpdateStepInfo,
-  type UpdateStepResult,
-  type UpdateStepProgress,
-} from "../infra/update-runner.js";
-import {
-  detectGlobalInstallManagerByPresence,
-  detectGlobalInstallManagerForRoot,
-  globalInstallArgs,
-  resolveGlobalPackageRoot,
-  type GlobalInstallManager,
-} from "../infra/update-global.js";
-import {
-  channelToNpmTag,
-  DEFAULT_GIT_CHANNEL,
-  DEFAULT_PACKAGE_CHANNEL,
-  formatUpdateChannelLabel,
-  normalizeUpdateChannel,
-  resolveEffectiveUpdateChannel,
-} from "../infra/update-channels.js";
-import { trimLogTail } from "../infra/restart-sentinel.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../terminal/links.js";
-import { formatCliCommand } from "./command-format.js";
-import { replaceCliName, resolveCliName } from "./cli-name.js";
-import { stylePromptHint, stylePromptMessage } from "../terminal/prompt-style.js";
 import { theme } from "../terminal/theme.js";
-import { renderTable } from "../terminal/table.js";
+import { inheritOptionFromParent } from "./command-options.js";
 import { formatHelpExamples } from "./help-format.js";
 import {
-  formatUpdateAvailableHint,
-  formatUpdateOneLiner,
-  resolveUpdateAvailability,
-} from "../commands/status.update.js";
-import { syncPluginsForUpdateChannel, updateNpmInstalledPlugins } from "../plugins/update.js";
-import { runCommandWithTimeout } from "../process/exec.js";
+  type UpdateCommandOptions,
+  type UpdateStatusOptions,
+  type UpdateWizardOptions,
+} from "./update-cli/shared.js";
+import { updateStatusCommand } from "./update-cli/status.js";
+import { updateCommand } from "./update-cli/update-command.js";
+import { updateWizardCommand } from "./update-cli/wizard.js";
 
-export type UpdateCommandOptions = {
-  json?: boolean;
-  restart?: boolean;
-  channel?: string;
-  tag?: string;
-  timeout?: string;
-  yes?: boolean;
-};
-export type UpdateStatusOptions = {
-  json?: boolean;
-  timeout?: string;
-};
-export type UpdateWizardOptions = {
-  timeout?: string;
-};
+export { updateCommand, updateStatusCommand, updateWizardCommand };
+export type { UpdateCommandOptions, UpdateStatusOptions, UpdateWizardOptions };
 
+<<<<<<< HEAD
 const STEP_LABELS: Record<string, string> = {
   "clean check": "Working directory is clean",
   "upstream check": "Upstream branch exists",
@@ -1143,21 +1092,37 @@ export async function updateWizardCommand(opts: UpdateWizardOptions = {}): Promi
   } catch (err) {
     defaultRuntime.error(String(err));
     defaultRuntime.exit(1);
+=======
+function inheritedUpdateJson(command?: Command): boolean {
+  return Boolean(inheritOptionFromParent<boolean>(command, "json"));
+}
+
+function inheritedUpdateTimeout(
+  opts: { timeout?: unknown },
+  command?: Command,
+): string | undefined {
+  const timeout = opts.timeout as string | undefined;
+  if (timeout) {
+    return timeout;
+>>>>>>> sync/upstream-20260313
   }
+  return inheritOptionFromParent<string>(command, "timeout");
 }
 
 export function registerUpdateCli(program: Command) {
   const update = program
     .command("update")
-    .description("Update OpenClaw to the latest version")
+    .description("Update OpenClaw and inspect update channel status")
     .option("--json", "Output result as JSON", false)
     .option("--no-restart", "Skip restarting the gateway service after a successful update")
+    .option("--dry-run", "Preview update actions without making changes", false)
     .option("--channel <stable|beta|dev>", "Persist update channel (git + npm)")
     .option("--tag <dist-tag|version>", "Override npm dist-tag or version for this update")
     .option("--timeout <seconds>", "Timeout for each update step in seconds (default: 1200)")
     .option("--yes", "Skip confirmation prompts (non-interactive)", false)
     .addHelpText("after", () => {
       const examples = [
+<<<<<<< HEAD
         ["nicholsbot update", "Update a source checkout (git)"],
         ["nicholsbot update --channel beta", "Switch to beta channel (git + npm)"],
         ["nicholsbot update --channel dev", "Switch to dev channel (git + npm)"],
@@ -1167,6 +1132,18 @@ export function registerUpdateCli(program: Command) {
         ["nicholsbot update --yes", "Non-interactive (accept downgrade prompts)"],
         ["nicholsbot update wizard", "Interactive update wizard"],
         ["nicholsbot --update", "Shorthand for nicholsbot update"],
+=======
+        ["openclaw update", "Update a source checkout (git)"],
+        ["openclaw update --channel beta", "Switch to beta channel (git + npm)"],
+        ["openclaw update --channel dev", "Switch to dev channel (git + npm)"],
+        ["openclaw update --tag beta", "One-off update to a dist-tag or version"],
+        ["openclaw update --dry-run", "Preview actions without changing anything"],
+        ["openclaw update --no-restart", "Update without restarting the service"],
+        ["openclaw update --json", "Output result as JSON"],
+        ["openclaw update --yes", "Non-interactive (accept downgrade prompts)"],
+        ["openclaw update wizard", "Interactive update wizard"],
+        ["openclaw --update", "Shorthand for openclaw update"],
+>>>>>>> sync/upstream-20260313
       ] as const;
       const fmtExamples = examples
         .map(([cmd, desc]) => `  ${theme.command(cmd)} ${theme.muted(`# ${desc}`)}`)
@@ -1184,6 +1161,7 @@ ${theme.heading("Switch channels:")}
 ${theme.heading("Non-interactive:")}
   - Use --yes to accept downgrade prompts
   - Combine with --channel/--tag/--restart/--json/--timeout as needed
+  - Use --dry-run to preview actions without writing config/installing/restarting
 
 ${theme.heading("Examples:")}
 ${fmtExamples}
@@ -1201,6 +1179,7 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "nicholsbot-docs.vercel.
         await updateCommand({
           json: Boolean(opts.json),
           restart: Boolean(opts.restart),
+          dryRun: Boolean(opts.dryRun),
           channel: opts.channel as string | undefined,
           tag: opts.tag as string | undefined,
           timeout: opts.timeout as string | undefined,
@@ -1220,10 +1199,10 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "nicholsbot-docs.vercel.
       "after",
       `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "nicholsbot-docs.vercel.app/cli/update")}\n`,
     )
-    .action(async (opts) => {
+    .action(async (opts, command) => {
       try {
         await updateWizardCommand({
-          timeout: opts.timeout as string | undefined,
+          timeout: inheritedUpdateTimeout(opts, command),
         });
       } catch (err) {
         defaultRuntime.error(String(err));
@@ -1249,11 +1228,11 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "nicholsbot-docs.vercel.
           "Docs:",
         )} ${formatDocsLink("/cli/update", "nicholsbot-docs.vercel.app/cli/update")}`,
     )
-    .action(async (opts) => {
+    .action(async (opts, command) => {
       try {
         await updateStatusCommand({
-          json: Boolean(opts.json),
-          timeout: opts.timeout as string | undefined,
+          json: Boolean(opts.json) || inheritedUpdateJson(command),
+          timeout: inheritedUpdateTimeout(opts, command),
         });
       } catch (err) {
         defaultRuntime.error(String(err));

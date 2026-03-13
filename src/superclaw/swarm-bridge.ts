@@ -53,7 +53,7 @@ let lightweightSwarm: LightweightSwarm | null = null;
  * Check if Claude-Flow is available
  */
 async function loadClaudeFlow(): Promise<boolean> {
-  if (SwarmCoordinator) return true;
+  if (SwarmCoordinator) {return true;}
 
   try {
     // Dynamic import to avoid hard dependency
@@ -246,7 +246,7 @@ export class SwarmBridge extends EventEmitter {
    */
   private async cancelSwarm(swarmId: string): Promise<void> {
     const swarm = this.activeSwarms.get(swarmId);
-    if (!swarm) return;
+    if (!swarm) {return;}
 
     try {
       await swarm.coordinator.shutdown();
@@ -307,7 +307,7 @@ export class SwarmBridge extends EventEmitter {
    */
   private async cleanupSwarm(swarmId: string): Promise<void> {
     const swarm = this.activeSwarms.get(swarmId);
-    if (!swarm) return;
+    if (!swarm) {return;}
 
     try {
       if (swarm.coordinator.shutdown) {
@@ -324,7 +324,7 @@ export class SwarmBridge extends EventEmitter {
    * Set up event forwarding from Claude-Flow to SuperClaw events
    */
   private setupEventForwarding(swarmId: string, coordinator: any): void {
-    if (!coordinator.on) return;
+    if (!coordinator.on) {return;}
 
     coordinator.on("agent.spawned", (event: any) => {
       this.emit("swarm:progress", {

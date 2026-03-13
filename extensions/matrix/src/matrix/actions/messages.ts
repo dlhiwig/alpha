@@ -1,3 +1,7 @@
+import { resolveMatrixRoomId, sendMessageMatrix } from "../send.js";
+import { resolveActionClient } from "./client.js";
+import { resolveMatrixActionLimit } from "./limits.js";
+import { summarizeMatrixRawEvent } from "./summary.js";
 import {
   EventType,
   MsgType,
@@ -7,9 +11,6 @@ import {
   type MatrixRawEvent,
   type RoomMessageEventContent,
 } from "./types.js";
-import { resolveActionClient } from "./client.js";
-import { summarizeMatrixRawEvent } from "./summary.js";
-import { resolveMatrixRoomId, sendMessageMatrix } from "../send.js";
 
 export async function sendMatrixMessage(
   to: string,
@@ -95,10 +96,7 @@ export async function readMatrixMessages(
   const { client, stopOnDone } = await resolveActionClient(opts);
   try {
     const resolvedRoom = await resolveMatrixRoomId(client, roomId);
-    const limit =
-      typeof opts.limit === "number" && Number.isFinite(opts.limit)
-        ? Math.max(1, Math.floor(opts.limit))
-        : 20;
+    const limit = resolveMatrixActionLimit(opts.limit, 20);
     const token = opts.before?.trim() || opts.after?.trim() || undefined;
     const dir = opts.after ? "f" : "b";
     // @vector-im/matrix-bot-sdk uses doRequest for room messages

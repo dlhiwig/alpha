@@ -1,11 +1,10 @@
-import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
-import { emptyPluginConfigSchema } from "openclaw/plugin-sdk";
-
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/nostr";
+import { emptyPluginConfigSchema } from "openclaw/plugin-sdk/nostr";
 import { nostrPlugin } from "./src/channel.js";
-import { setNostrRuntime, getNostrRuntime } from "./src/runtime.js";
-import { createNostrProfileHttpHandler } from "./src/nostr-profile-http.js";
-import { resolveNostrAccount } from "./src/types.js";
 import type { NostrProfile } from "./src/config-schema.js";
+import { createNostrProfileHttpHandler } from "./src/nostr-profile-http.js";
+import { setNostrRuntime, getNostrRuntime } from "./src/runtime.js";
+import { resolveNostrAccount } from "./src/types.js";
 
 const plugin = {
   id: "nostr",
@@ -62,7 +61,12 @@ const plugin = {
       log: api.logger,
     });
 
-    api.registerHttpHandler(httpHandler);
+    api.registerHttpRoute({
+      path: "/api/channels/nostr",
+      auth: "gateway",
+      match: "prefix",
+      handler: httpHandler,
+    });
   },
 };
 
