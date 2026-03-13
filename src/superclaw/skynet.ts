@@ -1,8 +1,8 @@
 /**
- * SKYNET Integration Layer for NicholsBot
+ * SKYNET Integration Layer for Alpha
  *
- * Bridges SuperClaw's SKYNET modules into the NicholsBot gateway.
- * This is the governance + self-evolution layer that makes NicholsBot
+ * Bridges SuperClaw's SKYNET modules into the Alpha gateway.
+ * This is the governance + self-evolution layer that makes Alpha
  * more than a chatbot.
  *
  * SKYNET Waves:

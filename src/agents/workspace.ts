@@ -16,17 +16,9 @@ export function resolveDefaultAgentWorkspaceDir(
   const home = resolveRequiredHomeDir(env, homedir);
   const profile = env.OPENCLAW_PROFILE?.trim();
   if (profile && profile.toLowerCase() !== "default") {
-<<<<<<< HEAD
-    const stateBase = env.NICHOLSBOT_STATE_DIR?.trim() || path.join(homedir(), ".nicholsbot");
-    return path.join(stateBase, `workspace-${profile}`);
+    return path.join(home, ".alpha", `workspace-${profile}`);
   }
-  const stateDir = env.NICHOLSBOT_STATE_DIR?.trim() || path.join(homedir(), ".nicholsbot");
-  return path.join(stateDir, "workspace");
-=======
-    return path.join(home, ".nicholsbot", `workspace-${profile}`);
-  }
-  return path.join(home, ".nicholsbot", "workspace");
->>>>>>> sync/upstream-20260313
+  return path.join(home, ".alpha", "workspace");
 }
 
 export const DEFAULT_AGENT_WORKSPACE_DIR = resolveDefaultAgentWorkspaceDir();
@@ -39,7 +31,7 @@ export const DEFAULT_HEARTBEAT_FILENAME = "HEARTBEAT.md";
 export const DEFAULT_BOOTSTRAP_FILENAME = "BOOTSTRAP.md";
 export const DEFAULT_MEMORY_FILENAME = "MEMORY.md";
 export const DEFAULT_MEMORY_ALT_FILENAME = "memory.md";
-const WORKSPACE_STATE_DIRNAME = ".nicholsbot";
+const WORKSPACE_STATE_DIRNAME = ".alpha";
 const WORKSPACE_STATE_FILENAME = "workspace-state.json";
 const WORKSPACE_STATE_VERSION = 1;
 

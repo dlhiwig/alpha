@@ -10,7 +10,7 @@ export function registerDaemonCli(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/gateway", "nicholsbot-docs.vercel.app/cli/gateway")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/gateway", "alpha-docs.vercel.app/cli/gateway")}\n`,
     );
 
   addGatewayServiceCommands(daemon, {

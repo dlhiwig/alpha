@@ -100,7 +100,7 @@ export function printDaemonStatus(status: DaemonStatus, opts: { json: boolean })
     }
     defaultRuntime.error(
       warnText(
-        `Recommendation: run "${formatCliCommand("nicholsbot doctor")}" (or "${formatCliCommand("nicholsbot doctor --repair")}").`,
+        `Recommendation: run "${formatCliCommand("alpha doctor")}" (or "${formatCliCommand("alpha doctor --repair")}").`,
       ),
     );
   }
@@ -134,7 +134,7 @@ export function printDaemonStatus(status: DaemonStatus, opts: { json: boolean })
       );
       defaultRuntime.error(
         errorText(
-          `Fix: rerun \`${formatCliCommand("nicholsbot gateway install --force")}\` from the same --profile / OPENCLAW_STATE_DIR you expect.`,
+          `Fix: rerun \`${formatCliCommand("alpha gateway install --force")}\` from the same --profile / OPENCLAW_STATE_DIR you expect.`,
         ),
       );
     }
@@ -231,7 +231,7 @@ export function printDaemonStatus(status: DaemonStatus, opts: { json: boolean })
       ),
     );
     defaultRuntime.error(
-      errorText(`Then reinstall: ${formatCliCommand("nicholsbot gateway install")}`),
+      errorText(`Then reinstall: ${formatCliCommand("alpha gateway install")}`),
     );
     spacer();
   }
@@ -304,8 +304,8 @@ export function printDaemonStatus(status: DaemonStatus, opts: { json: boolean })
     spacer();
   }
 
-  defaultRuntime.log(`${label("Troubles:")} run ${formatCliCommand("nicholsbot status")}`);
+  defaultRuntime.log(`${label("Troubles:")} run ${formatCliCommand("alpha status")}`);
   defaultRuntime.log(
-    `${label("Troubleshooting:")} https://nicholsbot-docs.vercel.app/troubleshooting`,
+    `${label("Troubleshooting:")} https://alpha-docs.vercel.app/troubleshooting`,
   );
 }

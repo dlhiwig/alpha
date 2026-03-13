@@ -1,13 +1,7 @@
 {
-<<<<<<< HEAD
-  "name": "nicholsbot",
-  "version": "0.1.0",
-  "description": "NicholsBot — personal AI agent gateway (MIT, forked from OpenClaw)",
-=======
-  "name": "openclaw",
+  "name": "alpha",
   "version": "2026.3.13",
-  "description": "Multi-channel AI gateway with extensible messaging integrations",
->>>>>>> sync/upstream-20260313
+  "description": "Alpha — independent AI agent gateway (MIT, forked from OpenClaw)",
   "keywords": [],
   "homepage": "https://github.com/openclaw/openclaw#readme",
   "bugs": {
@@ -20,7 +14,7 @@
     "url": "git+https://github.com/openclaw/openclaw.git"
   },
   "bin": {
-    "nicholsbot": "nicholsbot.mjs",
+    "alpha": "alpha.mjs",
     "openclaw": "openclaw.mjs"
   },
   "directories": {
@@ -28,59 +22,10 @@
     "test": "test"
   },
   "files": [
-<<<<<<< HEAD
-    "dist/acp/**",
-    "dist/agents/**",
-    "dist/auto-reply/**",
-    "dist/browser/**",
-    "dist/canvas-host/**",
-    "dist/cli/**",
-    "dist/commands/**",
-    "dist/config/**",
-    "dist/compat/**",
-    "dist/control-ui/**",
-    "dist/cron/**",
-    "dist/channels/**",
-    "dist/daemon/**",
-    "dist/discord/**",
-    "dist/gateway/**",
-    "dist/hooks/**",
-    "dist/imessage/**",
-    "dist/infra/**",
-    "dist/macos/**",
-    "dist/media/**",
-    "dist/media-understanding/**",
-    "dist/link-understanding/**",
-    "dist/process/**",
-    "dist/plugins/**",
-    "dist/plugin-sdk/**",
-    "dist/security/**",
-    "dist/sessions/**",
-    "dist/providers/**",
-    "dist/signal/**",
-    "dist/slack/**",
-    "dist/telegram/**",
-    "dist/line/**",
-    "dist/tui/**",
-    "dist/tts/**",
-    "dist/web/**",
-    "dist/wizard/**",
-    "dist/*.js",
-    "dist/*.json",
-    "docs/**",
-    "extensions/**",
-    "assets/**",
-    "openclaw.mjs",
-    "nicholsbot.mjs",
-    "skills/**",
-    "patches/**",
-    "README.md",
-    "README-header.png",
-=======
->>>>>>> sync/upstream-20260313
     "CHANGELOG.md",
     "LICENSE",
     "openclaw.mjs",
+    "alpha.mjs",
     "README-header.png",
     "README.md",
     "assets/",
@@ -269,7 +214,7 @@
       "types": "./dist/plugin-sdk/keyed-async-queue.d.ts",
       "default": "./dist/plugin-sdk/keyed-async-queue.js"
     },
-    "./cli-entry": "./openclaw.mjs"
+    "./cli-entry": "./alpha.mjs"
   },
   "scripts": {
     "android:assemble": "cd apps/android && ./gradlew :app:assembleDebug",

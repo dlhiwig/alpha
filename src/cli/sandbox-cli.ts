@@ -14,33 +14,33 @@ type CommandOptions = Record<string, unknown>;
 
 const SANDBOX_EXAMPLES = {
   main: [
-    ["nicholsbot sandbox list", "List all sandbox containers."],
-    ["nicholsbot sandbox list --browser", "List only browser containers."],
-    ["nicholsbot sandbox recreate --all", "Recreate all containers."],
-    ["nicholsbot sandbox recreate --session main", "Recreate a specific session."],
-    ["nicholsbot sandbox recreate --agent mybot", "Recreate agent containers."],
-    ["nicholsbot sandbox explain", "Explain effective sandbox config."],
+    ["alpha sandbox list", "List all sandbox containers."],
+    ["alpha sandbox list --browser", "List only browser containers."],
+    ["alpha sandbox recreate --all", "Recreate all containers."],
+    ["alpha sandbox recreate --session main", "Recreate a specific session."],
+    ["alpha sandbox recreate --agent mybot", "Recreate agent containers."],
+    ["alpha sandbox explain", "Explain effective sandbox config."],
   ],
   list: [
-    ["nicholsbot sandbox list", "List all sandbox containers."],
-    ["nicholsbot sandbox list --browser", "List only browser containers."],
-    ["nicholsbot sandbox list --json", "JSON output."],
+    ["alpha sandbox list", "List all sandbox containers."],
+    ["alpha sandbox list --browser", "List only browser containers."],
+    ["alpha sandbox list --json", "JSON output."],
   ],
   recreate: [
-    ["nicholsbot sandbox recreate --all", "Recreate all containers."],
-    ["nicholsbot sandbox recreate --session main", "Recreate a specific session."],
+    ["alpha sandbox recreate --all", "Recreate all containers."],
+    ["alpha sandbox recreate --session main", "Recreate a specific session."],
     [
-      "nicholsbot sandbox recreate --agent mybot",
+      "alpha sandbox recreate --agent mybot",
       "Recreate a specific agent (includes sub-agents).",
     ],
-    ["nicholsbot sandbox recreate --browser --all", "Recreate only browser containers."],
-    ["nicholsbot sandbox recreate --all --force", "Skip confirmation."],
+    ["alpha sandbox recreate --browser --all", "Recreate only browser containers."],
+    ["alpha sandbox recreate --all --force", "Skip confirmation."],
   ],
   explain: [
-    ["nicholsbot sandbox explain", "Show effective sandbox config."],
-    ["nicholsbot sandbox explain --session agent:main:main", "Explain a specific session."],
-    ["nicholsbot sandbox explain --agent work", "Explain an agent sandbox."],
-    ["nicholsbot sandbox explain --json", "JSON output."],
+    ["alpha sandbox explain", "Show effective sandbox config."],
+    ["alpha sandbox explain --session agent:main:main", "Explain a specific session."],
+    ["alpha sandbox explain --agent work", "Explain an agent sandbox."],
+    ["alpha sandbox explain --json", "JSON output."],
   ],
 } as const;
 
@@ -70,7 +70,7 @@ export function registerSandboxCli(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/sandbox", "nicholsbot-docs.vercel.app/cli/sandbox")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/sandbox", "alpha-docs.vercel.app/cli/sandbox")}\n`,
     )
     .action(() => {
       sandbox.help({ error: true });

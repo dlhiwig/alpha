@@ -107,24 +107,20 @@ export async function noteSecurityWarnings(cfg: OpenClawConfig) {
       const authFixLines =
         resolvedAuth.mode === "password"
           ? [
-              `  Fix: ${formatCliCommand("nicholsbot configure")} to set a password`,
-              `  Or switch to token: ${formatCliCommand("nicholsbot config set gateway.auth.mode token")}`,
+              `  Fix: ${formatCliCommand("openclaw configure")} to set a password`,
+              `  Or switch to token: ${formatCliCommand("openclaw config set gateway.auth.mode token")}`,
             ]
           : [
               `  Fix: ${formatCliCommand("openclaw doctor --fix")} to generate a token`,
               `  Or set token directly: ${formatCliCommand(
-                "nicholsbot config set gateway.auth.mode token",
+                "openclaw config set gateway.auth.mode token",
               )}`,
             ];
       warnings.push(
         `- CRITICAL: Gateway bound to ${bindDescriptor} without authentication.`,
         `  Anyone on your network (or internet if port-forwarded) can fully control your agent.`,
-<<<<<<< HEAD
-        `  Fix: ${formatCliCommand("nicholsbot config set gateway.bind loopback")}`,
-=======
         `  Fix: ${formatCliCommand("openclaw config set gateway.bind loopback")}`,
         ...saferRemoteAccessLines,
->>>>>>> sync/upstream-20260313
         ...authFixLines,
       );
     } else {

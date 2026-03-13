@@ -110,7 +110,7 @@ export async function ensureConfigReady(params: {
   }
   params.runtime.error("");
   params.runtime.error(
-    `${muted("Run:")} ${commandText(formatCliCommand("nicholsbot doctor --fix"))}`,
+    `${muted("Run:")} ${commandText(formatCliCommand("alpha doctor --fix"))}`,
   );
   if (!allowInvalid) {
     params.runtime.exit(1);

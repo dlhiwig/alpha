@@ -55,21 +55,21 @@ export function registerStatusHealthSessionsCommands(program: Command) {
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["nicholsbot status", "Show channel health + session summary."],
-          ["nicholsbot status --all", "Full diagnosis (read-only)."],
-          ["nicholsbot status --json", "Machine-readable output."],
-          ["nicholsbot status --usage", "Show model provider usage/quota snapshots."],
+          ["alpha status", "Show channel health + session summary."],
+          ["alpha status --all", "Full diagnosis (read-only)."],
+          ["alpha status --json", "Machine-readable output."],
+          ["alpha status --usage", "Show model provider usage/quota snapshots."],
           [
-            "nicholsbot status --deep",
+            "alpha status --deep",
             "Run channel probes (WA + Telegram + Discord + Slack + Signal).",
           ],
-          ["nicholsbot status --deep --timeout 5000", "Tighten probe timeout."],
+          ["alpha status --deep --timeout 5000", "Tighten probe timeout."],
         ])}`,
     )
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/status", "nicholsbot-docs.vercel.app/cli/status")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/status", "alpha-docs.vercel.app/cli/status")}\n`,
     )
     .action(async (opts) => {
       await runWithVerboseAndTimeout(opts, async ({ verbose, timeoutMs }) => {
@@ -97,7 +97,7 @@ export function registerStatusHealthSessionsCommands(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/health", "nicholsbot-docs.vercel.app/cli/health")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/health", "alpha-docs.vercel.app/cli/health")}\n`,
     )
     .action(async (opts) => {
       await runWithVerboseAndTimeout(opts, async ({ verbose, timeoutMs }) => {
@@ -125,19 +125,12 @@ export function registerStatusHealthSessionsCommands(program: Command) {
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-<<<<<<< HEAD
-          ["nicholsbot sessions", "List all sessions."],
-          ["nicholsbot sessions --active 120", "Only last 2 hours."],
-          ["nicholsbot sessions --json", "Machine-readable output."],
-          ["nicholsbot sessions --store ./tmp/sessions.json", "Use a specific session store."],
-=======
-          ["openclaw sessions", "List all sessions."],
-          ["openclaw sessions --agent work", "List sessions for one agent."],
-          ["openclaw sessions --all-agents", "Aggregate sessions across agents."],
-          ["openclaw sessions --active 120", "Only last 2 hours."],
-          ["openclaw sessions --json", "Machine-readable output."],
-          ["openclaw sessions --store ./tmp/sessions.json", "Use a specific session store."],
->>>>>>> sync/upstream-20260313
+          ["alpha sessions", "List all sessions."],
+          ["alpha sessions --agent work", "List sessions for one agent."],
+          ["alpha sessions --all-agents", "Aggregate sessions across agents."],
+          ["alpha sessions --active 120", "Only last 2 hours."],
+          ["alpha sessions --json", "Machine-readable output."],
+          ["alpha sessions --store ./tmp/sessions.json", "Use a specific session store."],
         ])}\n\n${theme.muted(
           "Shows token usage per session when the agent reports it; set agents.defaults.contextTokens to cap the window and show %.",
         )}`,
@@ -145,7 +138,7 @@ export function registerStatusHealthSessionsCommands(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/sessions", "nicholsbot-docs.vercel.app/cli/sessions")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/sessions", "alpha-docs.vercel.app/cli/sessions")}\n`,
     )
     .action(async (opts) => {
       setVerbose(Boolean(opts.verbose));
@@ -181,16 +174,16 @@ export function registerStatusHealthSessionsCommands(program: Command) {
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["openclaw sessions cleanup --dry-run", "Preview stale/cap cleanup."],
+          ["alpha sessions cleanup --dry-run", "Preview stale/cap cleanup."],
           [
-            "openclaw sessions cleanup --dry-run --fix-missing",
+            "alpha sessions cleanup --dry-run --fix-missing",
             "Also preview pruning entries with missing transcript files.",
           ],
-          ["openclaw sessions cleanup --enforce", "Apply maintenance now."],
-          ["openclaw sessions cleanup --agent work --dry-run", "Preview one agent store."],
-          ["openclaw sessions cleanup --all-agents --dry-run", "Preview all agent stores."],
+          ["alpha sessions cleanup --enforce", "Apply maintenance now."],
+          ["alpha sessions cleanup --agent work --dry-run", "Preview one agent store."],
+          ["alpha sessions cleanup --all-agents --dry-run", "Preview all agent stores."],
           [
-            "openclaw sessions cleanup --enforce --store ./tmp/sessions.json",
+            "alpha sessions cleanup --enforce --store ./tmp/sessions.json",
             "Use a specific store.",
           ],
         ])}`,

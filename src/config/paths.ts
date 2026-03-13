@@ -17,23 +17,11 @@ export function resolveIsNixMode(env: NodeJS.ProcessEnv = process.env): boolean 
 
 export const isNixMode = resolveIsNixMode();
 
-<<<<<<< HEAD
-const LEGACY_STATE_DIRNAMES = [".openclaw", ".clawdbot", ".moltbot", ".moldbot"] as const;
-const NEW_STATE_DIRNAME = ".nicholsbot";
-const CONFIG_FILENAME = "nicholsbot.json";
-const LEGACY_CONFIG_FILENAMES = [
-  "openclaw.json",
-  "clawdbot.json",
-  "moltbot.json",
-  "moldbot.json",
-] as const;
-=======
 // Support historical (and occasionally misspelled) legacy state dirs.
 const LEGACY_STATE_DIRNAMES = [".clawdbot", ".moldbot", ".moltbot"] as const;
-const NEW_STATE_DIRNAME = ".nicholsbot";
-const CONFIG_FILENAME = "nicholsbot.json";
+const NEW_STATE_DIRNAME = ".alpha";
+const CONFIG_FILENAME = "alpha.json";
 const LEGACY_CONFIG_FILENAMES = ["clawdbot.json", "moldbot.json", "moltbot.json"] as const;
->>>>>>> sync/upstream-20260313
 
 function resolveDefaultHomeDir(): string {
   return resolveRequiredHomeDir(process.env, os.homedir);
@@ -73,15 +61,8 @@ export function resolveStateDir(
   env: NodeJS.ProcessEnv = process.env,
   homedir: () => string = envHomedir(env),
 ): string {
-<<<<<<< HEAD
-  const override =
-    env.NICHOLSBOT_STATE_DIR?.trim() ||
-    env.OPENCLAW_STATE_DIR?.trim() ||
-    env.CLAWDBOT_STATE_DIR?.trim();
-=======
   const effectiveHomedir = () => resolveRequiredHomeDir(env, homedir);
   const override = env.OPENCLAW_STATE_DIR?.trim() || env.CLAWDBOT_STATE_DIR?.trim();
->>>>>>> sync/upstream-20260313
   if (override) {
     return resolveUserPath(override, env, effectiveHomedir);
   }
@@ -185,7 +166,7 @@ export function resolveConfigPath(
   if (env.OPENCLAW_TEST_FAST === "1") {
     return path.join(stateDir, CONFIG_FILENAME);
   }
-  const stateOverride = env.NICHOLSBOT_STATE_DIR?.trim() || env.OPENCLAW_STATE_DIR?.trim();
+  const stateOverride = env.OPENCLAW_STATE_DIR?.trim();
   const candidates = [
     path.join(stateDir, CONFIG_FILENAME),
     ...LEGACY_CONFIG_FILENAMES.map((name) => path.join(stateDir, name)),
@@ -227,10 +208,7 @@ export function resolveDefaultConfigCandidates(
   }
 
   const candidates: string[] = [];
-  const openclawStateDir =
-    env.NICHOLSBOT_STATE_DIR?.trim() ||
-    env.OPENCLAW_STATE_DIR?.trim() ||
-    env.CLAWDBOT_STATE_DIR?.trim();
+  const openclawStateDir = env.OPENCLAW_STATE_DIR?.trim() || env.CLAWDBOT_STATE_DIR?.trim();
   if (openclawStateDir) {
     const resolved = resolveUserPath(openclawStateDir, env, effectiveHomedir);
     candidates.push(path.join(resolved, CONFIG_FILENAME));
@@ -245,7 +223,7 @@ export function resolveDefaultConfigCandidates(
   return candidates;
 }
 
-export const DEFAULT_GATEWAY_PORT = 18790;
+export const DEFAULT_GATEWAY_PORT = 18789;
 
 /**
  * Gateway lock directory (ephemeral).
@@ -254,7 +232,7 @@ export const DEFAULT_GATEWAY_PORT = 18790;
 export function resolveGatewayLockDir(tmpdir: () => string = os.tmpdir): string {
   const base = tmpdir();
   const uid = typeof process.getuid === "function" ? process.getuid() : undefined;
-  const suffix = uid != null ? `nicholsbot-${uid}` : "nicholsbot";
+  const suffix = uid != null ? `alpha-${uid}` : "openclaw";
   return path.join(base, suffix);
 }
 
@@ -289,10 +267,7 @@ export function resolveGatewayPort(
   cfg?: OpenClawConfig,
   env: NodeJS.ProcessEnv = process.env,
 ): number {
-  const envRaw =
-    env.NICHOLSBOT_GATEWAY_PORT?.trim() ||
-    env.OPENCLAW_GATEWAY_PORT?.trim() ||
-    env.CLAWDBOT_GATEWAY_PORT?.trim();
+  const envRaw = env.OPENCLAW_GATEWAY_PORT?.trim() || env.CLAWDBOT_GATEWAY_PORT?.trim();
   if (envRaw) {
     const parsed = Number.parseInt(envRaw, 10);
     if (Number.isFinite(parsed) && parsed > 0) {

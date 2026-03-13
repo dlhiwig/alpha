@@ -611,13 +611,6 @@ export function buildStatusMessage(args: StatusArgs): string {
       : undefined;
   const costLabel = showCost && hasUsage ? formatUsd(cost) : undefined;
 
-<<<<<<< HEAD
-  const modelLabel = model ? `${provider}/${model}` : "unknown";
-  const authLabel = authLabelValue ? ` · 🔑 ${authLabelValue}` : "";
-  const modelLine = `🧠 Model: ${modelLabel}${authLabel}`;
-  const commit = resolveCommitHash();
-  const versionLine = `🦊 NicholsBot ${VERSION}${commit ? ` (${commit})` : ""}`;
-=======
   const selectedAuthLabel = selectedAuthLabelValue ? ` · 🔑 ${selectedAuthLabelValue}` : "";
   const channelModelNote = (() => {
     if (!args.config || !entry) {
@@ -666,8 +659,7 @@ export function buildStatusMessage(args: StatusArgs): string {
       } (${fallbackState.reason ?? "selected model unavailable"})`
     : null;
   const commit = resolveCommitHash({ moduleUrl: import.meta.url });
-  const versionLine = `🦞 OpenClaw ${VERSION}${commit ? ` (${commit})` : ""}`;
->>>>>>> sync/upstream-20260313
+  const versionLine = `⚡ Alpha ${VERSION}${commit ? ` (${commit})` : ""}`;
   const usagePair = formatUsagePair(inputTokens, outputTokens);
   const cacheLine = formatCacheLine(inputTokens, cacheRead, cacheWrite);
   const costLine = costLabel ? `💵 Cost: ${costLabel}` : null;

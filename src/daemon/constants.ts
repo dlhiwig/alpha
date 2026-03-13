@@ -1,26 +1,13 @@
 // Default service labels (canonical + legacy compatibility)
-export const GATEWAY_LAUNCH_AGENT_LABEL = "ai.nicholsbot.gateway";
-export const GATEWAY_SYSTEMD_SERVICE_NAME = "nicholsbot-gateway";
-<<<<<<< HEAD
-export const GATEWAY_WINDOWS_TASK_NAME = "NicholsBot Gateway";
-=======
-export const GATEWAY_WINDOWS_TASK_NAME = "OpenClaw Gateway";
->>>>>>> sync/upstream-20260313
-export const GATEWAY_SERVICE_MARKER = "nicholsbot";
+export const GATEWAY_LAUNCH_AGENT_LABEL = "ai.openclaw.gateway";
+export const GATEWAY_SYSTEMD_SERVICE_NAME = "alpha-gateway";
+export const GATEWAY_WINDOWS_TASK_NAME = "Alpha Gateway";
+export const GATEWAY_SERVICE_MARKER = "alpha";
 export const GATEWAY_SERVICE_KIND = "gateway";
-export const NODE_LAUNCH_AGENT_LABEL = "ai.nicholsbot.node";
-export const NODE_SYSTEMD_SERVICE_NAME = "nicholsbot-node";
-<<<<<<< HEAD
-export const NODE_WINDOWS_TASK_NAME = "NicholsBot Node";
-export const NODE_SERVICE_MARKER = "nicholsbot";
-export const NODE_SERVICE_KIND = "node";
-export const NODE_WINDOWS_TASK_SCRIPT_NAME = "node.cmd";
-export const LEGACY_GATEWAY_LAUNCH_AGENT_LABELS: string[] = ["ai.openclaw.gateway"];
-export const LEGACY_GATEWAY_SYSTEMD_SERVICE_NAMES: string[] = ["openclaw-gateway"];
-export const LEGACY_GATEWAY_WINDOWS_TASK_NAMES: string[] = ["OpenClaw Gateway"];
-=======
-export const NODE_WINDOWS_TASK_NAME = "OpenClaw Node";
-export const NODE_SERVICE_MARKER = "nicholsbot";
+export const NODE_LAUNCH_AGENT_LABEL = "ai.openclaw.node";
+export const NODE_SYSTEMD_SERVICE_NAME = "alpha-node";
+export const NODE_WINDOWS_TASK_NAME = "Alpha Node";
+export const NODE_SERVICE_MARKER = "alpha";
 export const NODE_SERVICE_KIND = "node";
 export const NODE_WINDOWS_TASK_SCRIPT_NAME = "node.cmd";
 export const LEGACY_GATEWAY_LAUNCH_AGENT_LABELS: string[] = [];
@@ -29,7 +16,6 @@ export const LEGACY_GATEWAY_SYSTEMD_SERVICE_NAMES: string[] = [
   "moltbot-gateway",
 ];
 export const LEGACY_GATEWAY_WINDOWS_TASK_NAMES: string[] = [];
->>>>>>> sync/upstream-20260313
 
 export function normalizeGatewayProfile(profile?: string): string | null {
   const trimmed = profile?.trim();
@@ -49,7 +35,7 @@ export function resolveGatewayLaunchAgentLabel(profile?: string): string {
   if (!normalized) {
     return GATEWAY_LAUNCH_AGENT_LABEL;
   }
-  return `ai.nicholsbot.${normalized}`;
+  return `ai.openclaw.${normalized}`;
 }
 
 export function resolveLegacyGatewayLaunchAgentLabels(profile?: string): string[] {
@@ -62,7 +48,7 @@ export function resolveGatewaySystemdServiceName(profile?: string): string {
   if (!suffix) {
     return GATEWAY_SYSTEMD_SERVICE_NAME;
   }
-  return `nicholsbot-gateway${suffix}`;
+  return `alpha-gateway${suffix}`;
 }
 
 export function resolveGatewayWindowsTaskName(profile?: string): string {
@@ -70,7 +56,7 @@ export function resolveGatewayWindowsTaskName(profile?: string): string {
   if (!normalized) {
     return GATEWAY_WINDOWS_TASK_NAME;
   }
-  return `NicholsBot Gateway (${normalized})`;
+  return `Alpha Gateway (${normalized})`;
 }
 
 export function formatGatewayServiceDescription(params?: {
@@ -87,9 +73,9 @@ export function formatGatewayServiceDescription(params?: {
     parts.push(`v${version}`);
   }
   if (parts.length === 0) {
-    return "NicholsBot Gateway";
+    return "Alpha Gateway";
   }
-  return `NicholsBot Gateway (${parts.join(", ")})`;
+  return `Alpha Gateway (${parts.join(", ")})`;
 }
 
 export function resolveGatewayServiceDescription(params: {
@@ -121,7 +107,7 @@ export function resolveNodeWindowsTaskName(): string {
 export function formatNodeServiceDescription(params?: { version?: string }): string {
   const version = params?.version?.trim();
   if (!version) {
-    return "NicholsBot Node Host";
+    return "Alpha Node Host";
   }
-  return `NicholsBot Node Host (v${version})`;
+  return `Alpha Node Host (v${version})`;
 }

@@ -106,7 +106,7 @@ export function registerDnsCli(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/dns", "nicholsbot-docs.vercel.app/cli/dns")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/dns", "alpha-docs.vercel.app/cli/dns")}\n`,
     );
 
   dns

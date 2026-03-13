@@ -16,11 +16,7 @@ export function registerCronCli(program: Command) {
     .addHelpText(
       "after",
       () =>
-<<<<<<< HEAD
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/cron", "nicholsbot-docs.vercel.app/cli/cron")}\n`,
-=======
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/cron", "docs.openclaw.ai/cli/cron")}\n${theme.muted("Upgrade tip:")} run \`openclaw doctor --fix\` to normalize legacy cron job storage.\n`,
->>>>>>> sync/upstream-20260313
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/cron", "alpha-docs.vercel.app/cli/cron")}\n${theme.muted("Upgrade tip:")} run \`openclaw doctor --fix\` to normalize legacy cron job storage.\n`,
     );
 
   registerCronStatusCommand(cron);

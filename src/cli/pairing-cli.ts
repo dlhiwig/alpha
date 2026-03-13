@@ -57,7 +57,7 @@ export function registerPairingCli(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/pairing", "nicholsbot-docs.vercel.app/cli/pairing")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/pairing", "alpha-docs.vercel.app/cli/pairing")}\n`,
     );
 
   pairing
@@ -135,12 +135,12 @@ export function registerPairingCli(program: Command) {
           : codeOrChannel;
       if (!channelRaw || !resolvedCode) {
         throw new Error(
-          `Usage: ${formatCliCommand("nicholsbot pairing approve <channel> <code>")} (or: ${formatCliCommand("nicholsbot pairing approve --channel <channel> <code>")})`,
+          `Usage: ${formatCliCommand("alpha pairing approve <channel> <code>")} (or: ${formatCliCommand("alpha pairing approve --channel <channel> <code>")})`,
         );
       }
       if (opts.channel && code != null) {
         throw new Error(
-          `Too many arguments. Use: ${formatCliCommand("nicholsbot pairing approve --channel <channel> <code>")}`,
+          `Too many arguments. Use: ${formatCliCommand("alpha pairing approve --channel <channel> <code>")}`,
         );
       }
       const channel = parseChannel(channelRaw, channels);

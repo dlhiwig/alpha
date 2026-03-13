@@ -58,33 +58,13 @@ type NodeDaemonStatusOptions = {
 };
 
 function renderNodeServiceStartHints(): string[] {
-<<<<<<< HEAD
-  const base = [
-    formatCliCommand("nicholsbot node install"),
-    formatCliCommand("nicholsbot node start"),
-  ];
-  switch (process.platform) {
-    case "darwin":
-      return [
-        ...base,
-        `launchctl bootstrap gui/$UID ~/Library/LaunchAgents/${resolveNodeLaunchAgentLabel()}.plist`,
-      ];
-    case "linux":
-      return [...base, `systemctl --user start ${resolveNodeSystemdServiceName()}.service`];
-    case "win32":
-      return [...base, `schtasks /Run /TN "${resolveNodeWindowsTaskName()}"`];
-    default:
-      return base;
-  }
-=======
   return buildPlatformServiceStartHints({
-    installCommand: formatCliCommand("openclaw node install"),
-    startCommand: formatCliCommand("openclaw node start"),
+    installCommand: formatCliCommand("alpha node install"),
+    startCommand: formatCliCommand("alpha node start"),
     launchAgentPlistPath: `~/Library/LaunchAgents/${resolveNodeLaunchAgentLabel()}.plist`,
     systemdServiceName: resolveNodeSystemdServiceName(),
     windowsTaskName: resolveNodeWindowsTaskName(),
   });
->>>>>>> sync/upstream-20260313
 }
 
 function buildNodeRuntimeHints(env: NodeJS.ProcessEnv = process.env): string[] {
@@ -148,7 +128,7 @@ export async function runNodeDaemonInstall(opts: NodeDaemonInstallOptions) {
     });
     if (!json) {
       defaultRuntime.log(`Node service already ${service.loadedText}.`);
-      defaultRuntime.log(`Reinstall with: ${formatCliCommand("nicholsbot node install --force")}`);
+      defaultRuntime.log(`Reinstall with: ${formatCliCommand("alpha node install --force")}`);
     }
     return;
   }

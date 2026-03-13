@@ -100,7 +100,7 @@ function hasOwnPathKey(value: Record<string, unknown>, key: string): boolean {
 }
 
 function formatDoctorHint(message: string): string {
-  return `Run \`${formatCliCommand("openclaw doctor")}\` ${message}`;
+  return `Run \`${formatCliCommand("alpha doctor")}\` ${message}`;
 }
 
 function validatePathSegments(path: PathSegment[]): void {
@@ -238,13 +238,8 @@ async function loadValidConfig(runtime: RuntimeEnv = defaultRuntime) {
   for (const line of formatConfigIssueLines(snapshot.issues, "-", { normalizeRoot: true })) {
     runtime.error(line);
   }
-<<<<<<< HEAD
-  defaultRuntime.error(`Run \`${formatCliCommand("nicholsbot doctor")}\` to repair, then retry.`);
-  defaultRuntime.exit(1);
-=======
   runtime.error(formatDoctorHint("to repair, then retry."));
   runtime.exit(1);
->>>>>>> sync/upstream-20260313
   return snapshot;
 }
 
@@ -406,7 +401,7 @@ export function registerConfigCli(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/config", "nicholsbot-docs.vercel.app/cli/config")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/config", "alpha-docs.vercel.app/cli/config")}\n`,
     )
     .option(
       "--section <section>",

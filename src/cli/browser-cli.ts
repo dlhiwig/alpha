@@ -30,13 +30,13 @@ export function registerBrowserCli(program: Command) {
           true,
         )}\n\n${theme.muted("Docs:")} ${formatDocsLink(
           "/cli/browser",
-          "nicholsbot-docs.vercel.app/cli/browser",
+          "alpha-docs.vercel.app/cli/browser",
         )}\n`,
     )
     .action(() => {
       browser.outputHelp();
       defaultRuntime.error(
-        danger(`Missing subcommand. Try: "${formatCliCommand("nicholsbot browser status")}"`),
+        danger(`Missing subcommand. Try: "${formatCliCommand("alpha browser status")}"`),
       );
       defaultRuntime.exit(1);
     });

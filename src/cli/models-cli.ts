@@ -47,7 +47,7 @@ export function registerModelsCli(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/models", "nicholsbot-docs.vercel.app/cli/models")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/models", "alpha-docs.vercel.app/cli/models")}\n`,
     );
 
   models

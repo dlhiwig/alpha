@@ -69,21 +69,21 @@ export function renderGatewayServiceStopHints(env: NodeJS.ProcessEnv = process.e
   switch (process.platform) {
     case "darwin":
       return [
-        `Tip: ${formatCliCommand("nicholsbot gateway stop")}`,
+        `Tip: ${formatCliCommand("alpha gateway stop")}`,
         `Or: launchctl bootout gui/$UID/${resolveGatewayLaunchAgentLabel(profile)}`,
       ];
     case "linux":
       return [
-        `Tip: ${formatCliCommand("nicholsbot gateway stop")}`,
+        `Tip: ${formatCliCommand("alpha gateway stop")}`,
         `Or: systemctl --user stop ${resolveGatewaySystemdServiceName(profile)}.service`,
       ];
     case "win32":
       return [
-        `Tip: ${formatCliCommand("nicholsbot gateway stop")}`,
+        `Tip: ${formatCliCommand("alpha gateway stop")}`,
         `Or: schtasks /End /TN "${resolveGatewayWindowsTaskName(profile)}"`,
       ];
     default:
-      return [`Tip: ${formatCliCommand("nicholsbot gateway stop")}`];
+      return [`Tip: ${formatCliCommand("alpha gateway stop")}`];
   }
 }
 

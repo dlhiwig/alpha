@@ -137,9 +137,7 @@ export function renderRuntimeHints(
     }
   })();
   if (runtime.missingUnit) {
-    hints.push(
-      `Service not installed. Run: ${formatCliCommand("nicholsbot gateway install", env)}`,
-    );
+    hints.push(`Service not installed. Run: ${formatCliCommand("alpha gateway install", env)}`);
     if (fileLog) {
       hints.push(`File logs: ${fileLog}`);
     }
@@ -161,17 +159,10 @@ export function renderRuntimeHints(
 }
 
 export function renderGatewayServiceStartHints(env: NodeJS.ProcessEnv = process.env): string[] {
-<<<<<<< HEAD
-  const base = [
-    formatCliCommand("nicholsbot gateway install", env),
-    formatCliCommand("nicholsbot gateway", env),
-  ];
-=======
->>>>>>> sync/upstream-20260313
   const profile = env.OPENCLAW_PROFILE;
   return buildPlatformServiceStartHints({
-    installCommand: formatCliCommand("openclaw gateway install", env),
-    startCommand: formatCliCommand("openclaw gateway", env),
+    installCommand: formatCliCommand("alpha gateway install", env),
+    startCommand: formatCliCommand("alpha gateway", env),
     launchAgentPlistPath: `~/Library/LaunchAgents/${resolveGatewayLaunchAgentLabel(profile)}.plist`,
     systemdServiceName: resolveGatewaySystemdServiceName(profile),
     windowsTaskName: resolveGatewayWindowsTaskName(profile),

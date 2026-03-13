@@ -1,14 +1,9 @@
 import path from "node:path";
 
-export const DEFAULT_CLI_NAME = "nicholsbot";
+export const DEFAULT_CLI_NAME = "alpha";
 
-<<<<<<< HEAD
-const KNOWN_CLI_NAMES = new Set([DEFAULT_CLI_NAME, "openclaw"]);
-const CLI_PREFIX_RE = /^(?:((?:pnpm|npm|bunx|npx)\s+))?(nicholsbot|openclaw)\b/;
-=======
 const KNOWN_CLI_NAMES = new Set([DEFAULT_CLI_NAME]);
-const CLI_PREFIX_RE = /^(?:((?:pnpm|npm|bunx|npx)\s+))?(nicholsbot)\b/;
->>>>>>> sync/upstream-20260313
+const CLI_PREFIX_RE = /^(?:((?:pnpm|npm|bunx|npx)\s+))?(alpha)\b/;
 
 export function resolveCliName(argv: string[] = process.argv): string {
   const argv1 = argv[1];

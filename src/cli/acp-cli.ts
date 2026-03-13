@@ -51,7 +51,7 @@ export function registerAcpCli(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/acp", "nicholsbot-docs.vercel.app/cli/acp")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/acp", "alpha-docs.vercel.app/cli/acp")}\n`,
     )
     .action(async (opts) => {
       try {

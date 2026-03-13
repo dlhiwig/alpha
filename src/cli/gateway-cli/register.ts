@@ -94,16 +94,12 @@ export function registerGatewayCli(program: Command) {
       .addHelpText(
         "after",
         () =>
-<<<<<<< HEAD
-          `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/gateway", "nicholsbot-docs.vercel.app/cli/gateway")}\n`,
-=======
           `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-            ["openclaw gateway run", "Run the gateway in the foreground."],
-            ["openclaw gateway status", "Show service status and probe reachability."],
-            ["openclaw gateway discover", "Find local and wide-area gateway beacons."],
-            ["openclaw gateway call health", "Call a gateway RPC method directly."],
-          ])}\n\n${theme.muted("Docs:")} ${formatDocsLink("/cli/gateway", "docs.openclaw.ai/cli/gateway")}\n`,
->>>>>>> sync/upstream-20260313
+            ["alpha gateway run", "Run the gateway in the foreground."],
+            ["alpha gateway status", "Show service status and probe reachability."],
+            ["alpha gateway discover", "Find local and wide-area gateway beacons."],
+            ["alpha gateway call health", "Call a gateway RPC method directly."],
+          ])}\n\n${theme.muted("Docs:")} ${formatDocsLink("/cli/gateway", "alpha-docs.vercel.app/cli/gateway")}\n`,
       ),
   );
 

@@ -62,12 +62,8 @@ export function formatCliBannerLine(version: string, options: BannerOptions = {}
   const commitLabel = commit ?? "unknown";
   const tagline = pickTagline({ ...options, mode: resolveTaglineMode(options) });
   const rich = options.richTty ?? isRich();
-<<<<<<< HEAD
-  const title = "🦊 NicholsBot";
-=======
-  const title = "🦊 OpenClaw";
->>>>>>> sync/upstream-20260313
-  const prefix = "🦊 ";
+  const title = "⚡ OpenClaw";
+  const prefix = "⚡ ";
   const columns = options.columns ?? process.stdout.columns ?? 120;
   const plainBaseLine = `${title} ${version} (${commitLabel})`;
   const plainFullLine = tagline ? `${plainBaseLine} — ${tagline}` : plainBaseLine;
@@ -102,21 +98,12 @@ export function formatCliBannerLine(version: string, options: BannerOptions = {}
 }
 
 const LOBSTER_ASCII = [
-<<<<<<< HEAD
-  "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄",
-  "██░▄▄▀██░▄▄▄░██░▄▄▀██░███░██░▄▄▄░██░████░▄▄▀██░▄▄▀██░▄▄▀██░▄▄▄██",
-  "██░██░██░███░██░█████░█░█░██░███░██░████░▀▀▄██░▀▀░██░██░██░▄▄▄██",
-  "██░▀▀░██░▀▀▀░██░▀▀▄██▄▀▄▀▄██░▀▀▀░██░▀▀░█░▀▀▀██░█████░▀▀░██░▀▀▀██",
-  "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀",
-  "                   🦊 NICHOLSBOT 🦊                      ",
-=======
   "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄",
   "██░▄▄▄░██░▄▄░██░▄▄▄██░▀██░██░▄▄▀██░████░▄▄▀██░███░██",
   "██░███░██░▀▀░██░▄▄▄██░█░█░██░█████░████░▀▀░██░█░█░██",
   "██░▀▀▀░██░█████░▀▀▀██░██▄░██░▀▀▄██░▀▀░█░██░██▄▀▄▀▄██",
   "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀",
-  "                  🦊 NICHOLSBOT 🦊                    ",
->>>>>>> sync/upstream-20260313
+  "                  ⚡ ALPHA ⚡                    ",
   " ",
 ];
 
@@ -140,16 +127,12 @@ export function formatCliBannerArt(options: BannerOptions = {}): string {
   };
 
   const colored = LOBSTER_ASCII.map((line) => {
-    if (line.includes("NICHOLSBOT")) {
+    if (line.includes("ALPHA")) {
       return (
         theme.muted("              ") +
-        theme.accent("🦊") +
-<<<<<<< HEAD
-        theme.info(" NICHOLSBOT ") +
-=======
+        theme.accent("⚡") +
         theme.info(" OPENCLAW ") +
->>>>>>> sync/upstream-20260313
-        theme.accent("🦊")
+        theme.accent("⚡")
       );
     }
     return splitGraphemes(line).map(colorChar).join("");

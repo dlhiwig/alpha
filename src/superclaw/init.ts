@@ -33,7 +33,7 @@ export async function getSuperclaw(config?: Partial<SuperClawConfig>): Promise<S
     // Initialize SKYNET governance layer
     try {
       const stateDir =
-        globalThis.process.env.NICHOLSBOT_STATE_DIR ?? path.join(os.homedir(), ".nicholsbot");
+        globalThis.process.env.ALPHA_STATE_DIR ?? path.join(os.homedir(), ".alpha");
       const skynetConfig: SkynetConfig = {
         stateDir,
         dbPath: path.join(stateDir, "skynet-audit.db"),

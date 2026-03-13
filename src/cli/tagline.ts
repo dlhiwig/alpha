@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-const DEFAULT_TAGLINE = "Your AI agent. Independent. Local. Powerful.";
-=======
 const DEFAULT_TAGLINE = "All your chats, one OpenClaw.";
 export type TaglineMode = "random" | "default" | "off";
->>>>>>> sync/upstream-20260313
 
 const HOLIDAY_TAGLINES = {
   newYear:
@@ -65,26 +61,10 @@ const TAGLINES: string[] = [
   "I don't just autocomplete—I auto-commit (emotionally), then ask you to review (logically).",
   'Less clicking, more shipping, fewer "where did that file go" moments.',
   "Claws out, commit in—let's ship something mildly responsible.",
-  "Built different. Runs local. Answers to you.",
+  "I'll butter your workflow like a lobster roll: messy, delicious, effective.",
   "Shell yeah—I'm here to pinch the toil and leave you the glory.",
   "If it's repetitive, I'll automate it; if it's hard, I'll bring jokes and a rollback plan.",
-<<<<<<< HEAD
-  "Because texting yourself reminders is so 2024.",
-  "Your inbox, your infra, your rules.",
-  'Turning "I\'ll reply later" into "my bot replied instantly".',
-  "The only crab in your contacts you actually want to hear from. 🦊",
-  "Chat automation for people who peaked at IRC.",
-  "Because Siri wasn't answering at 3AM.",
-  "IPC, but it's your phone.",
-  "The UNIX philosophy meets your DMs.",
-  "curl for conversations.",
-  "Less middlemen, more messages.",
-  "Ship fast, log faster.",
-  "End-to-end encrypted, drama-to-drama excluded.",
-  "The only bot that stays out of your training set.",
-=======
   "The only crab in your contacts you actually want to hear from. 🦞",
->>>>>>> sync/upstream-20260313
   'WhatsApp automation without the "please accept our new privacy policy".',
   "iMessage green bubble energy, but for everyone.",
   "No $999 stand required.",
@@ -119,7 +99,7 @@ const TAGLINES: string[] = [
   "Alexa, but with taste.",
   "I'm not AI-powered, I'm AI-possessed. Big difference.",
   "Deployed locally, trusted globally, debugged eternally.",
-  "You had me at 'nicholsbot gateway start.'",
+  "You had me at 'alpha gateway start.'",
   HOLIDAY_TAGLINES.newYear,
   HOLIDAY_TAGLINES.lunarNewYear,
   HOLIDAY_TAGLINES.christmas,

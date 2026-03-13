@@ -82,7 +82,7 @@ export function registerDirectoryCli(program: Command) {
           ],
         ])}\n\n${theme.muted("Docs:")} ${formatDocsLink(
           "/cli/directory",
-          "nicholsbot-docs.vercel.app/cli/directory",
+          "alpha-docs.vercel.app/cli/directory",
         )}\n`,
     )
     .action(() => {

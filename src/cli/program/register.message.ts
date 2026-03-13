@@ -46,7 +46,7 @@ ${formatHelpExamples([
   ],
 ])}
 
-${theme.muted("Docs:")} ${formatDocsLink("/cli/message", "nicholsbot-docs.vercel.app/cli/message")}`,
+${theme.muted("Docs:")} ${formatDocsLink("/cli/message", "alpha-docs.vercel.app/cli/message")}`,
     )
     .action(() => {
       message.help({ error: true });

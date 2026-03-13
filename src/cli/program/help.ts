@@ -23,26 +23,26 @@ const ROOT_COMMANDS_HINT =
 const EXAMPLES = [
   ["openclaw models --help", "Show detailed help for the models command."],
   [
-    "nicholsbot channels login --verbose",
+    "alpha channels login --verbose",
     "Link personal WhatsApp Web and show QR + connection logs.",
   ],
   [
-    'nicholsbot message send --target +15555550123 --message "Hi" --json',
+    'alpha message send --target +15555550123 --message "Hi" --json',
     "Send via your web session and print JSON result.",
   ],
-  ["nicholsbot gateway --port 18789", "Run the WebSocket Gateway locally."],
+  ["alpha gateway --port 18789", "Run the WebSocket Gateway locally."],
   [
-    "nicholsbot --dev gateway",
+    "alpha --dev gateway",
     "Run a dev Gateway (isolated state/config) on ws://127.0.0.1:19001.",
   ],
-  ["nicholsbot gateway --force", "Kill anything bound to the default gateway port, then start it."],
-  ["nicholsbot gateway ...", "Gateway control via WebSocket."],
+  ["alpha gateway --force", "Kill anything bound to the default gateway port, then start it."],
+  ["alpha gateway ...", "Gateway control via WebSocket."],
   [
-    'nicholsbot agent --to +15555550123 --message "Run summary" --deliver',
+    'alpha agent --to +15555550123 --message "Run summary" --deliver',
     "Talk directly to the agent using the Gateway; optionally send the WhatsApp reply.",
   ],
   [
-    'nicholsbot message send --channel telegram --target @mychat --message "Hi"',
+    'alpha message send --channel telegram --target @mychat --message "Hi"',
     "Send via your Telegram bot.",
   ],
 ] as const;
@@ -137,7 +137,7 @@ export function configureProgramHelp(program: Command, ctx: ProgramContext) {
     if (command !== program) {
       return "";
     }
-    const docs = formatDocsLink("/cli", "nicholsbot-docs.vercel.app/cli");
+    const docs = formatDocsLink("/cli", "alpha-docs.vercel.app/cli");
     return `\n${theme.heading("Examples:")}\n${fmtExamples}\n\n${theme.muted("Docs:")} ${docs}\n`;
   });
 }

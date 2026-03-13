@@ -1,10 +1,10 @@
-name: NicholsBot CI
+name: Alpha CI
 
 on:
   push:
-    branches: [nicholsbot/main]
+    branches: [alpha/main]
   pull_request:
-    branches: [nicholsbot/main]
+    branches: [alpha/main]
 
 env:
   NODE_VERSION: '22'
@@ -47,29 +47,29 @@ jobs:
       env:
         CI: true
 
-    - name: NicholsBot identity check
+    - name: Alpha identity check
       run: |
-        echo "🦊 NicholsBot Identity Verification"
+        echo "🦊 Alpha Identity Verification"
         echo "==================================="
 
         ERRORS=0
 
         # Check binary name
-        if grep -q '"name": "nicholsbot"' package.json 2>/dev/null || grep -q 'nicholsbot' package.json 2>/dev/null; then
-          echo "✅ Package references NicholsBot"
+        if grep -q '"name": "alpha"' package.json 2>/dev/null || grep -q 'alpha' package.json 2>/dev/null; then
+          echo "✅ Package references Alpha"
         fi
 
         # Check that key rebranding is in place
-        if grep -rq "NICHOLSBOT\|nicholsbot\|NicholsBot" src/superclaw/ 2>/dev/null; then
-          echo "✅ SuperClaw bridge has NicholsBot identity"
+        if grep -rq "ALPHA\|alpha\|Alpha" src/superclaw/ 2>/dev/null; then
+          echo "✅ SuperClaw bridge has Alpha identity"
         fi
 
         # Verify no hardcoded openclaw in user-facing strings (excluding upstream code)
         LOBSTER_COUNT=$(grep -r "🦞" src/superclaw/ 2>/dev/null | wc -l)
         if [ "$LOBSTER_COUNT" -eq 0 ]; then
-          echo "✅ No lobster emoji in NicholsBot code"
+          echo "✅ No lobster emoji in Alpha code"
         else
-          echo "⚠️ Found $LOBSTER_COUNT lobster references in NicholsBot code"
+          echo "⚠️ Found $LOBSTER_COUNT lobster references in Alpha code"
         fi
 
         echo ""

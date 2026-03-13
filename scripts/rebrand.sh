@@ -1,7 +1,7 @@
 #!/bin/bash
-# NicholsBot Rebrand Script
-# Applies NicholsBot identity on top of any OpenClaw upstream version
-# Run this after merging upstream changes to re-apply branding
+# Alpha Rebrand Script
+# Applies Alpha identity on top of the OpenClaw codebase
+# Run this after cherry-picking upstream changes to re-apply branding
 #
 # Usage: bash scripts/rebrand.sh [--dry-run]
 
@@ -12,101 +12,105 @@ DRY_RUN=false
 
 CHANGED=0
 
-rebrand_file() {
-  local file="$1"
-  shift
-  if [ ! -f "$file" ]; then
-    return
-  fi
-  for pattern in "$@"; do
-    local from="${pattern%%=>*}"
-    local to="${pattern##*=>}"
-    if grep -q "$from" "$file" 2>/dev/null; then
-      if $DRY_RUN; then
-        echo "  [dry-run] Would replace '$from' → '$to' in $file"
-      else
-        sed -i "s|${from}|${to}|g" "$file"
-      fi
-      CHANGED=$((CHANGED + 1))
-    fi
-  done
-}
-
-echo "🦊 NicholsBot Rebrand Script"
-echo "============================="
+echo "⚡ Alpha Rebrand Script"
+echo "======================="
 echo ""
+
+if $DRY_RUN; then
+  echo "[DRY RUN MODE]"
+  echo ""
+fi
 
 # 1. CLI Banner
 echo "1. CLI Banner & Taglines..."
-rebrand_file src/cli/banner.ts \
-  '🦞 OPENCLAW=>🦊 NICHOLSBOT' \
-  '🦞=>🦊'
+if [ -f src/cli/banner.ts ] && ! $DRY_RUN; then
+  sed -i 's/🦞 OPENCLAW/⚡ ALPHA/g' src/cli/banner.ts
+  sed -i 's/🦞/⚡/g' src/cli/banner.ts
+  CHANGED=$((CHANGED + 2))
+fi
 
-rebrand_file src/cli/tagline.ts \
-  'openclaw=>nicholsbot'
+if [ -f src/cli/tagline.ts ] && ! $DRY_RUN; then
+  sed -i 's/openclaw/alpha/g' src/cli/tagline.ts
+  CHANGED=$((CHANGED + 1))
+fi
 
 # 2. CLI Name
 echo "2. CLI Name..."
-rebrand_file src/cli/cli-name.ts \
-  "openclaw=>nicholsbot"
+if [ -f src/cli/cli-name.ts ] && ! $DRY_RUN; then
+  sed -i 's/"openclaw"/"alpha"/g' src/cli/cli-name.ts
+  CHANGED=$((CHANGED + 1))
+fi
 
 # 3. Config Paths (surgical — only user-facing constants, not internal variable names)
 echo "3. Config Paths..."
 if [ -f src/config/paths.ts ] && ! $DRY_RUN; then
-  sed -i 's/const NEW_STATE_DIRNAME = ".openclaw"/const NEW_STATE_DIRNAME = ".nicholsbot"/' src/config/paths.ts
-  sed -i 's/const CONFIG_FILENAME = "openclaw.json"/const CONFIG_FILENAME = "nicholsbot.json"/' src/config/paths.ts
-  sed -i 's/`openclaw-${uid}`/`nicholsbot-${uid}`/' src/config/paths.ts
-  sed -i 's/"openclaw";$/"nicholsbot";/' src/config/paths.ts
+  sed -i 's/const NEW_STATE_DIRNAME = ".openclaw"/const NEW_STATE_DIRNAME = ".alpha"/' src/config/paths.ts
+  sed -i 's/const NEW_STATE_DIRNAME = ".nicholsbot"/const NEW_STATE_DIRNAME = ".alpha"/' src/config/paths.ts
+  sed -i 's/const CONFIG_FILENAME = "openclaw.json"/const CONFIG_FILENAME = "alpha.json"/' src/config/paths.ts
+  sed -i 's/const CONFIG_FILENAME = "nicholsbot.json"/const CONFIG_FILENAME = "alpha.json"/' src/config/paths.ts
+  sed -i 's/`openclaw-${uid}`/`alpha-${uid}`/' src/config/paths.ts
+  sed -i 's/`nicholsbot-${uid}`/`alpha-${uid}`/' src/config/paths.ts
+  sed -i 's/: "openclaw";$/: "alpha";/' src/config/paths.ts
+  sed -i 's/: "nicholsbot";$/: "alpha";/' src/config/paths.ts
   CHANGED=$((CHANGED + 4))
 fi
 
-# 4. Daemon Identity  
+# 4. Daemon Identity
 echo "4. Daemon Identity..."
-rebrand_file src/daemon/constants.ts \
-  'openclaw-gateway=>nicholsbot-gateway' \
-  'openclaw=>nicholsbot'
+if [ -f src/daemon/constants.ts ] && ! $DRY_RUN; then
+  sed -i 's/openclaw-gateway/alpha-gateway/g' src/daemon/constants.ts
+  sed -i 's/nicholsbot-gateway/alpha-gateway/g' src/daemon/constants.ts
+  sed -i 's/"openclaw"/"alpha"/g' src/daemon/constants.ts
+  sed -i 's/"nicholsbot"/"alpha"/g' src/daemon/constants.ts
+  CHANGED=$((CHANGED + 2))
+fi
 
 # 5. Workspace Paths
 echo "5. Workspace Paths..."
-rebrand_file src/agents/workspace.ts \
-  '.openclaw=>.nicholsbot'
+if [ -f src/agents/workspace.ts ] && ! $DRY_RUN; then
+  sed -i 's/.openclaw/.alpha/g' src/agents/workspace.ts
+  sed -i 's/.nicholsbot/.alpha/g' src/agents/workspace.ts
+  CHANGED=$((CHANGED + 1))
+fi
 
-# 6. Entry Point (careful: don't rebrand internal module imports like openclaw-exec-env)
+# 6. Entry Point (careful: don't rebrand internal module imports)
 echo "6. Entry Point..."
-if [ -f src/entry.ts ]; then
-  # Only rebrand user-facing strings, not import paths
-  if ! $DRY_RUN; then
-    sed -i 's/wrapperBasename: "openclaw/wrapperBasename: "nicholsbot/g' src/entry.ts
-    sed -i 's/process\.title = "openclaw"/process.title = "nicholsbot"/g' src/entry.ts
-    sed -i 's/\[openclaw\]/[nicholsbot]/g' src/entry.ts
-  fi
+if [ -f src/entry.ts ] && ! $DRY_RUN; then
+  sed -i 's/wrapperBasename: "openclaw/wrapperBasename: "alpha/g' src/entry.ts
+  sed -i 's/wrapperBasename: "nicholsbot/wrapperBasename: "alpha/g' src/entry.ts
+  sed -i 's/process\.title = "openclaw"/process.title = "alpha"/g' src/entry.ts
+  sed -i 's/process\.title = "nicholsbot"/process.title = "alpha"/g' src/entry.ts
+  sed -i 's/\[openclaw\]/[alpha]/g' src/entry.ts
+  sed -i 's/\[nicholsbot\]/[alpha]/g' src/entry.ts
   CHANGED=$((CHANGED + 3))
 fi
 
 # 7. Gateway
 echo "7. Gateway..."
-rebrand_file src/gateway/server-startup.ts \
-  'openclaw=>nicholsbot' \
-  'OpenClaw=>NicholsBot'
+if [ -f src/gateway/server-startup.ts ] && ! $DRY_RUN; then
+  # Only user-facing strings, not function names or types
+  sed -i 's/loadNicholsBotPlugins/loadAlphaPlugins/g' src/gateway/server-startup.ts 2>/dev/null || true
+  CHANGED=$((CHANGED + 1))
+fi
 
 # 8. WebChat UI
 echo "8. WebChat UI..."
-rebrand_file ui/index.html \
-  'OpenClaw=>NicholsBot' \
-  'openclaw=>nicholsbot'
-
-# 9. Auto-reply (only user-facing strings, not TypeScript types like OpenClawConfig)
-echo "9. Auto-reply Status..."
-# Skip — this file imports OpenClawConfig type, rebranding breaks the build
+if [ -f ui/index.html ] && ! $DRY_RUN; then
+  sed -i 's/OpenClaw/Alpha/g' ui/index.html
+  sed -i 's/NicholsBot/Alpha/g' ui/index.html
+  sed -i 's/openclaw/alpha/g' ui/index.html
+  sed -i 's/nicholsbot/alpha/g' ui/index.html
+  CHANGED=$((CHANGED + 2))
+fi
 
 echo ""
 if $DRY_RUN; then
-  echo "Dry run complete. $CHANGED replacements would be made."
+  echo "Dry run complete. ~$CHANGED replacements would be made."
 else
-  echo "✅ Rebrand complete. $CHANGED replacements made."
+  echo "✅ Rebrand complete. ~$CHANGED replacements made."
   echo ""
   echo "Next steps:"
   echo "  1. Review changes: git diff"
   echo "  2. Test: pnpm build"
-  echo "  3. Commit: git add -A && git commit -m 'chore: re-apply NicholsBot rebrand'"
+  echo "  3. Commit: git add -A && git commit -m 'chore: rebrand to Alpha'"
 fi

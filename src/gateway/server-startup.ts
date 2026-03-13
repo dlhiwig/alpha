@@ -20,7 +20,7 @@ import {
 } from "../hooks/internal-hooks.js";
 import { loadInternalHooks } from "../hooks/loader.js";
 import { isTruthyEnvValue } from "../infra/env.js";
-import type { loadNicholsBotPlugins } from "../plugins/loader.js";
+import type { loadOpenClawPlugins } from "../plugins/loader.js";
 import { type PluginServicesHandle, startPluginServices } from "../plugins/services.js";
 import { startBrowserControlServerIfEnabled } from "./server-browser.js";
 import {
@@ -34,7 +34,7 @@ const SESSION_LOCK_STALE_MS = 30 * 60 * 1000;
 
 export async function startGatewaySidecars(params: {
   cfg: ReturnType<typeof loadConfig>;
-  pluginRegistry: ReturnType<typeof loadNicholsBotPlugins>;
+  pluginRegistry: ReturnType<typeof loadOpenClawPlugins>;
   defaultWorkspaceDir: string;
   deps: CliDeps;
   startChannels: () => Promise<void>;
@@ -62,7 +62,7 @@ export async function startGatewaySidecars(params: {
     params.log.warn(`session lock cleanup failed on startup: ${String(err)}`);
   }
 
-  // Start NicholsBot browser control server (unless disabled via config).
+  // Start Alpha browser control server (unless disabled via config).
   let browserControl: Awaited<ReturnType<typeof startBrowserControlServerIfEnabled>> = null;
   try {
     browserControl = await startBrowserControlServerIfEnabled();
@@ -71,8 +71,8 @@ export async function startGatewaySidecars(params: {
   }
 
   // Start SuperClaw bridge (multi-agent swarm, task routing, governance).
-  // Enabled by default in NicholsBot; can be disabled via NICHOLSBOT_SKIP_SUPERCLAW=1.
-  if (!isTruthyEnvValue(process.env.NICHOLSBOT_SKIP_SUPERCLAW)) {
+  // Enabled by default in Alpha; can be disabled via ALPHA_SKIP_SUPERCLAW=1.
+  if (!isTruthyEnvValue(process.env.ALPHA_SKIP_SUPERCLAW)) {
     try {
       const bridge = await getSuperclaw();
       if (isSuperclawInitialized()) {

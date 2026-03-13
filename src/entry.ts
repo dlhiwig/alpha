@@ -13,16 +13,10 @@ import { ensureOpenClawExecMarkerOnProcess } from "./infra/openclaw-exec-env.js"
 import { installProcessWarningFilter } from "./infra/warning-filter.js";
 import { attachChildProcessBridge } from "./process/child-process-bridge.js";
 
-<<<<<<< HEAD
-process.title = "nicholsbot";
-installProcessWarningFilter();
-normalizeEnv();
-=======
 const ENTRY_WRAPPER_PAIRS = [
-  { wrapperBasename: "nicholsbot.mjs", entryBasename: "entry.js" },
-  { wrapperBasename: "nicholsbot.js", entryBasename: "entry.js" },
+  { wrapperBasename: "alpha.mjs", entryBasename: "entry.js" },
+  { wrapperBasename: "alpha.js", entryBasename: "entry.js" },
 ] as const;
->>>>>>> sync/upstream-20260313
 
 function shouldForceReadOnlyAuthStore(argv: string[]): boolean {
   const tokens = argv.slice(2).filter((token) => token.length > 0 && !token.startsWith("-"));
@@ -30,24 +24,8 @@ function shouldForceReadOnlyAuthStore(argv: string[]): boolean {
     if (tokens[index] === "secrets" && tokens[index + 1] === "audit") {
       return true;
     }
-<<<<<<< HEAD
-    process.exit(code ?? 1);
-  });
-
-  child.once("error", (error) => {
-    console.error(
-      "[nicholsbot] Failed to respawn CLI:",
-      error instanceof Error ? (error.stack ?? error.message) : error,
-    );
-    process.exit(1);
-  });
-
-  // Parent must not continue running the CLI.
-  return true;
-=======
   }
   return false;
->>>>>>> sync/upstream-20260313
 }
 
 // Guard: only run entry-point logic when this file is the main module.
@@ -63,7 +41,7 @@ if (
 ) {
   // Imported as a dependency — skip all entry-point side effects.
 } else {
-  process.title = "nicholsbot";
+  process.title = "alpha";
   ensureOpenClawExecMarkerOnProcess();
   installProcessWarningFilter();
   normalizeEnv();
@@ -127,15 +105,6 @@ if (
 
     attachChildProcessBridge(child);
 
-<<<<<<< HEAD
-if (!ensureExperimentalWarningSuppressed()) {
-  const parsed = parseCliProfileArgs(process.argv);
-  if (!parsed.ok) {
-    // Keep it simple; Commander will handle rich help/errors after we strip flags.
-    console.error(`[nicholsbot] ${parsed.error}`);
-    process.exit(2);
-  }
-=======
     child.once("exit", (code, signal) => {
       if (signal) {
         process.exitCode = 1;
@@ -143,15 +112,10 @@ if (!ensureExperimentalWarningSuppressed()) {
       }
       process.exit(code ?? 1);
     });
->>>>>>> sync/upstream-20260313
 
     child.once("error", (error) => {
       console.error(
-<<<<<<< HEAD
-        "[nicholsbot] Failed to start CLI:",
-=======
-        "[nicholsbot] Failed to respawn CLI:",
->>>>>>> sync/upstream-20260313
+        "[alpha] Failed to respawn CLI:",
         error instanceof Error ? (error.stack ?? error.message) : error,
       );
       process.exit(1);
@@ -173,7 +137,7 @@ if (!ensureExperimentalWarningSuppressed()) {
       })
       .catch((error) => {
         console.error(
-          "[nicholsbot] Failed to resolve version:",
+          "[alpha] Failed to resolve version:",
           error instanceof Error ? (error.stack ?? error.message) : error,
         );
         process.exitCode = 1;
@@ -191,7 +155,7 @@ if (!ensureExperimentalWarningSuppressed()) {
       })
       .catch((error) => {
         console.error(
-          "[nicholsbot] Failed to display help:",
+          "[alpha] Failed to display help:",
           error instanceof Error ? (error.stack ?? error.message) : error,
         );
         process.exitCode = 1;
@@ -205,7 +169,7 @@ if (!ensureExperimentalWarningSuppressed()) {
     const parsed = parseCliProfileArgs(process.argv);
     if (!parsed.ok) {
       // Keep it simple; Commander will handle rich help/errors after we strip flags.
-      console.error(`[nicholsbot] ${parsed.error}`);
+      console.error(`[alpha] ${parsed.error}`);
       process.exit(2);
     }
 
@@ -220,7 +184,7 @@ if (!ensureExperimentalWarningSuppressed()) {
         .then(({ runCli }) => runCli(process.argv))
         .catch((error) => {
           console.error(
-            "[nicholsbot] Failed to start CLI:",
+            "[alpha] Failed to start CLI:",
             error instanceof Error ? (error.stack ?? error.message) : error,
           );
           process.exitCode = 1;

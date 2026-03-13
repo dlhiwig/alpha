@@ -29,15 +29,8 @@ export function parseScreenRecordPayload(value: unknown): ScreenRecordPayload {
 }
 
 export function screenRecordTempPath(opts: { ext: string; tmpDir?: string; id?: string }) {
-<<<<<<< HEAD
-  const tmpDir = opts.tmpDir ?? os.tmpdir();
-  const id = opts.id ?? randomUUID();
-  const ext = opts.ext.startsWith(".") ? opts.ext : `.${opts.ext}`;
-  return path.join(tmpDir, `nicholsbot-screen-record-${id}${ext}`);
-=======
   const { tmpDir, id, ext } = resolveTempPathParts(opts);
   return path.join(tmpDir, `openclaw-screen-record-${id}${ext}`);
->>>>>>> sync/upstream-20260313
 }
 
 export async function writeScreenRecordToFile(filePath: string, base64: string) {

@@ -72,7 +72,7 @@ async function runBrowserToggle(
   if (printJsonResult(parent, status)) {
     return;
   }
-  const name = status.profile ?? "openclaw";
+  const name = status.profile ?? "alpha";
   defaultRuntime.log(info(`🦞 browser [${name}] running: ${status.running}`));
 }
 
@@ -117,7 +117,7 @@ export function registerBrowserManageCommands(
         const detectedDisplay = detectedPath ? shortenHomePath(detectedPath) : "auto";
         defaultRuntime.log(
           [
-            `profile: ${status.profile ?? "nicholsbot"}`,
+            `profile: ${status.profile ?? "alpha"}`,
             `enabled: ${status.enabled}`,
             `running: ${status.running}`,
             `cdpPort: ${status.cdpPort}`,
@@ -139,34 +139,7 @@ export function registerBrowserManageCommands(
       const parent = parentOpts(cmd);
       const profile = parent?.browserProfile;
       await runBrowserCommand(async () => {
-<<<<<<< HEAD
-        await callBrowserRequest(
-          parent,
-          {
-            method: "POST",
-            path: "/start",
-            query: profile ? { profile } : undefined,
-          },
-          { timeoutMs: 15000 },
-        );
-        const status = await callBrowserRequest<BrowserStatus>(
-          parent,
-          {
-            method: "GET",
-            path: "/",
-            query: profile ? { profile } : undefined,
-          },
-          { timeoutMs: 1500 },
-        );
-        if (parent?.json) {
-          defaultRuntime.log(JSON.stringify(status, null, 2));
-          return;
-        }
-        const name = status.profile ?? "nicholsbot";
-        defaultRuntime.log(info(`🦊 browser [${name}] running: ${status.running}`));
-=======
         await runBrowserToggle(parent, { profile, path: "/start" });
->>>>>>> sync/upstream-20260313
       });
     });
 
@@ -177,34 +150,7 @@ export function registerBrowserManageCommands(
       const parent = parentOpts(cmd);
       const profile = parent?.browserProfile;
       await runBrowserCommand(async () => {
-<<<<<<< HEAD
-        await callBrowserRequest(
-          parent,
-          {
-            method: "POST",
-            path: "/stop",
-            query: profile ? { profile } : undefined,
-          },
-          { timeoutMs: 15000 },
-        );
-        const status = await callBrowserRequest<BrowserStatus>(
-          parent,
-          {
-            method: "GET",
-            path: "/",
-            query: profile ? { profile } : undefined,
-          },
-          { timeoutMs: 1500 },
-        );
-        if (parent?.json) {
-          defaultRuntime.log(JSON.stringify(status, null, 2));
-          return;
-        }
-        const name = status.profile ?? "nicholsbot";
-        defaultRuntime.log(info(`🦊 browser [${name}] running: ${status.running}`));
-=======
         await runBrowserToggle(parent, { profile, path: "/stop" });
->>>>>>> sync/upstream-20260313
       });
     });
 
@@ -228,11 +174,11 @@ export function registerBrowserManageCommands(
           return;
         }
         if (!result.moved) {
-          defaultRuntime.log(info(`🦊 browser profile already missing.`));
+          defaultRuntime.log(info(`🦞 browser profile already missing.`));
           return;
         }
         const dest = result.to ?? result.from;
-        defaultRuntime.log(info(`🦊 browser profile moved to Trash (${dest})`));
+        defaultRuntime.log(info(`🦞 browser profile moved to Trash (${dest})`));
       });
     });
 
@@ -474,7 +420,7 @@ export function registerBrowserManageCommands(
     .requiredOption("--name <name>", "Profile name (lowercase, numbers, hyphens)")
     .option("--color <hex>", "Profile color (hex format, e.g. #0066CC)")
     .option("--cdp-url <url>", "CDP URL for remote Chrome (http/https)")
-    .option("--driver <driver>", "Profile driver (nicholsbot|extension). Default: nicholsbot")
+    .option("--driver <driver>", "Profile driver (alpha|extension). Default: alpha")
     .action(
       async (opts: { name: string; color?: string; cdpUrl?: string; driver?: string }, cmd) => {
         const parent = parentOpts(cmd);
@@ -499,7 +445,7 @@ export function registerBrowserManageCommands(
           const loc = result.isRemote ? `  cdpUrl: ${result.cdpUrl}` : `  port: ${result.cdpPort}`;
           defaultRuntime.log(
             info(
-              `🦊 Created profile "${result.profile}"\n${loc}\n  color: ${result.color}${
+              `🦞 Created profile "${result.profile}"\n${loc}\n  color: ${result.color}${
                 opts.driver === "extension" ? "\n  driver: extension" : ""
               }`,
             ),
@@ -527,8 +473,8 @@ export function registerBrowserManageCommands(
           return;
         }
         const msg = result.deleted
-          ? `🦊 Deleted profile "${result.profile}" (user data removed)`
-          : `🦊 Deleted profile "${result.profile}" (no user data found)`;
+          ? `🦞 Deleted profile "${result.profile}" (user data removed)`
+          : `🦞 Deleted profile "${result.profile}" (no user data found)`;
         defaultRuntime.log(info(msg));
       });
     });

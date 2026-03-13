@@ -21,7 +21,7 @@ export function registerTuiCli(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/tui", "nicholsbot-docs.vercel.app/cli/tui")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/tui", "alpha-docs.vercel.app/cli/tui")}\n`,
     )
     .action(async (opts) => {
       try {

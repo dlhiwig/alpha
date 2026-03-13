@@ -45,7 +45,7 @@ export function registerSystemCli(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/system", "nicholsbot-docs.vercel.app/cli/system")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/system", "alpha-docs.vercel.app/cli/system")}\n`,
     );
 
   addGatewayClientOptions(
