@@ -486,7 +486,7 @@ function formatSandboxRecreateHint(params: { scope: SandboxConfig["scope"]; sess
     const agentId = resolveSandboxAgentId(params.sessionKey) ?? "main";
     return formatCliCommand(`openclaw sandbox recreate --agent ${agentId}`);
   }
-  return formatCliCommand("openclaw sandbox recreate --all");
+  return formatCliCommand("alpha sandbox recreate --all");
 }
 
 export async function ensureSandboxContainer(params: {

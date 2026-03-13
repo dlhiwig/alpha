@@ -221,8 +221,8 @@ export function formatControlUiSshHint(params: {
     localUrl,
     authedUrl,
     "Docs:",
-    "https://docs.openclaw.ai/gateway/remote",
-    "https://docs.openclaw.ai/web/control-ui",
+    "https://alpha-docs.vercel.app/gateway/remote",
+    "https://alpha-docs.vercel.app/web/control-ui",
   ]
     .filter(Boolean)
     .join("\n");

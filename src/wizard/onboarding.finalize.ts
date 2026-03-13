@@ -243,8 +243,8 @@ export async function finalizeOnboardingWizard(
       await prompter.note(
         [
           "Docs:",
-          "https://docs.openclaw.ai/gateway/health",
-          "https://docs.openclaw.ai/gateway/troubleshooting",
+          "https://alpha-docs.vercel.app/gateway/health",
+          "https://alpha-docs.vercel.app/gateway/troubleshooting",
         ].join("\n"),
         "Health check help",
       );
@@ -328,7 +328,7 @@ export async function finalizeOnboardingWizard(
         : undefined,
       `Gateway WS: ${links.wsUrl}`,
       gatewayStatusLine,
-      "Docs: https://docs.openclaw.ai/web/control-ui",
+      "Docs: https://alpha-docs.vercel.app/web/control-ui",
     ]
       .filter(Boolean)
       .join("\n"),
@@ -358,10 +358,10 @@ export async function finalizeOnboardingWizard(
       [
         "Gateway token: shared auth for the Gateway + Control UI.",
         "Stored in: ~/.openclaw/openclaw.json (gateway.auth.token) or OPENCLAW_GATEWAY_TOKEN.",
-        `View token: ${formatCliCommand("openclaw config get gateway.auth.token")}`,
-        `Generate token: ${formatCliCommand("openclaw doctor --generate-gateway-token")}`,
+        `View token: ${formatCliCommand("alpha config get gateway.auth.token")}`,
+        `Generate token: ${formatCliCommand("alpha doctor --generate-gateway-token")}`,
         "Web UI keeps dashboard URL tokens in memory for the current tab and strips them from the URL after load.",
-        `Open the dashboard anytime: ${formatCliCommand("openclaw dashboard --no-open")}`,
+        `Open the dashboard anytime: ${formatCliCommand("alpha dashboard --no-open")}`,
         "If prompted: paste the token into Control UI settings (or use the tokenized dashboard URL).",
       ].join("\n"),
       "Token",
@@ -420,7 +420,7 @@ export async function finalizeOnboardingWizard(
       );
     } else {
       await prompter.note(
-        `When you're ready: ${formatCliCommand("openclaw dashboard --no-open")}`,
+        `When you're ready: ${formatCliCommand("alpha dashboard --no-open")}`,
         "Later",
       );
     }
@@ -431,13 +431,13 @@ export async function finalizeOnboardingWizard(
   await prompter.note(
     [
       "Back up your agent workspace.",
-      "Docs: https://docs.openclaw.ai/concepts/agent-workspace",
+      "Docs: https://alpha-docs.vercel.app/concepts/agent-workspace",
     ].join("\n"),
     "Workspace backup",
   );
 
   await prompter.note(
-    "Running agents on your computer is risky — harden your setup: https://docs.openclaw.ai/security",
+    "Running agents on your computer is risky — harden your setup: https://alpha-docs.vercel.app/security",
     "Security",
   );
 
@@ -506,7 +506,7 @@ export async function finalizeOnboardingWizard(
           "",
           `Provider: ${label}`,
           ...(keySource ? [keySource] : []),
-          "Docs: https://docs.openclaw.ai/tools/web",
+          "Docs: https://alpha-docs.vercel.app/tools/web",
         ].join("\n"),
         "Web search",
       );
@@ -515,10 +515,10 @@ export async function finalizeOnboardingWizard(
         [
           `Provider ${label} is selected but no API key was found.`,
           "web_search will not work until a key is added.",
-          `  ${formatCliCommand("openclaw configure --section web")}`,
+          `  ${formatCliCommand("alpha configure --section web")}`,
           "",
-          `Get your key at: ${entry?.signupUrl ?? "https://docs.openclaw.ai/tools/web"}`,
-          "Docs: https://docs.openclaw.ai/tools/web",
+          `Get your key at: ${entry?.signupUrl ?? "https://alpha-docs.vercel.app/tools/web"}`,
+          "Docs: https://alpha-docs.vercel.app/tools/web",
         ].join("\n"),
         "Web search",
       );
@@ -526,9 +526,9 @@ export async function finalizeOnboardingWizard(
       await prompter.note(
         [
           `Web search (${label}) is configured but disabled.`,
-          `Re-enable: ${formatCliCommand("openclaw configure --section web")}`,
+          `Re-enable: ${formatCliCommand("alpha configure --section web")}`,
           "",
-          "Docs: https://docs.openclaw.ai/tools/web",
+          "Docs: https://alpha-docs.vercel.app/tools/web",
         ].join("\n"),
         "Web search",
       );
@@ -545,7 +545,7 @@ export async function finalizeOnboardingWizard(
       await prompter.note(
         [
           `Web search is available via ${legacyDetected.label} (auto-detected).`,
-          "Docs: https://docs.openclaw.ai/tools/web",
+          "Docs: https://alpha-docs.vercel.app/tools/web",
         ].join("\n"),
         "Web search",
       );
@@ -553,9 +553,9 @@ export async function finalizeOnboardingWizard(
       await prompter.note(
         [
           "Web search was skipped. You can enable it later:",
-          `  ${formatCliCommand("openclaw configure --section web")}`,
+          `  ${formatCliCommand("alpha configure --section web")}`,
           "",
-          "Docs: https://docs.openclaw.ai/tools/web",
+          "Docs: https://alpha-docs.vercel.app/tools/web",
         ].join("\n"),
         "Web search",
       );

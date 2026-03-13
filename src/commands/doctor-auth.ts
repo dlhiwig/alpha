@@ -237,7 +237,7 @@ function formatAuthIssueHint(issue: AuthIssue): string | null {
       "alpha models auth login --provider openai-codex",
     )} or ${formatCliCommand("alpha configure")}.`;
   }
-  return `Re-auth via \`${formatCliCommand("alpha configure")}\` or \`${formatCliCommand("openclaw onboard")}\`.`;
+  return `Re-auth via \`${formatCliCommand("alpha configure")}\` or \`${formatCliCommand("alpha onboard")}\`.`;
 }
 
 function formatAuthIssueLine(issue: AuthIssue): string {
