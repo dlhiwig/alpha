@@ -22,19 +22,13 @@ const ROOT_COMMANDS_HINT =
 
 const EXAMPLES = [
   ["openclaw models --help", "Show detailed help for the models command."],
-  [
-    "alpha channels login --verbose",
-    "Link personal WhatsApp Web and show QR + connection logs.",
-  ],
+  ["alpha channels login --verbose", "Link personal WhatsApp Web and show QR + connection logs."],
   [
     'alpha message send --target +15555550123 --message "Hi" --json',
     "Send via your web session and print JSON result.",
   ],
   ["alpha gateway --port 18789", "Run the WebSocket Gateway locally."],
-  [
-    "alpha --dev gateway",
-    "Run a dev Gateway (isolated state/config) on ws://127.0.0.1:19001.",
-  ],
+  ["alpha --dev gateway", "Run a dev Gateway (isolated state/config) on ws://127.0.0.1:19001."],
   ["alpha gateway --force", "Kill anything bound to the default gateway port, then start it."],
   ["alpha gateway ...", "Gateway control via WebSocket."],
   [
@@ -54,7 +48,7 @@ export function configureProgramHelp(program: Command, ctx: ProgramContext) {
     .version(ctx.programVersion)
     .option(
       "--dev",
-      "Dev profile: isolate state under ~/.openclaw-dev, default gateway port 19001, and shift derived ports (browser/canvas)",
+      "Dev profile: isolate state under ~/.alpha-dev, default gateway port 19001, and shift derived ports (browser/canvas)",
     )
     .option(
       "--profile <name>",
@@ -114,9 +108,7 @@ export function configureProgramHelp(program: Command, ctx: ProgramContext) {
     hasRootVersionAlias(process.argv)
   ) {
     const commit = resolveCommitHash({ moduleUrl: import.meta.url });
-    console.log(
-      commit ? `OpenClaw ${ctx.programVersion} (${commit})` : `OpenClaw ${ctx.programVersion}`,
-    );
+    console.log(commit ? `Alpha ${ctx.programVersion} (${commit})` : `Alpha ${ctx.programVersion}`);
     process.exit(0);
   }
 
