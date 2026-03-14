@@ -52,36 +52,33 @@ CREATE VIRTUAL TABLE shared_memories_fts USING fts5(
 ### Basic Memory Storage
 
 ```typescript
-import { getSharedMemory } from './shared-memory.js';
+import { getSharedMemory } from "./shared-memory.js";
 
 const sharedMemory = await getSharedMemory();
 
 // Store a lesson learned
 await sharedMemory.store({
-  agentId: 'agent-coder',
-  content: 'Always validate input parameters before processing',
-  type: 'lesson',
-  tags: ['validation', 'security', 'best-practice'],
+  agentId: "agent-coder",
+  content: "Always validate input parameters before processing",
+  type: "lesson",
+  tags: ["validation", "security", "best-practice"],
   importance: 0.8,
-  source: 'coding-session-001'
+  source: "coding-session-001",
 });
 ```
 
 ### Context Injection
 
 ```typescript
-import { injectRelevantMemories } from './shared-memory-context.js';
+import { injectRelevantMemories } from "./shared-memory-context.js";
 
 // Inject relevant memories for a task
-const context = await injectRelevantMemories(
-  'I need to implement user authentication',
-  {
-    maxMemories: 5,
-    types: ['lesson', 'decision'],
-    minImportance: 0.6,
-    format: 'markdown'
-  }
-);
+const context = await injectRelevantMemories("I need to implement user authentication", {
+  maxMemories: 5,
+  types: ["lesson", "decision"],
+  minImportance: 0.6,
+  format: "markdown",
+});
 
 // Use context.contextText in your agent prompt
 ```
@@ -89,32 +86,38 @@ const context = await injectRelevantMemories(
 ### Search Memories
 
 ```typescript
-const memories = await sharedMemory.search('authentication security', {
+const memories = await sharedMemory.search("authentication security", {
   limit: 10,
-  types: ['lesson', 'decision'],
-  minImportance: 0.5
+  types: ["lesson", "decision"],
+  minImportance: 0.5,
 });
 ```
 
 ### Helper Functions
 
 ```typescript
-import { storeLesson, storeDecision, storeObservation } from './shared-memory-context.js';
+import { storeLesson, storeDecision, storeObservation } from "./shared-memory-context.js";
 
 // Store different types of memories with helpers
-await storeLesson('agent-id', 'Use prepared statements to prevent SQL injection');
-await storeDecision('agent-id', 'Choose PostgreSQL over MySQL for this project', 'Better JSON support');
-await storeObservation('agent-id', 'API response times increased after recent deployment');
+await storeLesson("agent-id", "Use prepared statements to prevent SQL injection");
+await storeDecision(
+  "agent-id",
+  "Choose PostgreSQL over MySQL for this project",
+  "Better JSON support",
+);
+await storeObservation("agent-id", "API response times increased after recent deployment");
 ```
 
 ## API Endpoints
 
 ### Search Memories
+
 ```http
 GET /api/v1/memory/shared/search?q=authentication&limit=5&types=lesson,decision
 ```
 
 Response:
+
 ```json
 {
   "success": true,
@@ -125,6 +128,7 @@ Response:
 ```
 
 ### Store Memory
+
 ```http
 POST /api/v1/memory/shared/store
 Content-Type: application/json
@@ -140,11 +144,13 @@ Content-Type: application/json
 ```
 
 ### Get Statistics
+
 ```http
 GET /api/v1/memory/shared/stats
 ```
 
 Response:
+
 ```json
 {
   "success": true,
@@ -165,13 +171,13 @@ Response:
 
 ## Memory Types
 
-| Type | Description | Use Case |
-|------|-------------|----------|
-| `fact` | Objective information | API endpoints, documentation, facts |
-| `decision` | Decisions made with reasoning | Architecture choices, tool selections |
-| `lesson` | Lessons learned from experience | Best practices, what to avoid |
-| `task` | Task descriptions and outcomes | Completed work, task templates |
-| `observation` | Observations and insights | Performance issues, patterns noticed |
+| Type          | Description                     | Use Case                              |
+| ------------- | ------------------------------- | ------------------------------------- |
+| `fact`        | Objective information           | API endpoints, documentation, facts   |
+| `decision`    | Decisions made with reasoning   | Architecture choices, tool selections |
+| `lesson`      | Lessons learned from experience | Best practices, what to avoid         |
+| `task`        | Task descriptions and outcomes  | Completed work, task templates        |
+| `observation` | Observations and insights       | Performance issues, patterns noticed  |
 
 ## Swarm Integration
 
@@ -190,7 +196,7 @@ Shared memory uses Alpha's existing memory configuration:
 memory:
   embeddings:
     enabled: true
-    provider: "ollama"  # or "openai", "gemini", etc.
+    provider: "ollama" # or "openai", "gemini", etc.
 ```
 
 ## Performance Considerations
@@ -256,6 +262,7 @@ const stats = await sharedMemory.getStats();
 ### Debug Mode
 
 Enable debug logging:
+
 ```bash
 DEBUG=shared-memory,shared-memory-context alpha start
 ```
@@ -270,6 +277,7 @@ node --import tsx src/superclaw/shared-memory-demo.ts
 ```
 
 The demo will:
+
 1. Initialize shared memory
 2. Store sample memories from different agents
 3. Demonstrate search and context injection

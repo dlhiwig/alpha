@@ -1,18 +1,18 @@
 /**
  * Alpha ORACLE Learning System - Core Learning Engine
- * 
+ *
  * Port of SuperClaw's ORACLE system adapted for Alpha's architecture.
  * Enables self-learning that makes Alpha smarter with every task.
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as crypto from 'crypto';
-import { homedir } from 'node:os';
-import { getSharedMemory } from './shared-memory.js';
-import { createSubsystemLogger } from '../logging/subsystem.js';
+import * as crypto from "crypto";
+import * as fs from "fs/promises";
+import { homedir } from "node:os";
+import * as path from "path";
+import { createSubsystemLogger } from "../logging/subsystem.js";
+import { getSharedMemory } from "./shared-memory.js";
 
-const log = createSubsystemLogger('oracle-learning');
+const log = createSubsystemLogger("oracle-learning");
 
 // ═══════════════════════════════════════════════════════════════════
 // TYPES & INTERFACES
@@ -21,22 +21,22 @@ const log = createSubsystemLogger('oracle-learning');
 export interface InteractionRecord {
   id: string;
   timestamp: number;
-  provider: string;      // claude, gemini, etc
-  taskType: string;      // code, research, analysis, etc
-  prompt: string;        // what was asked (hash for privacy)
-  success: boolean;      // did it work?
-  latencyMs: number;     // how long
-  cost?: number;         // estimated cost
-  userFeedback?: 'positive' | 'negative';
+  provider: string; // claude, gemini, etc
+  taskType: string; // code, research, analysis, etc
+  prompt: string; // what was asked (hash for privacy)
+  success: boolean; // did it work?
+  latencyMs: number; // how long
+  cost?: number; // estimated cost
+  userFeedback?: "positive" | "negative";
   responseLength?: number;
   tags: string[];
 }
 
 export interface MistakePattern {
-  pattern: string;       // what went wrong
-  rootCause: string;     // why
-  correction: string;    // how to fix
-  severity: 'low' | 'medium' | 'high';
+  pattern: string; // what went wrong
+  rootCause: string; // why
+  correction: string; // how to fix
+  severity: "low" | "medium" | "high";
   frequency: number;
   lastSeen: number;
   confidence: number;
@@ -49,15 +49,15 @@ export interface MistakePattern {
 export interface RecommendationResult {
   bestProvider: string;
   confidence: number;
-  avoidPatterns: string[];  // known mistakes to watch for
-  tips: string[];           // lessons learned
+  avoidPatterns: string[]; // known mistakes to watch for
+  tips: string[]; // lessons learned
   estimatedCost?: number;
   estimatedLatency?: number;
   reasoning: string;
 }
 
 export interface ReflectionResult {
-  performanceTrend: 'improving' | 'stable' | 'declining';
+  performanceTrend: "improving" | "stable" | "declining";
   topInsights: string[];
   suggestedOptimizations: string[];
   mistakesPrevented: number;
@@ -89,21 +89,27 @@ export interface OracleState {
   reflectionsPerformed: number;
   recentInteractions: InteractionRecord[];
   mistakePatterns: Map<string, MistakePattern>;
-  providerPerformance: Map<string, {
-    totalRequests: number;
-    successCount: number;
-    failureCount: number;
-    avgLatency: number;
-    avgCost: number;
-    bestFor: string[];
-  }>;
-  taskTypePerformance: Map<string, {
-    totalAttempts: number;
-    successCount: number;
-    bestProvider: string;
-    avgLatency: number;
-    avgCost: number;
-  }>;
+  providerPerformance: Map<
+    string,
+    {
+      totalRequests: number;
+      successCount: number;
+      failureCount: number;
+      avgLatency: number;
+      avgCost: number;
+      bestFor: string[];
+    }
+  >;
+  taskTypePerformance: Map<
+    string,
+    {
+      totalAttempts: number;
+      successCount: number;
+      bestProvider: string;
+      avgLatency: number;
+      avgCost: number;
+    }
+  >;
   optimizationsApplied: number;
   costSaved: number;
   mistakesPrevented: number;
@@ -122,7 +128,7 @@ export class OracleLearning {
   private reflectionCounter: number = 0;
 
   constructor() {
-    this.stateFile = path.join(homedir(), '.alpha', 'data', 'oracle-state.json');
+    this.stateFile = path.join(homedir(), ".alpha", "data", "oracle-state.json");
     this.state = this.getInitialState();
   }
 
@@ -145,27 +151,31 @@ export class OracleLearning {
    * Initialize the ORACLE learning system
    */
   async initialize(): Promise<void> {
-    if (this.isInitialized) return;
+    if (this.isInitialized) {
+      return;
+    }
 
     try {
       // Initialize shared memory
       this.sharedMemory = await getSharedMemory();
-      
+
       // Load saved state
       await this.loadState();
-      
+
       this.isInitialized = true;
-      log.info(`Oracle Learning initialized with ${this.state.totalInteractions} past interactions`);
-      
+      log.info(
+        `Oracle Learning initialized with ${this.state.totalInteractions} past interactions`,
+      );
+
       // Store initialization in shared memory
       await this.storeInSharedMemory(
-        'Oracle Learning system initialized',
-        'observation',
-        ['oracle', 'initialization'],
-        0.8
+        "Oracle Learning system initialized",
+        "observation",
+        ["oracle", "initialization"],
+        0.8,
       );
     } catch (error) {
-      log.error('Failed to initialize Oracle Learning:', error);
+      log.error("Failed to initialize Oracle Learning:", error);
       throw error;
     }
   }
@@ -180,7 +190,7 @@ export class OracleLearning {
     success: boolean;
     latencyMs: number;
     cost?: number;
-    userFeedback?: 'positive' | 'negative';
+    userFeedback?: "positive" | "negative";
     responseLength?: number;
   }): Promise<string> {
     if (!this.isInitialized) {
@@ -228,7 +238,9 @@ export class OracleLearning {
       await this.saveState();
     }
 
-    log.debug(`Recorded interaction: ${record.provider} ${record.taskType} ${record.success ? '✓' : '✗'}`);
+    log.debug(
+      `Recorded interaction: ${record.provider} ${record.taskType} ${record.success ? "✓" : "✗"}`,
+    );
     return id;
   }
 
@@ -239,7 +251,7 @@ export class OracleLearning {
     pattern: string;
     rootCause: string;
     correction: string;
-    severity: 'low' | 'medium' | 'high';
+    severity: "low" | "medium" | "high";
     contexts?: string[];
     tags?: string[];
   }): Promise<void> {
@@ -247,10 +259,10 @@ export class OracleLearning {
       await this.initialize();
     }
 
-    const hash = crypto.createHash('md5').update(mistake.pattern).digest('hex').slice(0, 12);
-    
+    const hash = crypto.createHash("md5").update(mistake.pattern).digest("hex").slice(0, 12);
+
     let mistakePattern = this.state.mistakePatterns.get(hash);
-    
+
     if (!mistakePattern) {
       mistakePattern = {
         pattern: mistake.pattern,
@@ -274,17 +286,19 @@ export class OracleLearning {
     this.state.mistakePatterns.set(hash, mistakePattern);
 
     // Store significant mistake in shared memory
-    if (mistake.severity === 'high' || mistakePattern.frequency >= 3) {
+    if (mistake.severity === "high" || mistakePattern.frequency >= 3) {
       await this.storeInSharedMemory(
         `Mistake pattern learned: ${mistake.pattern}. Prevention: ${mistake.correction}`,
-        'lesson',
-        ['oracle', 'mistake', mistake.severity, ...mistakePattern.tags],
-        mistake.severity === 'high' ? 0.9 : 0.7
+        "lesson",
+        ["oracle", "mistake", mistake.severity, ...mistakePattern.tags],
+        mistake.severity === "high" ? 0.9 : 0.7,
       );
     }
 
     await this.saveState();
-    log.info(`Learned mistake pattern: ${mistake.pattern} (frequency: ${mistakePattern.frequency})`);
+    log.info(
+      `Learned mistake pattern: ${mistake.pattern} (frequency: ${mistakePattern.frequency})`,
+    );
   }
 
   /**
@@ -302,16 +316,16 @@ export class OracleLearning {
     if (!taskPerf && allProviders.length === 0) {
       // No historical data, return default recommendation
       return {
-        bestProvider: 'claude', // Default fallback
+        bestProvider: "claude", // Default fallback
         confidence: 0.3,
         avoidPatterns: [],
-        tips: ['No historical data available for this task type'],
-        reasoning: 'Default recommendation due to lack of historical data'
+        tips: ["No historical data available for this task type"],
+        reasoning: "Default recommendation due to lack of historical data",
       };
     }
 
     // Find best provider based on success rate and performance
-    let bestProvider = 'claude';
+    let bestProvider = "claude";
     let bestScore = 0;
     let estimatedCost = 0;
     let estimatedLatency = 0;
@@ -320,9 +334,9 @@ export class OracleLearning {
       const successRate = performance.successCount / performance.totalRequests;
       const costFactor = 1 / (performance.avgCost + 0.001); // Favor lower cost
       const latencyFactor = 1 / (performance.avgLatency + 1); // Favor lower latency
-      
+
       const score = successRate * 0.6 + costFactor * 0.2 + latencyFactor * 0.2;
-      
+
       if (score > bestScore) {
         bestScore = score;
         bestProvider = provider;
@@ -346,7 +360,7 @@ export class OracleLearning {
       tips,
       estimatedCost,
       estimatedLatency,
-      reasoning: `Based on ${this.state.totalInteractions} interactions. ${bestProvider} has best performance for ${taskType} tasks.`
+      reasoning: `Based on ${this.state.totalInteractions} interactions. ${bestProvider} has best performance for ${taskType} tasks.`,
     };
   }
 
@@ -362,16 +376,19 @@ export class OracleLearning {
    */
   getStats(): OracleStats {
     const recentInteractions = this.state.recentInteractions.slice(-100);
-    const successCount = recentInteractions.filter(i => i.success).length;
-    const successRate = recentInteractions.length > 0 ? successCount / recentInteractions.length : 0;
-    
-    const avgLatency = recentInteractions.length > 0 
-      ? recentInteractions.reduce((sum, i) => sum + i.latencyMs, 0) / recentInteractions.length 
-      : 0;
-    
-    const avgCost = recentInteractions.length > 0 
-      ? recentInteractions.reduce((sum, i) => sum + (i.cost || 0), 0) / recentInteractions.length 
-      : 0;
+    const successCount = recentInteractions.filter((i) => i.success).length;
+    const successRate =
+      recentInteractions.length > 0 ? successCount / recentInteractions.length : 0;
+
+    const avgLatency =
+      recentInteractions.length > 0
+        ? recentInteractions.reduce((sum, i) => sum + i.latencyMs, 0) / recentInteractions.length
+        : 0;
+
+    const avgCost =
+      recentInteractions.length > 0
+        ? recentInteractions.reduce((sum, i) => sum + (i.cost || 0), 0) / recentInteractions.length
+        : 0;
 
     return {
       totalInteractions: this.state.totalInteractions,
@@ -396,12 +413,12 @@ export class OracleLearning {
   private async performReflection(): Promise<ReflectionResult> {
     const now = Date.now();
     const recentInteractions = this.state.recentInteractions.slice(-50);
-    
+
     if (recentInteractions.length < 5) {
       // Not enough data for meaningful reflection
       return {
-        performanceTrend: 'stable',
-        topInsights: ['Insufficient data for reflection'],
+        performanceTrend: "stable",
+        topInsights: ["Insufficient data for reflection"],
         suggestedOptimizations: [],
         mistakesPrevented: this.state.mistakesPrevented,
         totalInteractions: this.state.totalInteractions,
@@ -416,26 +433,29 @@ export class OracleLearning {
     const halfwayPoint = Math.floor(recentInteractions.length / 2);
     const firstHalf = recentInteractions.slice(0, halfwayPoint);
     const secondHalf = recentInteractions.slice(halfwayPoint);
-    
-    const firstHalfSuccess = firstHalf.filter(i => i.success).length / firstHalf.length;
-    const secondHalfSuccess = secondHalf.filter(i => i.success).length / secondHalf.length;
-    
-    let performanceTrend: 'improving' | 'stable' | 'declining' = 'stable';
+
+    const firstHalfSuccess = firstHalf.filter((i) => i.success).length / firstHalf.length;
+    const secondHalfSuccess = secondHalf.filter((i) => i.success).length / secondHalf.length;
+
+    let performanceTrend: "improving" | "stable" | "declining" = "stable";
     if (secondHalfSuccess > firstHalfSuccess + 0.1) {
-      performanceTrend = 'improving';
+      performanceTrend = "improving";
     } else if (secondHalfSuccess < firstHalfSuccess - 0.1) {
-      performanceTrend = 'declining';
+      performanceTrend = "declining";
     }
 
     // Generate insights
     const insights = this.generateInsights(recentInteractions, performanceTrend);
-    
+
     // Generate optimization suggestions
     const optimizations = this.generateOptimizations(recentInteractions);
 
-    const successRate = recentInteractions.filter(i => i.success).length / recentInteractions.length;
-    const avgLatency = recentInteractions.reduce((sum, i) => sum + i.latencyMs, 0) / recentInteractions.length;
-    const avgCost = recentInteractions.reduce((sum, i) => sum + (i.cost || 0), 0) / recentInteractions.length;
+    const successRate =
+      recentInteractions.filter((i) => i.success).length / recentInteractions.length;
+    const avgLatency =
+      recentInteractions.reduce((sum, i) => sum + i.latencyMs, 0) / recentInteractions.length;
+    const avgCost =
+      recentInteractions.reduce((sum, i) => sum + (i.cost || 0), 0) / recentInteractions.length;
 
     const result: ReflectionResult = {
       performanceTrend,
@@ -454,31 +474,35 @@ export class OracleLearning {
 
     // Store reflection in shared memory
     await this.storeInSharedMemory(
-      `Oracle reflection: ${performanceTrend} performance trend. Success rate: ${(successRate * 100).toFixed(1)}%. ${insights[0] || 'No specific insights'}`,
-      'observation',
-      ['oracle', 'reflection', performanceTrend],
-      0.8
+      `Oracle reflection: ${performanceTrend} performance trend. Success rate: ${(successRate * 100).toFixed(1)}%. ${insights[0] || "No specific insights"}`,
+      "observation",
+      ["oracle", "reflection", performanceTrend],
+      0.8,
     );
 
     await this.saveState();
-    log.info(`Oracle reflection completed: ${performanceTrend} trend, ${(successRate * 100).toFixed(1)}% success rate`);
+    log.info(
+      `Oracle reflection completed: ${performanceTrend} trend, ${(successRate * 100).toFixed(1)}% success rate`,
+    );
 
     return result;
   }
 
   private generateInsights(interactions: InteractionRecord[], trend: string): string[] {
     const insights: string[] = [];
-    
+
     // Provider performance insights
     const providerStats = new Map<string, { success: number; total: number }>();
     for (const interaction of interactions) {
       const stats = providerStats.get(interaction.provider) || { success: 0, total: 0 };
       stats.total++;
-      if (interaction.success) stats.success++;
+      if (interaction.success) {
+        stats.success++;
+      }
       providerStats.set(interaction.provider, stats);
     }
 
-    let bestProvider = '';
+    let bestProvider = "";
     let bestRate = 0;
     for (const [provider, stats] of providerStats) {
       const rate = stats.success / stats.total;
@@ -489,7 +513,9 @@ export class OracleLearning {
     }
 
     if (bestProvider) {
-      insights.push(`${bestProvider} provider has best recent success rate: ${(bestRate * 100).toFixed(1)}%`);
+      insights.push(
+        `${bestProvider} provider has best recent success rate: ${(bestRate * 100).toFixed(1)}%`,
+      );
     }
 
     // Task type insights
@@ -497,22 +523,27 @@ export class OracleLearning {
     for (const interaction of interactions) {
       const stats = taskStats.get(interaction.taskType) || { success: 0, total: 0 };
       stats.total++;
-      if (interaction.success) stats.success++;
+      if (interaction.success) {
+        stats.success++;
+      }
       taskStats.set(interaction.taskType, stats);
     }
 
-    const worstTask = Array.from(taskStats.entries())
-      .sort((a, b) => (a[1].success / a[1].total) - (b[1].success / b[1].total))[0];
-    
+    const worstTask = Array.from(taskStats.entries()).toSorted(
+      (a, b) => a[1].success / a[1].total - b[1].success / b[1].total,
+    )[0];
+
     if (worstTask && worstTask[1].success / worstTask[1].total < 0.7) {
-      insights.push(`${worstTask[0]} tasks need improvement: ${((worstTask[1].success / worstTask[1].total) * 100).toFixed(1)}% success rate`);
+      insights.push(
+        `${worstTask[0]} tasks need improvement: ${((worstTask[1].success / worstTask[1].total) * 100).toFixed(1)}% success rate`,
+      );
     }
 
     // Trend insights
-    if (trend === 'improving') {
-      insights.push('Performance is improving - current strategies are effective');
-    } else if (trend === 'declining') {
-      insights.push('Performance is declining - may need strategy adjustment');
+    if (trend === "improving") {
+      insights.push("Performance is improving - current strategies are effective");
+    } else if (trend === "declining") {
+      insights.push("Performance is declining - may need strategy adjustment");
     }
 
     return insights.slice(0, 3); // Top 3 insights
@@ -522,19 +553,22 @@ export class OracleLearning {
     const optimizations: string[] = [];
 
     // High latency optimization
-    const highLatencyInteractions = interactions.filter(i => i.latencyMs > 10000);
+    const highLatencyInteractions = interactions.filter((i) => i.latencyMs > 10000);
     if (highLatencyInteractions.length > interactions.length * 0.3) {
-      optimizations.push('Consider using faster providers or smaller models for time-sensitive tasks');
+      optimizations.push(
+        "Consider using faster providers or smaller models for time-sensitive tasks",
+      );
     }
 
     // Cost optimization
     const avgCost = interactions.reduce((sum, i) => sum + (i.cost || 0), 0) / interactions.length;
-    if (avgCost > 0.01) { // More than 1 cent per interaction
-      optimizations.push('Consider using more cost-effective providers for routine tasks');
+    if (avgCost > 0.01) {
+      // More than 1 cent per interaction
+      optimizations.push("Consider using more cost-effective providers for routine tasks");
     }
 
     // Failure pattern optimization
-    const failures = interactions.filter(i => !i.success);
+    const failures = interactions.filter((i) => !i.success);
     if (failures.length > interactions.length * 0.2) {
       const commonFailureType = this.getMostCommonTaskType(failures);
       if (commonFailureType) {
@@ -550,7 +584,7 @@ export class OracleLearning {
     for (const interaction of interactions) {
       counts.set(interaction.taskType, (counts.get(interaction.taskType) || 0) + 1);
     }
-    
+
     let maxCount = 0;
     let mostCommon = null;
     for (const [taskType, count] of counts) {
@@ -559,13 +593,13 @@ export class OracleLearning {
         mostCommon = taskType;
       }
     }
-    
+
     return mostCommon;
   }
 
   private updateProviderPerformance(interaction: InteractionRecord): void {
     let performance = this.state.providerPerformance.get(interaction.provider);
-    
+
     if (!performance) {
       performance = {
         totalRequests: 0,
@@ -585,8 +619,12 @@ export class OracleLearning {
     }
 
     // Update running averages
-    performance.avgLatency = ((performance.avgLatency * (performance.totalRequests - 1)) + interaction.latencyMs) / performance.totalRequests;
-    performance.avgCost = ((performance.avgCost * (performance.totalRequests - 1)) + (interaction.cost || 0)) / performance.totalRequests;
+    performance.avgLatency =
+      (performance.avgLatency * (performance.totalRequests - 1) + interaction.latencyMs) /
+      performance.totalRequests;
+    performance.avgCost =
+      (performance.avgCost * (performance.totalRequests - 1) + (interaction.cost || 0)) /
+      performance.totalRequests;
 
     // Update best-for list
     if (interaction.success && !performance.bestFor.includes(interaction.taskType)) {
@@ -598,7 +636,7 @@ export class OracleLearning {
 
   private updateTaskTypePerformance(interaction: InteractionRecord): void {
     let performance = this.state.taskTypePerformance.get(interaction.taskType);
-    
+
     if (!performance) {
       performance = {
         totalAttempts: 0,
@@ -612,7 +650,7 @@ export class OracleLearning {
     performance.totalAttempts++;
     if (interaction.success) {
       performance.successCount++;
-      
+
       // Update best provider if this one is performing better
       const currentSuccessRate = performance.successCount / performance.totalAttempts;
       const thisProviderPerf = this.state.providerPerformance.get(interaction.provider);
@@ -625,18 +663,24 @@ export class OracleLearning {
     }
 
     // Update running averages
-    performance.avgLatency = ((performance.avgLatency * (performance.totalAttempts - 1)) + interaction.latencyMs) / performance.totalAttempts;
-    performance.avgCost = ((performance.avgCost * (performance.totalAttempts - 1)) + (interaction.cost || 0)) / performance.totalAttempts;
+    performance.avgLatency =
+      (performance.avgLatency * (performance.totalAttempts - 1) + interaction.latencyMs) /
+      performance.totalAttempts;
+    performance.avgCost =
+      (performance.avgCost * (performance.totalAttempts - 1) + (interaction.cost || 0)) /
+      performance.totalAttempts;
 
     this.state.taskTypePerformance.set(interaction.taskType, performance);
   }
 
   private getRelevantMistakePatterns(taskType: string): string[] {
     const patterns: string[] = [];
-    
+
     for (const [_, mistake] of this.state.mistakePatterns) {
-      if (mistake.confidence > 0.7 && 
-          (mistake.tags.includes(taskType) || mistake.contexts.includes(taskType))) {
+      if (
+        mistake.confidence > 0.7 &&
+        (mistake.tags.includes(taskType) || mistake.contexts.includes(taskType))
+      ) {
         patterns.push(mistake.preventionPrompt);
       }
     }
@@ -647,68 +691,79 @@ export class OracleLearning {
   private generateTips(taskType: string): string[] {
     const tips: string[] = [];
     const taskPerf = this.state.taskTypePerformance.get(taskType);
-    
+
     if (taskPerf) {
       tips.push(`Best provider for ${taskType}: ${taskPerf.bestProvider}`);
       tips.push(`Average latency: ${Math.round(taskPerf.avgLatency)}ms`);
-      tips.push(`Success rate: ${((taskPerf.successCount / taskPerf.totalAttempts) * 100).toFixed(1)}%`);
+      tips.push(
+        `Success rate: ${((taskPerf.successCount / taskPerf.totalAttempts) * 100).toFixed(1)}%`,
+      );
     }
 
     return tips;
   }
 
-  private generatePreventionPrompt(mistake: {
-    pattern: string;
-    correction: string;
-  }): string {
+  private generatePreventionPrompt(mistake: { pattern: string; correction: string }): string {
     return `AVOID: ${mistake.pattern}. Instead: ${mistake.correction}`;
   }
 
   private hashPrompt(prompt: string): string {
-    const normalized = prompt.toLowerCase().trim().replace(/\s+/g, ' ');
-    return crypto.createHash('md5').update(normalized).digest('hex').slice(0, 12);
+    const normalized = prompt.toLowerCase().trim().replace(/\s+/g, " ");
+    return crypto.createHash("md5").update(normalized).digest("hex").slice(0, 12);
   }
 
   private extractTags(prompt: string, taskType: string): string[] {
     const tags = [taskType];
-    
+
     // Detect common patterns
-    if (/\b(code|function|implement|class|api)\b/i.test(prompt)) tags.push('coding');
-    if (/\b(explain|what is|how does|why)\b/i.test(prompt)) tags.push('explanation');
-    if (/\b(write|create|generate|draft)\b/i.test(prompt)) tags.push('generation');
-    if (/\b(fix|debug|error|bug)\b/i.test(prompt)) tags.push('debugging');
-    if (/\b(summarize|summary|tldr)\b/i.test(prompt)) tags.push('summarization');
-    
+    if (/\b(code|function|implement|class|api)\b/i.test(prompt)) {
+      tags.push("coding");
+    }
+    if (/\b(explain|what is|how does|why)\b/i.test(prompt)) {
+      tags.push("explanation");
+    }
+    if (/\b(write|create|generate|draft)\b/i.test(prompt)) {
+      tags.push("generation");
+    }
+    if (/\b(fix|debug|error|bug)\b/i.test(prompt)) {
+      tags.push("debugging");
+    }
+    if (/\b(summarize|summary|tldr)\b/i.test(prompt)) {
+      tags.push("summarization");
+    }
+
     return [...new Set(tags)]; // Remove duplicates
   }
 
   private async storeInSharedMemory(
     content: string,
-    type: 'fact' | 'decision' | 'lesson' | 'task' | 'observation',
+    type: "fact" | "decision" | "lesson" | "task" | "observation",
     tags: string[],
-    importance: number
+    importance: number,
   ): Promise<void> {
-    if (!this.sharedMemory) return;
+    if (!this.sharedMemory) {
+      return;
+    }
 
     try {
       await this.sharedMemory.store({
-        agentId: 'oracle-learning',
+        agentId: "oracle-learning",
         content,
         type,
         tags,
         importance,
-        source: 'oracle-learning'
+        source: "oracle-learning",
       });
     } catch (error) {
-      log.warn('Failed to store in shared memory:', error);
+      log.warn("Failed to store in shared memory:", error);
     }
   }
 
   private async loadState(): Promise<void> {
     try {
-      const data = await fs.readFile(this.stateFile, 'utf8');
+      const data = await fs.readFile(this.stateFile, "utf8");
       const saved = JSON.parse(data);
-      
+
       this.state = {
         ...this.state,
         ...saved,
@@ -716,28 +771,30 @@ export class OracleLearning {
         providerPerformance: new Map(Object.entries(saved.providerPerformance || {})),
         taskTypePerformance: new Map(Object.entries(saved.taskTypePerformance || {})),
       };
-      
-      log.info(`Loaded Oracle state: ${this.state.totalInteractions} interactions, ${this.state.mistakePatterns.size} mistake patterns`);
+
+      log.info(
+        `Loaded Oracle state: ${this.state.totalInteractions} interactions, ${this.state.mistakePatterns.size} mistake patterns`,
+      );
     } catch {
       // Fresh start - no previous state
-      log.info('Starting Oracle with fresh state');
+      log.info("Starting Oracle with fresh state");
     }
   }
 
   private async saveState(): Promise<void> {
     try {
       await fs.mkdir(path.dirname(this.stateFile), { recursive: true });
-      
+
       const toSave = {
         ...this.state,
         mistakePatterns: Object.fromEntries(this.state.mistakePatterns),
         providerPerformance: Object.fromEntries(this.state.providerPerformance),
         taskTypePerformance: Object.fromEntries(this.state.taskTypePerformance),
       };
-      
+
       await fs.writeFile(this.stateFile, JSON.stringify(toSave, null, 2));
     } catch (error) {
-      log.error('Failed to save Oracle state:', error);
+      log.error("Failed to save Oracle state:", error);
     }
   }
 }

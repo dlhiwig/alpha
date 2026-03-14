@@ -137,3 +137,4 @@ ui/src/ui/views/__screenshots__
 ui/.vitest-attachments
 docs/superpowers
 >>>>>>> sync/upstream-20260313
+stress-test-results/

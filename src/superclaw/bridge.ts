@@ -10,6 +10,7 @@
  */
 
 import { EventEmitter } from "node:events";
+import { getOracleLearning } from "./oracle-learning.js";
 import { TaskRouter } from "./router.js";
 import { SwarmBridge, FallbackExecutor } from "./swarm-bridge.js";
 import type {
@@ -22,7 +23,6 @@ import type {
   BridgeMetrics,
   BridgeEvents,
 } from "./types.js";
-import { getOracleLearning } from "./oracle-learning.js";
 
 export interface ProcessResult {
   /** Whether SuperClaw handled the request */
@@ -85,7 +85,9 @@ export class SuperClawBridge extends EventEmitter {
    * Initialize the bridge
    */
   async initialize(): Promise<void> {
-    if (this.initialized) {return;}
+    if (this.initialized) {
+      return;
+    }
 
     console.log("[SuperClaw] Initializing bridge...");
 
@@ -290,8 +292,12 @@ export class SuperClawBridge extends EventEmitter {
    * Record an outcome for learning
    */
   private async recordOutcome(outcome: LearningOutcome): Promise<void> {
-    if (!this.config.learning.storePatterns) {return;}
-    if (!outcome.success && outcome.wasSwarm) {return;} // Don't learn from swarm failures
+    if (!this.config.learning.storePatterns) {
+      return;
+    }
+    if (!outcome.success && outcome.wasSwarm) {
+      return;
+    } // Don't learn from swarm failures
 
     // Store pattern
     const pattern: PatternMatch = {

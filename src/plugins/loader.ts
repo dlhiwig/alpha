@@ -616,7 +616,7 @@ export function loadOpenClawPlugins(options: PluginLoadOptions = {}): PluginRegi
     if (jitiLoader) {
       return jitiLoader;
     }
-    // Disable custom alias resolution since the "openclaw" symlink in node_modules 
+    // Disable custom alias resolution since the "openclaw" symlink in node_modules
     // provides proper module resolution through standard Node.js mechanisms
     jitiLoader = createJiti(import.meta.url, {
       interopDefault: true,

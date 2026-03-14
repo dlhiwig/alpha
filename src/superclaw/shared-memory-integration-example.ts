@@ -1,10 +1,15 @@
 /**
  * Shared Memory Integration Example
- * 
+ *
  * Shows how to integrate shared memory into Alpha agent workflows
  */
 
-import { injectRelevantMemories, storeLesson, storeDecision, storeObservation } from './shared-memory-context.js';
+import {
+  injectRelevantMemories,
+  storeLesson,
+  storeDecision,
+  storeObservation,
+} from "./shared-memory-context.js";
 
 // ═══════════════════════════════════════════════════════════════════
 // EXAMPLE: ENHANCED AGENT PROMPT WITH SHARED MEMORY
@@ -13,7 +18,7 @@ import { injectRelevantMemories, storeLesson, storeDecision, storeObservation } 
 export async function enhanceAgentPrompt(
   agentId: string,
   originalPrompt: string,
-  taskDescription: string
+  taskDescription: string,
 ): Promise<string> {
   try {
     // Get relevant memories for context
@@ -22,7 +27,7 @@ export async function enhanceAgentPrompt(
       minImportance: 0.5,
       excludeAgents: [agentId], // Don't include our own memories
       maxAgeHours: 168, // One week
-      format: 'markdown'
+      format: "markdown",
     });
 
     if (context.memoriesIncluded > 0) {
@@ -41,7 +46,7 @@ Please consider this shared knowledge when completing your task, but don't be co
 
     return originalPrompt;
   } catch (error) {
-    console.warn('Failed to enhance prompt with shared memory:', error);
+    console.warn("Failed to enhance prompt with shared memory:", error);
     return originalPrompt;
   }
 }
@@ -60,7 +65,7 @@ export async function extractAndStoreKnowledge(
     decisions?: Array<{ decision: string; reasoning: string }>;
     lessons?: string[];
     observations?: string[];
-  }
+  },
 ): Promise<void> {
   try {
     // Store decisions made during task execution
@@ -80,7 +85,7 @@ export async function extractAndStoreKnowledge(
     // Store observations
     if (result.observations) {
       for (const observation of result.observations) {
-        await storeObservation(agentId, observation, ['task-execution'], 0.6);
+        await storeObservation(agentId, observation, ["task-execution"], 0.6);
       }
     }
 
@@ -97,12 +102,11 @@ export async function extractAndStoreKnowledge(
         agentId,
         `Task failed: ${result.output}`,
         taskDescription,
-        0.8 // High importance for failures
+        0.8, // High importance for failures
       );
     }
-
   } catch (error) {
-    console.error('Failed to extract and store knowledge:', error);
+    console.error("Failed to extract and store knowledge:", error);
   }
 }
 
@@ -125,9 +129,9 @@ export class SwarmCoordinator {
       const context = await injectRelevantMemories(task, {
         maxMemories: 10,
         minImportance: 0.6,
-        types: ['decision', 'lesson'],
+        types: ["decision", "lesson"],
         maxAgeHours: 72, // 3 days
-        format: 'plain'
+        format: "plain",
       });
 
       if (context.memoriesIncluded > 0) {
@@ -142,7 +146,7 @@ TASK: ${task}`;
 
       return `TASK: ${task}`;
     } catch (error) {
-      console.warn('Failed to prepare swarm context:', error);
+      console.warn("Failed to prepare swarm context:", error);
       return `TASK: ${task}`;
     }
   }
@@ -167,7 +171,7 @@ TASK: ${task}`;
           this.swarmId,
           results.finalDecision,
           results.reasoning,
-          0.9 // High importance for consensus decisions
+          0.9, // High importance for consensus decisions
         );
       }
 
@@ -176,8 +180,8 @@ TASK: ${task}`;
         await storeObservation(
           finding.agentId,
           finding.finding,
-          ['swarm', 'collaborative'],
-          finding.confidence * 0.7 // Scale importance by confidence
+          ["swarm", "collaborative"],
+          finding.confidence * 0.7, // Scale importance by confidence
         );
       }
 
@@ -185,14 +189,13 @@ TASK: ${task}`;
       if (!results.consensusReached) {
         await storeLesson(
           this.swarmId,
-          'Swarm failed to reach consensus - may need better coordination or clearer task definition',
+          "Swarm failed to reach consensus - may need better coordination or clearer task definition",
           `Swarm task with ${results.agentFindings.length} agents`,
-          0.6
+          0.6,
         );
       }
-
     } catch (error) {
-      console.error('Failed to store swarm results:', error);
+      console.error("Failed to store swarm results:", error);
     }
   }
 }
@@ -211,7 +214,10 @@ export class AgentLearningPipeline {
   /**
    * Pre-task: Get relevant context and recent learnings
    */
-  async prepareForTask(taskType: string, taskDescription: string): Promise<{
+  async prepareForTask(
+    taskType: string,
+    taskDescription: string,
+  ): Promise<{
     contextPrompt: string;
     relevantLessons: string[];
   }> {
@@ -219,30 +225,30 @@ export class AgentLearningPipeline {
       // Get task-specific context
       const taskContext = await injectRelevantMemories(taskDescription, {
         maxMemories: 3,
-        types: ['lesson', 'decision'],
-        minImportance: 0.7
+        types: ["lesson", "decision"],
+        minImportance: 0.7,
       });
 
       // Get recent learnings for this type of task
       const typeContext = await injectRelevantMemories(taskType, {
         maxMemories: 2,
-        types: ['lesson'],
+        types: ["lesson"],
         minImportance: 0.6,
-        maxAgeHours: 48
+        maxAgeHours: 48,
       });
 
       const contextPrompt = [taskContext.contextText, typeContext.contextText]
         .filter(Boolean)
-        .join('\n\n');
+        .join("\n\n");
 
       const relevantLessons = [...taskContext.memories, ...typeContext.memories]
-        .filter(m => m.type === 'lesson')
-        .map(m => m.content);
+        .filter((m) => m.type === "lesson")
+        .map((m) => m.content);
 
       return { contextPrompt, relevantLessons };
     } catch (error) {
-      console.error('Failed to prepare for task:', error);
-      return { contextPrompt: '', relevantLessons: [] };
+      console.error("Failed to prepare for task:", error);
+      return { contextPrompt: "", relevantLessons: [] };
     }
   }
 
@@ -257,35 +263,38 @@ export class AgentLearningPipeline {
       finalResult: { success: boolean; output: string };
       duration: number;
       resourcesUsed?: string[];
-    }
+    },
   ): Promise<void> {
     try {
       const lessons: string[] = [];
       const observations: string[] = [];
 
       // Analyze execution steps for patterns
-      const failedSteps = execution.steps.filter(step => !step.success);
+      const failedSteps = execution.steps.filter((step) => !step.success);
       if (failedSteps.length > 0) {
         lessons.push(
-          `Common failure points in ${taskType}: ${failedSteps.map(s => s.action).join(', ')}`
+          `Common failure points in ${taskType}: ${failedSteps.map((s) => s.action).join(", ")}`,
         );
       }
 
-      const successfulSteps = execution.steps.filter(step => step.success);
+      const successfulSteps = execution.steps.filter((step) => step.success);
       if (successfulSteps.length === execution.steps.length && execution.finalResult.success) {
         observations.push(
-          `Successful ${taskType} pattern: ${successfulSteps.map(s => s.action).join(' → ')}`
+          `Successful ${taskType} pattern: ${successfulSteps.map((s) => s.action).join(" → ")}`,
         );
       }
 
       // Performance observations
-      if (execution.duration > 30000) { // > 30 seconds
-        observations.push(`${taskType} tasks may take longer than expected (${execution.duration}ms)`);
+      if (execution.duration > 30000) {
+        // > 30 seconds
+        observations.push(
+          `${taskType} tasks may take longer than expected (${execution.duration}ms)`,
+        );
       }
 
       // Resource usage patterns
       if (execution.resourcesUsed && execution.resourcesUsed.length > 0) {
-        observations.push(`${taskType} typically uses: ${execution.resourcesUsed.join(', ')}`);
+        observations.push(`${taskType} typically uses: ${execution.resourcesUsed.join(", ")}`);
       }
 
       // Store all learnings
@@ -297,8 +306,8 @@ export class AgentLearningPipeline {
         await storeObservation(
           this.agentId,
           observation,
-          [taskType, 'performance', 'pattern'],
-          0.6
+          [taskType, "performance", "pattern"],
+          0.6,
         );
       }
 
@@ -308,12 +317,11 @@ export class AgentLearningPipeline {
           this.agentId,
           `Failed ${taskType}: ${execution.finalResult.output}`,
           `Context: ${taskDescription}`,
-          0.85
+          0.85,
         );
       }
-
     } catch (error) {
-      console.error('Failed to learn from task:', error);
+      console.error("Failed to learn from task:", error);
     }
   }
 }
@@ -323,41 +331,41 @@ export class AgentLearningPipeline {
 // ═══════════════════════════════════════════════════════════════════
 
 export async function exampleAgentWithSharedMemory() {
-  const agentId = 'example-agent';
+  const agentId = "example-agent";
   const learning = new AgentLearningPipeline(agentId);
-  
+
   // 1. Prepare for a coding task
-  console.log('📚 Preparing for coding task...');
+  console.log("📚 Preparing for coding task...");
   const { contextPrompt, relevantLessons } = await learning.prepareForTask(
-    'api-development',
-    'Create a REST API for user authentication'
+    "api-development",
+    "Create a REST API for user authentication",
   );
-  
-  console.log('Context prompt:', contextPrompt);
-  console.log('Relevant lessons:', relevantLessons);
-  
+
+  console.log("Context prompt:", contextPrompt);
+  console.log("Relevant lessons:", relevantLessons);
+
   // 2. Simulate task execution
   const execution = {
     steps: [
-      { action: 'design-endpoints', result: 'Designed /login and /register', success: true },
-      { action: 'implement-auth', result: 'Added JWT token system', success: true },
-      { action: 'add-validation', result: 'Input validation added', success: true },
-      { action: 'write-tests', result: 'Unit tests completed', success: true }
+      { action: "design-endpoints", result: "Designed /login and /register", success: true },
+      { action: "implement-auth", result: "Added JWT token system", success: true },
+      { action: "add-validation", result: "Input validation added", success: true },
+      { action: "write-tests", result: "Unit tests completed", success: true },
     ],
-    finalResult: { success: true, output: 'Authentication API completed successfully' },
+    finalResult: { success: true, output: "Authentication API completed successfully" },
     duration: 45000,
-    resourcesUsed: ['jwt', 'bcrypt', 'express-validator']
+    resourcesUsed: ["jwt", "bcrypt", "express-validator"],
   };
-  
+
   // 3. Learn from the task
-  console.log('💡 Learning from task execution...');
+  console.log("💡 Learning from task execution...");
   await learning.learnFromTask(
-    'api-development',
-    'Create a REST API for user authentication',
-    execution
+    "api-development",
+    "Create a REST API for user authentication",
+    execution,
   );
-  
-  console.log('✅ Knowledge stored in shared memory for future agents');
+
+  console.log("✅ Knowledge stored in shared memory for future agents");
 }
 
 // Uncomment to run the example

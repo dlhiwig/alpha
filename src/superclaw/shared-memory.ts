@@ -1,20 +1,20 @@
 /**
  * Shared Memory System for Alpha
- * 
+ *
  * Enables memory sharing between all Alpha agents, supporting swarm intelligence
  * and knowledge transfer across agent boundaries.
  */
 
-import { promises as fs } from 'node:fs';
-import path from 'node:path';
-import { homedir } from 'node:os';
-import crypto from 'node:crypto';
-import { requireNodeSqlite } from '../memory/sqlite.js';
-import { createEmbeddingProvider, type EmbeddingProvider } from '../memory/embeddings.js';
-import { createSubsystemLogger } from '../logging/subsystem.js';
-import type { OpenClawConfig } from '../config/config.js';
+import crypto from "node:crypto";
+import { promises as fs } from "node:fs";
+import { homedir } from "node:os";
+import path from "node:path";
+import type { OpenClawConfig } from "../config/config.js";
+import { createSubsystemLogger } from "../logging/subsystem.js";
+import { createEmbeddingProvider, type EmbeddingProvider } from "../memory/embeddings.js";
+import { requireNodeSqlite } from "../memory/sqlite.js";
 
-const log = createSubsystemLogger('shared-memory');
+const log = createSubsystemLogger("shared-memory");
 
 // ═══════════════════════════════════════════════════════════════════
 // TYPES
@@ -24,7 +24,7 @@ export interface SharedMemoryEntry {
   id: string;
   agentId: string;
   content: string;
-  type: 'fact' | 'decision' | 'lesson' | 'task' | 'observation';
+  type: "fact" | "decision" | "lesson" | "task" | "observation";
   tags: string[];
   importance: number;
   source?: string;
@@ -37,7 +37,7 @@ export interface SharedMemoryEntry {
 export interface SharedMemoryStoreOptions {
   agentId: string;
   content: string;
-  type: 'fact' | 'decision' | 'lesson' | 'task' | 'observation';
+  type: "fact" | "decision" | "lesson" | "task" | "observation";
   tags: string[];
   importance: number;
   source?: string;
@@ -117,14 +117,14 @@ const SCHEMA_SQL = `
 // ═══════════════════════════════════════════════════════════════════
 
 export class SharedMemory {
-  private db: import('node:sqlite').DatabaseSync | null = null;
+  private db: import("node:sqlite").DatabaseSync | null = null;
   private embeddingProvider: EmbeddingProvider | null = null;
   private dbPath: string;
   private config: OpenClawConfig | null = null;
 
   constructor(config?: OpenClawConfig) {
     this.config = config || null;
-    this.dbPath = path.join(homedir(), '.alpha', 'memory', 'shared.sqlite');
+    this.dbPath = path.join(homedir(), ".alpha", "memory", "shared.sqlite");
   }
 
   /**
@@ -138,26 +138,26 @@ export class SharedMemory {
       // Initialize database
       const sqlite = requireNodeSqlite();
       this.db = new sqlite.DatabaseSync(this.dbPath);
-      
+
       // Create schema
       this.db.exec(SCHEMA_SQL);
-      
+
       // Initialize embeddings if configured
       if (this.config?.memory?.embeddings?.enabled) {
         try {
           this.embeddingProvider = createEmbeddingProvider({
             enabled: true,
-            ...this.config.memory.embeddings
+            ...this.config.memory.embeddings,
           });
-          log.info('Shared memory initialized with embeddings support');
+          log.info("Shared memory initialized with embeddings support");
         } catch (error) {
-          log.warn('Failed to initialize embeddings for shared memory:', error);
+          log.warn("Failed to initialize embeddings for shared memory:", error);
         }
       }
-      
+
       log.info(`Shared memory initialized at ${this.dbPath}`);
     } catch (error) {
-      log.error('Failed to initialize shared memory:', error);
+      log.error("Failed to initialize shared memory:", error);
       throw error;
     }
   }
@@ -167,12 +167,12 @@ export class SharedMemory {
    */
   async store(entry: SharedMemoryStoreOptions): Promise<string> {
     if (!this.db) {
-      throw new Error('Shared memory not initialized');
+      throw new Error("Shared memory not initialized");
     }
 
     const id = crypto.randomUUID();
     const now = Date.now();
-    
+
     // Generate embedding if provider available
     let embedding: number[] | null = null;
     if (this.embeddingProvider) {
@@ -182,7 +182,7 @@ export class SharedMemory {
           embedding = result.embeddings[0];
         }
       } catch (error) {
-        log.warn('Failed to generate embedding for memory entry:', error);
+        log.warn("Failed to generate embedding for memory entry:", error);
       }
     }
 
@@ -204,7 +204,7 @@ export class SharedMemory {
       entry.source || null,
       embedding ? JSON.stringify(embedding) : null,
       now,
-      0
+      0,
     );
 
     log.debug(`Stored shared memory entry: ${id} from agent ${entry.agentId}`);
@@ -214,18 +214,15 @@ export class SharedMemory {
   /**
    * Search shared memory entries
    */
-  async search(query: string, options: SharedMemorySearchOptions = {}): Promise<SharedMemoryEntry[]> {
+  async search(
+    query: string,
+    options: SharedMemorySearchOptions = {},
+  ): Promise<SharedMemoryEntry[]> {
     if (!this.db) {
-      throw new Error('Shared memory not initialized');
+      throw new Error("Shared memory not initialized");
     }
 
-    const {
-      limit = 10,
-      types,
-      minImportance,
-      agentId,
-      useEmbeddings = true
-    } = options;
+    const { limit = 10, types, minImportance, agentId, useEmbeddings = true } = options;
 
     let results: SharedMemoryEntry[] = [];
 
@@ -237,7 +234,7 @@ export class SharedMemory {
           results = await this.searchByEmbedding(queryEmbedding.embeddings[0], options);
         }
       } catch (error) {
-        log.warn('Embedding search failed, falling back to text search:', error);
+        log.warn("Embedding search failed, falling back to text search:", error);
       }
     }
 
@@ -262,8 +259,13 @@ export class SharedMemory {
   /**
    * Search by embedding similarity
    */
-  private async searchByEmbedding(queryEmbedding: number[], options: SharedMemorySearchOptions): Promise<SharedMemoryEntry[]> {
-    if (!this.db) return [];
+  private async searchByEmbedding(
+    queryEmbedding: number[],
+    options: SharedMemorySearchOptions,
+  ): Promise<SharedMemoryEntry[]> {
+    if (!this.db) {
+      return [];
+    }
 
     let sql = `
       SELECT id, agent_id, content, type, tags, importance, source,
@@ -271,20 +273,20 @@ export class SharedMemory {
       FROM shared_memories 
       WHERE embedding IS NOT NULL
     `;
-    
+
     const params: any[] = [];
 
     // Add filters
     if (options.types && options.types.length > 0) {
-      sql += ` AND type IN (${options.types.map(() => '?').join(',')})`;
+      sql += ` AND type IN (${options.types.map(() => "?").join(",")})`;
       params.push(...options.types);
     }
-    
+
     if (options.minImportance !== undefined) {
       sql += ` AND importance >= ?`;
       params.push(options.minImportance);
     }
-    
+
     if (options.agentId) {
       sql += ` AND agent_id = ?`;
       params.push(options.agentId);
@@ -298,26 +300,27 @@ export class SharedMemory {
 
     // Calculate similarities and sort
     const results: Array<SharedMemoryEntry & { similarity: number }> = [];
-    
+
     for (const row of rows) {
       try {
         const embedding = JSON.parse(row.embedding);
         const similarity = this.cosineSimilarity(queryEmbedding, embedding);
-        
-        if (similarity > 0.1) { // Only include relevant results
+
+        if (similarity > 0.1) {
+          // Only include relevant results
           results.push({
             ...this.rowToEntry(row),
-            similarity
+            similarity,
           });
         }
       } catch (error) {
-        log.warn('Failed to parse embedding for entry:', row.id);
+        log.warn("Failed to parse embedding for entry:", row.id);
       }
     }
 
     // Sort by similarity and return
     return results
-      .sort((a, b) => b.similarity - a.similarity)
+      .toSorted((a, b) => b.similarity - a.similarity)
       .slice(0, options.limit || 10)
       .map(({ similarity, ...entry }) => entry);
   }
@@ -325,8 +328,13 @@ export class SharedMemory {
   /**
    * Search by text using FTS
    */
-  private async searchByText(query: string, options: SharedMemorySearchOptions): Promise<SharedMemoryEntry[]> {
-    if (!this.db) return [];
+  private async searchByText(
+    query: string,
+    options: SharedMemorySearchOptions,
+  ): Promise<SharedMemoryEntry[]> {
+    if (!this.db) {
+      return [];
+    }
 
     let sql = `
       SELECT m.id, m.agent_id, m.content, m.type, m.tags, m.importance, m.source,
@@ -336,20 +344,20 @@ export class SharedMemory {
       JOIN shared_memories m ON m.rowid = fts.rowid
       WHERE shared_memories_fts MATCH ?
     `;
-    
+
     const params: any[] = [query];
 
     // Add filters
     if (options.types && options.types.length > 0) {
-      sql += ` AND m.type IN (${options.types.map(() => '?').join(',')})`;
+      sql += ` AND m.type IN (${options.types.map(() => "?").join(",")})`;
       params.push(...options.types);
     }
-    
+
     if (options.minImportance !== undefined) {
       sql += ` AND m.importance >= ?`;
       params.push(options.minImportance);
     }
-    
+
     if (options.agentId) {
       sql += ` AND m.agent_id = ?`;
       params.push(options.agentId);
@@ -361,9 +369,9 @@ export class SharedMemory {
     try {
       const stmt = this.db.prepare(sql);
       const rows = stmt.all(...params) as any[];
-      return rows.map(row => this.rowToEntry(row));
+      return rows.map((row) => this.rowToEntry(row));
     } catch (error) {
-      log.warn('FTS search failed:', error);
+      log.warn("FTS search failed:", error);
       return [];
     }
   }
@@ -372,7 +380,9 @@ export class SharedMemory {
    * Get recent memories
    */
   async recent(limit: number = 10): Promise<SharedMemoryEntry[]> {
-    if (!this.db) return [];
+    if (!this.db) {
+      return [];
+    }
 
     const stmt = this.db.prepare(`
       SELECT id, agent_id, content, type, tags, importance, source,
@@ -383,7 +393,7 @@ export class SharedMemory {
     `);
 
     const rows = stmt.all(limit) as any[];
-    return rows.map(row => this.rowToEntry(row));
+    return rows.map((row) => this.rowToEntry(row));
   }
 
   /**
@@ -391,7 +401,7 @@ export class SharedMemory {
    */
   async consolidate(): Promise<number> {
     if (!this.db || !this.embeddingProvider) {
-      log.warn('Consolidation requires embeddings to be enabled');
+      log.warn("Consolidation requires embeddings to be enabled");
       return 0;
     }
 
@@ -408,38 +418,44 @@ export class SharedMemory {
     const processed = new Set<string>();
 
     for (let i = 0; i < memories.length; i++) {
-      if (processed.has(memories[i].id)) continue;
+      if (processed.has(memories[i].id)) {
+        continue;
+      }
 
       const currentMemory = memories[i];
       const currentEmbedding = JSON.parse(currentMemory.embedding);
-      
+
       for (let j = i + 1; j < memories.length; j++) {
-        if (processed.has(memories[j].id)) continue;
-        
+        if (processed.has(memories[j].id)) {
+          continue;
+        }
+
         const otherMemory = memories[j];
         const otherEmbedding = JSON.parse(otherMemory.embedding);
-        
+
         const similarity = this.cosineSimilarity(currentEmbedding, otherEmbedding);
-        
-        if (similarity > 0.95) { // Very similar memories
+
+        if (similarity > 0.95) {
+          // Very similar memories
           // Keep the one with higher importance or newer date
-          const keepCurrent = currentMemory.importance > otherMemory.importance ||
-                             (currentMemory.importance === otherMemory.importance && 
-                              currentMemory.created_at > otherMemory.created_at);
-          
+          const keepCurrent =
+            currentMemory.importance > otherMemory.importance ||
+            (currentMemory.importance === otherMemory.importance &&
+              currentMemory.created_at > otherMemory.created_at);
+
           const idToDelete = keepCurrent ? otherMemory.id : currentMemory.id;
-          
+
           // Delete the duplicate
-          const deleteStmt = this.db.prepare('DELETE FROM shared_memories WHERE id = ?');
+          const deleteStmt = this.db.prepare("DELETE FROM shared_memories WHERE id = ?");
           deleteStmt.run(idToDelete);
-          
+
           processed.add(idToDelete);
           mergedCount++;
-          
+
           log.debug(`Consolidated duplicate memory: ${idToDelete}`);
         }
       }
-      
+
       processed.add(currentMemory.id);
     }
 
@@ -455,15 +471,17 @@ export class SharedMemory {
    */
   async getStats(): Promise<SharedMemoryStats> {
     if (!this.db) {
-      throw new Error('Shared memory not initialized');
+      throw new Error("Shared memory not initialized");
     }
 
     // Total entries
-    const totalStmt = this.db.prepare('SELECT COUNT(*) as count FROM shared_memories');
+    const totalStmt = this.db.prepare("SELECT COUNT(*) as count FROM shared_memories");
     const total = (totalStmt.get() as any).count;
 
     // Entries by type
-    const typeStmt = this.db.prepare('SELECT type, COUNT(*) as count FROM shared_memories GROUP BY type');
+    const typeStmt = this.db.prepare(
+      "SELECT type, COUNT(*) as count FROM shared_memories GROUP BY type",
+    );
     const typeRows = typeStmt.all() as any[];
     const entriesByType: Record<string, number> = {};
     for (const row of typeRows) {
@@ -471,7 +489,9 @@ export class SharedMemory {
     }
 
     // Entries by agent
-    const agentStmt = this.db.prepare('SELECT agent_id, COUNT(*) as count FROM shared_memories GROUP BY agent_id');
+    const agentStmt = this.db.prepare(
+      "SELECT agent_id, COUNT(*) as count FROM shared_memories GROUP BY agent_id",
+    );
     const agentRows = agentStmt.all() as any[];
     const entriesByAgent: Record<string, number> = {};
     for (const row of agentRows) {
@@ -479,11 +499,13 @@ export class SharedMemory {
     }
 
     // Average importance
-    const avgStmt = this.db.prepare('SELECT AVG(importance) as avg FROM shared_memories');
+    const avgStmt = this.db.prepare("SELECT AVG(importance) as avg FROM shared_memories");
     const avgImportance = (avgStmt.get() as any).avg || 0;
 
     // Date range
-    const rangeStmt = this.db.prepare('SELECT MIN(created_at) as oldest, MAX(created_at) as newest FROM shared_memories');
+    const rangeStmt = this.db.prepare(
+      "SELECT MIN(created_at) as oldest, MAX(created_at) as newest FROM shared_memories",
+    );
     const range = rangeStmt.get() as any;
 
     return {
@@ -500,9 +522,11 @@ export class SharedMemory {
    * Clean up old entries to manage size
    */
   async cleanup(maxEntries: number = 10000): Promise<number> {
-    if (!this.db) return 0;
+    if (!this.db) {
+      return 0;
+    }
 
-    const countStmt = this.db.prepare('SELECT COUNT(*) as count FROM shared_memories');
+    const countStmt = this.db.prepare("SELECT COUNT(*) as count FROM shared_memories");
     const currentCount = (countStmt.get() as any).count;
 
     if (currentCount <= maxEntries) {
@@ -510,7 +534,7 @@ export class SharedMemory {
     }
 
     const deleteCount = currentCount - maxEntries;
-    
+
     // Delete oldest entries with low importance first
     const deleteStmt = this.db.prepare(`
       DELETE FROM shared_memories 
@@ -520,9 +544,9 @@ export class SharedMemory {
         LIMIT ?
       )
     `);
-    
+
     deleteStmt.run(deleteCount);
-    
+
     log.info(`Cleaned up ${deleteCount} old memories`);
     return deleteCount;
   }
@@ -547,7 +571,7 @@ export class SharedMemory {
       agentId: row.agent_id,
       content: row.content,
       type: row.type,
-      tags: JSON.parse(row.tags || '[]'),
+      tags: JSON.parse(row.tags || "[]"),
       importance: row.importance,
       source: row.source,
       embedding: row.embedding ? JSON.parse(row.embedding) : undefined,
@@ -558,19 +582,23 @@ export class SharedMemory {
   }
 
   private async updateAccess(id: string): Promise<void> {
-    if (!this.db) return;
+    if (!this.db) {
+      return;
+    }
 
     const stmt = this.db.prepare(`
       UPDATE shared_memories 
       SET accessed_at = ?, access_count = access_count + 1 
       WHERE id = ?
     `);
-    
+
     stmt.run(Date.now(), id);
   }
 
   private cosineSimilarity(a: number[], b: number[]): number {
-    if (a.length !== b.length) return 0;
+    if (a.length !== b.length) {
+      return 0;
+    }
 
     let dotProduct = 0;
     let normA = 0;

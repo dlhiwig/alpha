@@ -4,6 +4,17 @@
  */
 
 import { EventEmitter } from "node:events";
+// Import lightweight swarm as fallback
+import { LightweightSwarm, createLightweightSwarm } from "./lightweight-swarm.js";
+// Import ORACLE learning for self-improvement
+import { getOracleLearning } from "./oracle-learning.js";
+// Import shared memory for storing swarm results
+import { getSharedMemory } from "./shared-memory.js";
+// Import the real SuperClaw swarm executor
+import {
+  SuperClawSwarmExecutor,
+  createSuperClawSwarmExecutor,
+} from "./superclaw-swarm-executor.js";
 import type {
   SwarmConfig,
   SwarmResult,
@@ -13,18 +24,6 @@ import type {
   SwarmTopology,
   ConsensusType,
 } from "./types.js";
-
-// Import the real SuperClaw swarm executor
-import { SuperClawSwarmExecutor, createSuperClawSwarmExecutor } from "./superclaw-swarm-executor.js";
-
-// Import lightweight swarm as fallback
-import { LightweightSwarm, createLightweightSwarm } from "./lightweight-swarm.js";
-
-// Import shared memory for storing swarm results
-import { getSharedMemory } from "./shared-memory.js";
-
-// Import ORACLE learning for self-improvement
-import { getOracleLearning } from "./oracle-learning.js";
 
 // Real SuperClaw swarm executor
 let superclawExecutor: SuperClawSwarmExecutor | null = null;
@@ -36,28 +35,34 @@ let lightweightSwarm: LightweightSwarm | null = null;
  * Check if SuperClaw real swarm is available
  */
 async function loadSuperClawSwarm(): Promise<boolean> {
-  if (superclawExecutor) {return true;}
+  if (superclawExecutor) {
+    return true;
+  }
 
   try {
     // Initialize the real SuperClaw executor
     superclawExecutor = createSuperClawSwarmExecutor();
-    
+
     // Do a quick health check
     const health = await superclawExecutor.healthCheck();
-    const workingProviders = health.filter(h => h.status === 'ok');
-    
+    const workingProviders = health.filter((h) => h.status === "ok");
+
     if (workingProviders.length === 0) {
       console.log("[SuperClaw] No working providers found, falling back to lightweight swarm");
       lightweightSwarm = createLightweightSwarm();
       superclawExecutor = null;
       return false;
     }
-    
-    console.log(`[SuperClaw] Real swarm available with ${workingProviders.length} providers: ${workingProviders.map(p => p.provider).join(', ')}`);
+
+    console.log(
+      `[SuperClaw] Real swarm available with ${workingProviders.length} providers: ${workingProviders.map((p) => p.provider).join(", ")}`,
+    );
     return true;
   } catch (error) {
     // SuperClaw real swarm not available - use lightweight swarm
-    console.log(`[SuperClaw] Real swarm failed to initialize: ${error instanceof Error ? error.message : String(error)}`);
+    console.log(
+      `[SuperClaw] Real swarm failed to initialize: ${error instanceof Error ? error.message : String(error)}`,
+    );
     console.log("[SuperClaw] Using lightweight swarm (OpenClaw native)");
     lightweightSwarm = createLightweightSwarm();
     superclawExecutor = null;
@@ -129,7 +134,9 @@ export class SwarmBridge extends EventEmitter {
    * Check if swarm functionality is available
    */
   isAvailable(): boolean {
-    return this.config.swarm.enabled && (this.superclawAvailable === true || lightweightSwarm !== null);
+    return (
+      this.config.swarm.enabled && (this.superclawAvailable === true || lightweightSwarm !== null)
+    );
   }
 
   /**
@@ -185,47 +192,51 @@ export class SwarmBridge extends EventEmitter {
       const taskType = this.classifyTaskType(config.task);
       oracleRecommendation = await oracle.getRecommendation(taskType);
       bestProvider = oracleRecommendation.bestProvider;
-      
-      console.log(`[Oracle] Recommendation for ${taskType}: ${bestProvider} (confidence: ${(oracleRecommendation.confidence * 100).toFixed(1)}%)`);
-      
+
+      console.log(
+        `[Oracle] Recommendation for ${taskType}: ${bestProvider} (confidence: ${(oracleRecommendation.confidence * 100).toFixed(1)}%)`,
+      );
+
       // Log avoid patterns if any
       if (oracleRecommendation.avoidPatterns.length > 0) {
-        console.log(`[Oracle] Avoid patterns: ${oracleRecommendation.avoidPatterns.join(', ')}`);
+        console.log(`[Oracle] Avoid patterns: ${oracleRecommendation.avoidPatterns.join(", ")}`);
       }
     } catch (error) {
-      console.warn(`[Oracle] Failed to get recommendation: ${error instanceof Error ? error.message : String(error)}`);
+      console.warn(
+        `[Oracle] Failed to get recommendation: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
 
     try {
       // Use real SuperClaw executor if available, otherwise fallback to lightweight
       let result: SwarmResult;
-      
+
       if (this.superclawAvailable && superclawExecutor) {
         console.log(`[SuperClaw] Executing swarm ${swarmId} with real SuperClaw via llm-run`);
-        
+
         // Prepare config for SuperClaw executor
         const executorConfig = {
           ...config,
           maxAgents: config.maxAgents || this.config.swarm.maxAgents,
           timeout: config.timeout || this.config.swarm.timeout,
         };
-        
+
         result = await superclawExecutor.execute(executorConfig);
       } else if (lightweightSwarm) {
         console.log(`[SuperClaw] Executing swarm ${swarmId} with lightweight fallback`);
-        
+
         // Use lightweight swarm as fallback
         const taskClassification = {
-          complexity: 'complex' as const,
+          complexity: "complex" as const,
           confidence: 0.8,
-          suggestedModel: 'anthropic/claude-sonnet-4-20250514',
-          suggestedAgents: ['coder', 'reviewer'],
-          reasoning: 'Swarm task'
+          suggestedModel: "anthropic/claude-sonnet-4-20250514",
+          suggestedAgents: ["coder", "reviewer"],
+          reasoning: "Swarm task",
         };
-        
+
         const swarmTasks = await lightweightSwarm.decomposeTask(config.task, taskClassification);
         const swarmResult = await lightweightSwarm.executeSwarm(swarmTasks);
-        
+
         // Map lightweight result to SwarmResult format
         result = {
           success: swarmResult.success,
@@ -233,10 +244,10 @@ export class SwarmBridge extends EventEmitter {
           agentsUsed: swarmResult.agentsUsed,
           consensusReached: swarmResult.consensusReached,
           executionTimeMs: swarmResult.totalLatencyMs,
-          metadata: { swarmId, mode: 'lightweight', consensus: true }
+          metadata: { swarmId, mode: "lightweight", consensus: true },
         };
       } else {
-        throw new Error('No swarm implementation available');
+        throw new Error("No swarm implementation available");
       }
 
       // Add swarm metadata
@@ -253,18 +264,16 @@ export class SwarmBridge extends EventEmitter {
           await sharedMemory.store({
             agentId: swarmId,
             content: result.output,
-            type: result.consensusReached ? 'decision' : 'observation',
-            tags: [
-              'swarm',
-              config.topology || 'fanout',
-              ...(config.tags || [])
-            ],
+            type: result.consensusReached ? "decision" : "observation",
+            tags: ["swarm", config.topology || "fanout", ...(config.tags || [])],
             importance: result.consensusReached ? 0.8 : 0.6,
-            source: `swarm:${swarmId}:${config.task.slice(0, 50)}`
+            source: `swarm:${swarmId}:${config.task.slice(0, 50)}`,
           });
           console.log(`[SharedMemory] Stored swarm result ${swarmId} in shared memory`);
         } catch (error) {
-          console.warn(`[SharedMemory] Failed to store swarm result: ${error instanceof Error ? error.message : String(error)}`);
+          console.warn(
+            `[SharedMemory] Failed to store swarm result: ${error instanceof Error ? error.message : String(error)}`,
+          );
         }
       }
 
@@ -273,17 +282,21 @@ export class SwarmBridge extends EventEmitter {
         const oracle = await getOracleLearning();
         const taskType = this.classifyTaskType(config.task);
         await oracle.recordInteraction({
-          provider: bestProvider || 'unknown',
+          provider: bestProvider || "unknown",
           taskType,
           prompt: config.task,
           success: result.success,
           latencyMs: result.executionTimeMs,
           cost: this.estimateSwarmCost(result),
-          responseLength: result.output.length
+          responseLength: result.output.length,
         });
-        console.log(`[Oracle] Recorded swarm interaction: ${result.success ? '✓' : '✗'} ${taskType}`);
+        console.log(
+          `[Oracle] Recorded swarm interaction: ${result.success ? "✓" : "✗"} ${taskType}`,
+        );
       } catch (error) {
-        console.warn(`[Oracle] Failed to record interaction: ${error instanceof Error ? error.message : String(error)}`);
+        console.warn(
+          `[Oracle] Failed to record interaction: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
 
       this.emit("swarm:completed", { id: swarmId, result });
@@ -299,14 +312,14 @@ export class SwarmBridge extends EventEmitter {
         const oracle = await getOracleLearning();
         const taskType = this.classifyTaskType(config.task);
         const errorMessage = error instanceof Error ? error.message : String(error);
-        
+
         // Record failed interaction
         await oracle.recordInteraction({
-          provider: bestProvider || 'unknown',
+          provider: bestProvider || "unknown",
           taskType,
           prompt: config.task,
           success: false,
-          latencyMs: executionTimeMs
+          latencyMs: executionTimeMs,
         });
 
         // Learn from the mistake pattern
@@ -315,13 +328,17 @@ export class SwarmBridge extends EventEmitter {
           rootCause: this.categorizeFailure(errorMessage),
           correction: this.suggestCorrection(errorMessage),
           severity: this.classifyFailureSeverity(errorMessage),
-          contexts: [taskType, config.topology || 'fanout'],
-          tags: ['swarm', 'failure', taskType]
+          contexts: [taskType, config.topology || "fanout"],
+          tags: ["swarm", "failure", taskType],
         });
 
-        console.log(`[Oracle] Learned from swarm failure: ${taskType} - ${errorMessage.slice(0, 50)}`);
+        console.log(
+          `[Oracle] Learned from swarm failure: ${taskType} - ${errorMessage.slice(0, 50)}`,
+        );
       } catch (oracleError) {
-        console.warn(`[Oracle] Failed to learn from failure: ${oracleError instanceof Error ? oracleError.message : String(oracleError)}`);
+        console.warn(
+          `[Oracle] Failed to learn from failure: ${oracleError instanceof Error ? oracleError.message : String(oracleError)}`,
+        );
       }
 
       return {
@@ -330,7 +347,7 @@ export class SwarmBridge extends EventEmitter {
         agentsUsed: 0,
         consensusReached: false,
         executionTimeMs,
-        metadata: { swarmId }
+        metadata: { swarmId },
       };
     } finally {
       // Cleanup
@@ -343,7 +360,9 @@ export class SwarmBridge extends EventEmitter {
    */
   private async cancelSwarm(swarmId: string): Promise<void> {
     const swarm = this.activeSwarms.get(swarmId);
-    if (!swarm) {return;}
+    if (!swarm) {
+      return;
+    }
 
     try {
       if (this.superclawAvailable && superclawExecutor) {
@@ -397,7 +416,9 @@ export class SwarmBridge extends EventEmitter {
    */
   private async cleanupSwarm(swarmId: string): Promise<void> {
     const swarm = this.activeSwarms.get(swarmId);
-    if (!swarm) {return;}
+    if (!swarm) {
+      return;
+    }
 
     try {
       // No special cleanup needed for llm-run based execution
@@ -426,15 +447,13 @@ export class SwarmBridge extends EventEmitter {
   /**
    * Get swarm health status
    */
-  async getHealthStatus(): Promise<{ provider: string; status: 'ok' | 'error'; error?: string }[]> {
+  async getHealthStatus(): Promise<{ provider: string; status: "ok" | "error"; error?: string }[]> {
     if (this.superclawAvailable && superclawExecutor) {
       return await superclawExecutor.healthCheck();
     }
-    
+
     // For lightweight swarm, return basic status
-    return [
-      { provider: 'lightweight', status: 'ok' }
-    ];
+    return [{ provider: "lightweight", status: "ok" }];
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -446,30 +465,30 @@ export class SwarmBridge extends EventEmitter {
    */
   private classifyTaskType(task: string): string {
     const taskLower = task.toLowerCase();
-    
+
     if (/\b(code|function|implement|class|api|programming|debug|fix)\b/.test(taskLower)) {
-      return 'coding';
+      return "coding";
     }
     if (/\b(research|analyze|investigate|study|find|search)\b/.test(taskLower)) {
-      return 'research';
+      return "research";
     }
     if (/\b(write|create|generate|draft|compose|author)\b/.test(taskLower)) {
-      return 'generation';
+      return "generation";
     }
     if (/\b(explain|describe|summarize|clarify|interpret)\b/.test(taskLower)) {
-      return 'explanation';
+      return "explanation";
     }
     if (/\b(test|validate|verify|check|review)\b/.test(taskLower)) {
-      return 'testing';
+      return "testing";
     }
     if (/\b(plan|strategy|design|architect|outline)\b/.test(taskLower)) {
-      return 'planning';
+      return "planning";
     }
     if (/\b(optimize|improve|enhance|refactor)\b/.test(taskLower)) {
-      return 'optimization';
+      return "optimization";
     }
-    
-    return 'general';
+
+    return "general";
   }
 
   /**
@@ -479,8 +498,8 @@ export class SwarmBridge extends EventEmitter {
     // Rough estimation based on agents used and output length
     const baseAgentCost = 0.002; // ~$0.002 per agent
     const outputCostPerChar = 0.000001; // Very rough estimate
-    
-    return (result.agentsUsed * baseAgentCost) + (result.output.length * outputCostPerChar);
+
+    return result.agentsUsed * baseAgentCost + result.output.length * outputCostPerChar;
   }
 
   /**
@@ -488,30 +507,30 @@ export class SwarmBridge extends EventEmitter {
    */
   private categorizeFailure(errorMessage: string): string {
     const errorLower = errorMessage.toLowerCase();
-    
+
     if (/timeout|time.*out|deadline|expired/.test(errorLower)) {
-      return 'timeout';
+      return "timeout";
     }
     if (/quota|limit|rate.*limit|too.*many/.test(errorLower)) {
-      return 'rate_limit';
+      return "rate_limit";
     }
     if (/auth|unauthorized|permission|forbidden|api.*key/.test(errorLower)) {
-      return 'authentication';
+      return "authentication";
     }
     if (/network|connection|unreachable|dns/.test(errorLower)) {
-      return 'network';
+      return "network";
     }
     if (/memory|resource|cpu|disk/.test(errorLower)) {
-      return 'resource';
+      return "resource";
     }
     if (/parsing|format|invalid.*json|syntax/.test(errorLower)) {
-      return 'format';
+      return "format";
     }
     if (/provider|model|unavailable|not.*found/.test(errorLower)) {
-      return 'provider_unavailable';
+      return "provider_unavailable";
     }
-    
-    return 'unknown';
+
+    return "unknown";
   }
 
   /**
@@ -519,46 +538,46 @@ export class SwarmBridge extends EventEmitter {
    */
   private suggestCorrection(errorMessage: string): string {
     const failureType = this.categorizeFailure(errorMessage);
-    
+
     switch (failureType) {
-      case 'timeout':
-        return 'Increase timeout or break task into smaller parts';
-      case 'rate_limit':
-        return 'Add delay between requests or use different provider';
-      case 'authentication':
-        return 'Check API credentials and permissions';
-      case 'network':
-        return 'Check network connectivity and retry';
-      case 'resource':
-        return 'Reduce task complexity or increase resource limits';
-      case 'format':
-        return 'Validate input format and fix syntax errors';
-      case 'provider_unavailable':
-        return 'Use alternative provider or retry later';
+      case "timeout":
+        return "Increase timeout or break task into smaller parts";
+      case "rate_limit":
+        return "Add delay between requests or use different provider";
+      case "authentication":
+        return "Check API credentials and permissions";
+      case "network":
+        return "Check network connectivity and retry";
+      case "resource":
+        return "Reduce task complexity or increase resource limits";
+      case "format":
+        return "Validate input format and fix syntax errors";
+      case "provider_unavailable":
+        return "Use alternative provider or retry later";
       default:
-        return 'Review error details and adjust task parameters';
+        return "Review error details and adjust task parameters";
     }
   }
 
   /**
    * Classify failure severity for learning prioritization
    */
-  private classifyFailureSeverity(errorMessage: string): 'low' | 'medium' | 'high' {
+  private classifyFailureSeverity(errorMessage: string): "low" | "medium" | "high" {
     const failureType = this.categorizeFailure(errorMessage);
-    
+
     switch (failureType) {
-      case 'timeout':
-      case 'rate_limit':
-      case 'network':
-        return 'medium';
-      case 'authentication':
-      case 'provider_unavailable':
-        return 'high';
-      case 'resource':
-      case 'format':
-        return 'low';
+      case "timeout":
+      case "rate_limit":
+      case "network":
+        return "medium";
+      case "authentication":
+      case "provider_unavailable":
+        return "high";
+      case "resource":
+      case "format":
+        return "low";
       default:
-        return 'medium';
+        return "medium";
     }
   }
 }

@@ -76,12 +76,17 @@ export class QuorumVoting {
    * rather than applying a 66% threshold that makes 1/2 fail quorum).
    */
   checkQuorum(results: SubtaskResult[]): { reached: boolean; ratio: number; threshold: number } {
-    const validResults = results.filter((r) => r.success && r.confidence >= this.config.minConfidence);
+    const validResults = results.filter(
+      (r) => r.success && r.confidence >= this.config.minConfidence,
+    );
     const ratio = results.length > 0 ? validResults.length / results.length : 0;
 
     // Adaptive quorum: when only 2 agents, require simple majority (>= 0.5)
     // instead of the default supermajority. With 2 agents, 1/2 = 0.5 passes.
-    const threshold = results.length <= 2 ? Math.min(this.config.quorumThreshold, 0.5) : this.config.quorumThreshold;
+    const threshold =
+      results.length <= 2
+        ? Math.min(this.config.quorumThreshold, 0.5)
+        : this.config.quorumThreshold;
 
     return {
       reached: ratio >= threshold,
@@ -117,7 +122,7 @@ export class QuorumVoting {
     });
 
     // Sort by final score descending
-    return scores.sort((a, b) => b.finalScore - a.finalScore);
+    return scores.toSorted((a, b) => b.finalScore - a.finalScore);
   }
 
   /**
@@ -163,10 +168,14 @@ export class QuorumVoting {
    * Uses simple token overlap as a proxy for semantic agreement.
    */
   private scoreAgreement(result: SubtaskResult, allResults: SubtaskResult[]): number {
-    if (allResults.length <= 1) return 1; // Single result always agrees with itself
+    if (allResults.length <= 1) {
+      return 1;
+    } // Single result always agrees with itself
 
     const tokens = this.tokenize(result.output);
-    if (tokens.size === 0) return 0;
+    if (tokens.size === 0) {
+      return 0;
+    }
 
     const others = allResults.filter((r) => r.agentId !== result.agentId);
     let totalOverlap = 0;
@@ -175,7 +184,9 @@ export class QuorumVoting {
       const otherTokens = this.tokenize(other.output);
       let overlap = 0;
       for (const token of tokens) {
-        if (otherTokens.has(token)) overlap++;
+        if (otherTokens.has(token)) {
+          overlap++;
+        }
       }
       totalOverlap += tokens.size > 0 ? overlap / tokens.size : 0;
     }
@@ -284,9 +295,7 @@ export class JudgeStep {
 
     // Identify dissenting agents (score significantly below winner)
     const winnerFinal = winnerScore.finalScore;
-    const dissent = scores
-      .filter((s) => winnerFinal - s.finalScore > 0.3)
-      .map((s) => s.agentId);
+    const dissent = scores.filter((s) => winnerFinal - s.finalScore > 0.3).map((s) => s.agentId);
 
     // Build reasoning
     const reasoning = this.buildReasoning(winnerScore, scores, quorumCheck);
@@ -346,7 +355,9 @@ export class JudgeStep {
     scores: CandidateScore[],
     quorum: { reached: boolean; ratio: number },
   ): number {
-    if (scores.length === 0) return 0;
+    if (scores.length === 0) {
+      return 0;
+    }
 
     const topScore = scores[0].finalScore;
 
@@ -375,9 +386,13 @@ export class JudgeStep {
     parts.push(`Winner: agent ${winner.agentId} (score: ${winner.finalScore.toFixed(2)})`);
 
     if (quorum.reached) {
-      parts.push(`Quorum reached: ${(quorum.ratio * 100).toFixed(0)}% >= ${(quorum.threshold * 100).toFixed(0)}%`);
+      parts.push(
+        `Quorum reached: ${(quorum.ratio * 100).toFixed(0)}% >= ${(quorum.threshold * 100).toFixed(0)}%`,
+      );
     } else {
-      parts.push(`Quorum NOT reached: ${(quorum.ratio * 100).toFixed(0)}% < ${(quorum.threshold * 100).toFixed(0)}%`);
+      parts.push(
+        `Quorum NOT reached: ${(quorum.ratio * 100).toFixed(0)}% < ${(quorum.threshold * 100).toFixed(0)}%`,
+      );
     }
 
     parts.push(`Candidates evaluated: ${scores.length}`);

@@ -1,20 +1,20 @@
 /**
  * SuperClaw API Endpoints
- * 
+ *
  * HTTP API endpoints for SuperClaw swarm functionality
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { handleGatewayPostJsonEndpoint } from "../gateway/http-endpoint-helpers.js";
-import { sendJson } from "../gateway/http-common.js";
-import type { ResolvedGatewayAuth } from "../gateway/auth.js";
 import type { AuthRateLimiter } from "../gateway/auth-rate-limit.js";
+import type { ResolvedGatewayAuth } from "../gateway/auth.js";
+import { sendJson } from "../gateway/http-common.js";
+import { handleGatewayPostJsonEndpoint } from "../gateway/http-endpoint-helpers.js";
 import { SuperClawBridge } from "./bridge.js";
-import { getSuperClawExecutor } from "./swarm-bridge.js";
-import { getSharedMemory } from "./shared-memory.js";
 import { getOracleLearning } from "./oracle-learning.js";
-import { getSkynet } from "./skynet.js";
 import { getSelfEvolver } from "./self-evolve.js";
+import { getSharedMemory } from "./shared-memory.js";
+import { getSkynet } from "./skynet.js";
+import { getSuperClawExecutor } from "./swarm-bridge.js";
 
 // Global bridge instance (initialized when needed)
 let bridgeInstance: SuperClawBridge | null = null;
@@ -38,7 +38,7 @@ export async function handleSkynetSwarmRequest(
     trustedProxies?: string[];
     allowRealIpFallback?: boolean;
     rateLimiter?: AuthRateLimiter;
-  }
+  },
 ): Promise<boolean> {
   const endpointResult = await handleGatewayPostJsonEndpoint(req, res, {
     pathname: "/api/v1/skynet/swarm",
@@ -59,47 +59,49 @@ export async function handleSkynetSwarmRequest(
 
   try {
     const body = endpointResult.body as any;
-    
+
     // Validate request body
-    if (!body || typeof body !== 'object') {
-      sendJson(res, 400, { 
-        error: "Invalid request body", 
-        message: "Request body must be JSON object" 
+    if (!body || typeof body !== "object") {
+      sendJson(res, 400, {
+        error: "Invalid request body",
+        message: "Request body must be JSON object",
       });
       return true;
     }
 
-    if (!body.task || typeof body.task !== 'string') {
-      sendJson(res, 400, { 
-        error: "Missing or invalid task", 
-        message: "Request must include 'task' field with string value" 
+    if (!body.task || typeof body.task !== "string") {
+      sendJson(res, 400, {
+        error: "Missing or invalid task",
+        message: "Request must include 'task' field with string value",
       });
       return true;
     }
 
     // Extract parameters
-    const { task, mode = 'fanout', maxAgents = 2, timeout = 60000, context } = body;
-    
-    console.log(`[SuperClaw API] Swarm request: task="${task.slice(0, 50)}...", mode=${mode}, maxAgents=${maxAgents}`);
+    const { task, mode = "fanout", maxAgents = 2, timeout = 60000, context } = body;
+
+    console.log(
+      `[SuperClaw API] Swarm request: task="${task.slice(0, 50)}...", mode=${mode}, maxAgents=${maxAgents}`,
+    );
 
     // Get bridge and execute swarm
     const bridge = await getBridge();
-    
+
     if (!bridge.isSwarmAvailable()) {
       sendJson(res, 503, {
         error: "Swarm not available",
-        message: "SuperClaw swarm functionality is not currently available"
+        message: "SuperClaw swarm functionality is not currently available",
       });
       return true;
     }
 
     // For fanout mode, use the swarm directly
-    if (mode === 'fanout') {
+    if (mode === "fanout") {
       const executor = getSuperClawExecutor();
       if (!executor) {
         sendJson(res, 503, {
           error: "SuperClaw executor not available",
-          message: "Real SuperClaw swarm executor is not available"
+          message: "Real SuperClaw swarm executor is not available",
         });
         return true;
       }
@@ -109,7 +111,7 @@ export async function handleSkynetSwarmRequest(
         maxAgents,
         timeout,
         context,
-        mode: 'fanout' as const
+        mode: "fanout" as const,
       };
 
       const result = await executor.execute(swarmConfig);
@@ -121,27 +123,27 @@ export async function handleSkynetSwarmRequest(
         consensusReached: result.consensusReached,
         executionTimeMs: result.executionTimeMs,
         tokensUsed: result.tokensUsed,
-        metadata: result.metadata
+        metadata: result.metadata,
       });
     } else {
       // Use the bridge for other modes
       const result = await bridge.processMessage(task, {
         sessionKey: `api:swarm:${Date.now()}`,
-        channel: 'http-api'
+        channel: "http-api",
       });
 
       if (!result.handled) {
         sendJson(res, 500, {
           error: "Task not handled",
           message: "SuperClaw bridge did not handle the task",
-          classification: result.classification
+          classification: result.classification,
         });
         return true;
       }
 
       sendJson(res, 200, {
         success: true,
-        output: result.response || '',
+        output: result.response || "",
         agentsUsed: result.metadata?.agentsUsed || 1,
         consensusReached: true,
         executionTimeMs: result.metadata?.latencyMs || 0,
@@ -149,20 +151,20 @@ export async function handleSkynetSwarmRequest(
         metadata: {
           ...result.metadata,
           usedSwarm: result.usedSwarm,
-          classification: result.classification
-        }
+          classification: result.classification,
+        },
       });
     }
 
     return true;
   } catch (error) {
-    console.error('[SuperClaw API] Error handling swarm request:', error);
-    
+    console.error("[SuperClaw API] Error handling swarm request:", error);
+
     sendJson(res, 500, {
       error: "Internal server error",
-      message: error instanceof Error ? error.message : "Unknown error occurred"
+      message: error instanceof Error ? error.message : "Unknown error occurred",
     });
-    
+
     return true;
   }
 }
@@ -178,7 +180,7 @@ export async function handleSkynetHealthRequest(
     trustedProxies?: string[];
     allowRealIpFallback?: boolean;
     rateLimiter?: AuthRateLimiter;
-  }
+  },
 ): Promise<boolean> {
   const url = new URL(req.url ?? "/", `http://${req.headers.host || "localhost"}`);
   if (url.pathname !== "/api/v1/skynet/health") {
@@ -194,32 +196,32 @@ export async function handleSkynetHealthRequest(
   try {
     const bridge = await getBridge();
     const executor = getSuperClawExecutor();
-    
-    let health: { provider: string; status: 'ok' | 'error'; error?: string }[] = [];
-    
+
+    let health: { provider: string; status: "ok" | "error"; error?: string }[] = [];
+
     if (executor) {
       health = await executor.healthCheck();
     } else {
-      health = [{ provider: 'lightweight', status: 'ok' }];
+      health = [{ provider: "lightweight", status: "ok" }];
     }
 
     const response = {
       swarmAvailable: bridge.isSwarmAvailable(),
       realSwarmAvailable: executor !== null,
       providers: health,
-      metrics: bridge.getMetrics()
+      metrics: bridge.getMetrics(),
     };
 
     sendJson(res, 200, response);
     return true;
   } catch (error) {
-    console.error('[SuperClaw API] Error handling health request:', error);
-    
+    console.error("[SuperClaw API] Error handling health request:", error);
+
     sendJson(res, 500, {
       error: "Internal server error",
-      message: error instanceof Error ? error.message : "Unknown error occurred"
+      message: error instanceof Error ? error.message : "Unknown error occurred",
     });
-    
+
     return true;
   }
 }
@@ -235,7 +237,7 @@ export async function handleSharedMemorySearchRequest(
     trustedProxies?: string[];
     allowRealIpFallback?: boolean;
     rateLimiter?: AuthRateLimiter;
-  }
+  },
 ): Promise<boolean> {
   const url = new URL(req.url ?? "/", `http://${req.headers.host || "localhost"}`);
   if (url.pathname !== "/api/v1/memory/shared/search") {
@@ -252,8 +254,8 @@ export async function handleSharedMemorySearchRequest(
     const query = url.searchParams.get("q") || "";
     const limit = parseInt(url.searchParams.get("limit") || "10");
     const types = url.searchParams.get("types")?.split(",");
-    const minImportance = url.searchParams.get("minImportance") 
-      ? parseFloat(url.searchParams.get("minImportance")!) 
+    const minImportance = url.searchParams.get("minImportance")
+      ? parseFloat(url.searchParams.get("minImportance")!)
       : undefined;
     const agentId = url.searchParams.get("agentId") || undefined;
 
@@ -262,25 +264,25 @@ export async function handleSharedMemorySearchRequest(
       limit,
       types,
       minImportance,
-      agentId
+      agentId,
     });
 
     sendJson(res, 200, {
       success: true,
       results,
       count: results.length,
-      query
+      query,
     });
 
     return true;
   } catch (error) {
-    console.error('[SharedMemory API] Error handling search request:', error);
-    
+    console.error("[SharedMemory API] Error handling search request:", error);
+
     sendJson(res, 500, {
       error: "Internal server error",
-      message: error instanceof Error ? error.message : "Unknown error occurred"
+      message: error instanceof Error ? error.message : "Unknown error occurred",
     });
-    
+
     return true;
   }
 }
@@ -296,7 +298,7 @@ export async function handleSharedMemoryStoreRequest(
     trustedProxies?: string[];
     allowRealIpFallback?: boolean;
     rateLimiter?: AuthRateLimiter;
-  }
+  },
 ): Promise<boolean> {
   const endpointResult = await handleGatewayPostJsonEndpoint(req, res, {
     pathname: "/api/v1/memory/shared/store",
@@ -317,12 +319,12 @@ export async function handleSharedMemoryStoreRequest(
 
   try {
     const body = endpointResult.body as any;
-    
+
     // Validate request body
-    if (!body || typeof body !== 'object') {
-      sendJson(res, 400, { 
-        error: "Invalid request body", 
-        message: "Request body must be JSON object" 
+    if (!body || typeof body !== "object") {
+      sendJson(res, 400, {
+        error: "Invalid request body",
+        message: "Request body must be JSON object",
       });
       return true;
     }
@@ -330,17 +332,17 @@ export async function handleSharedMemoryStoreRequest(
     const { agentId, content, type, tags, importance, source } = body;
 
     if (!agentId || !content || !type) {
-      sendJson(res, 400, { 
-        error: "Missing required fields", 
-        message: "agentId, content, and type are required" 
+      sendJson(res, 400, {
+        error: "Missing required fields",
+        message: "agentId, content, and type are required",
       });
       return true;
     }
 
-    if (!['fact', 'decision', 'lesson', 'task', 'observation'].includes(type)) {
-      sendJson(res, 400, { 
-        error: "Invalid type", 
-        message: "type must be one of: fact, decision, lesson, task, observation" 
+    if (!["fact", "decision", "lesson", "task", "observation"].includes(type)) {
+      sendJson(res, 400, {
+        error: "Invalid type",
+        message: "type must be one of: fact, decision, lesson, task, observation",
       });
       return true;
     }
@@ -352,24 +354,24 @@ export async function handleSharedMemoryStoreRequest(
       type,
       tags: tags || [],
       importance: importance ?? 0.5,
-      source
+      source,
     });
 
     sendJson(res, 201, {
       success: true,
       id: memoryId,
-      message: "Memory stored successfully"
+      message: "Memory stored successfully",
     });
 
     return true;
   } catch (error) {
-    console.error('[SharedMemory API] Error handling store request:', error);
-    
+    console.error("[SharedMemory API] Error handling store request:", error);
+
     sendJson(res, 500, {
       error: "Internal server error",
-      message: error instanceof Error ? error.message : "Unknown error occurred"
+      message: error instanceof Error ? error.message : "Unknown error occurred",
     });
-    
+
     return true;
   }
 }
@@ -385,7 +387,7 @@ export async function handleSharedMemoryStatsRequest(
     trustedProxies?: string[];
     allowRealIpFallback?: boolean;
     rateLimiter?: AuthRateLimiter;
-  }
+  },
 ): Promise<boolean> {
   const url = new URL(req.url ?? "/", `http://${req.headers.host || "localhost"}`);
   if (url.pathname !== "/api/v1/memory/shared/stats") {
@@ -404,18 +406,18 @@ export async function handleSharedMemoryStatsRequest(
 
     sendJson(res, 200, {
       success: true,
-      ...stats
+      ...stats,
     });
 
     return true;
   } catch (error) {
-    console.error('[SharedMemory API] Error handling stats request:', error);
-    
+    console.error("[SharedMemory API] Error handling stats request:", error);
+
     sendJson(res, 500, {
       error: "Internal server error",
-      message: error instanceof Error ? error.message : "Unknown error occurred"
+      message: error instanceof Error ? error.message : "Unknown error occurred",
     });
-    
+
     return true;
   }
 }
@@ -431,7 +433,7 @@ export async function handleOracleStatsRequest(
     trustedProxies?: string[];
     allowRealIpFallback?: boolean;
     rateLimiter?: AuthRateLimiter;
-  }
+  },
 ): Promise<boolean> {
   const url = new URL(req.url ?? "/", `http://${req.headers.host || "localhost"}`);
   if (url.pathname !== "/api/v1/skynet/oracle/stats") {
@@ -450,18 +452,18 @@ export async function handleOracleStatsRequest(
 
     sendJson(res, 200, {
       success: true,
-      ...stats
+      ...stats,
     });
 
     return true;
   } catch (error) {
-    console.error('[Oracle API] Error handling stats request:', error);
-    
+    console.error("[Oracle API] Error handling stats request:", error);
+
     sendJson(res, 500, {
       error: "Internal server error",
-      message: error instanceof Error ? error.message : "Unknown error occurred"
+      message: error instanceof Error ? error.message : "Unknown error occurred",
     });
-    
+
     return true;
   }
 }
@@ -477,7 +479,7 @@ export async function handleOracleRecommendRequest(
     trustedProxies?: string[];
     allowRealIpFallback?: boolean;
     rateLimiter?: AuthRateLimiter;
-  }
+  },
 ): Promise<boolean> {
   const url = new URL(req.url ?? "/", `http://${req.headers.host || "localhost"}`);
   if (url.pathname !== "/api/v1/skynet/oracle/recommend") {
@@ -491,11 +493,11 @@ export async function handleOracleRecommendRequest(
   }
 
   try {
-    const taskType = url.searchParams.get('task');
+    const taskType = url.searchParams.get("task");
     if (!taskType) {
       sendJson(res, 400, {
         error: "Missing task parameter",
-        message: "Task type is required for recommendations"
+        message: "Task type is required for recommendations",
       });
       return true;
     }
@@ -505,18 +507,18 @@ export async function handleOracleRecommendRequest(
 
     sendJson(res, 200, {
       success: true,
-      recommendation
+      recommendation,
     });
 
     return true;
   } catch (error) {
-    console.error('[Oracle API] Error handling recommendation request:', error);
-    
+    console.error("[Oracle API] Error handling recommendation request:", error);
+
     sendJson(res, 500, {
       error: "Internal server error",
-      message: error instanceof Error ? error.message : "Unknown error occurred"
+      message: error instanceof Error ? error.message : "Unknown error occurred",
     });
-    
+
     return true;
   }
 }
@@ -532,7 +534,7 @@ export async function handleOracleFeedbackRequest(
     trustedProxies?: string[];
     allowRealIpFallback?: boolean;
     rateLimiter?: AuthRateLimiter;
-  }
+  },
 ): Promise<boolean> {
   const endpointResult = await handleGatewayPostJsonEndpoint(req, res, {
     pathname: "/api/v1/skynet/oracle/feedback",
@@ -553,19 +555,19 @@ export async function handleOracleFeedbackRequest(
 
   try {
     const body = endpointResult.body as any;
-    
-    if (!body || typeof body !== 'object') {
-      sendJson(res, 400, { 
-        error: "Invalid request body", 
-        message: "Request body must be JSON object" 
+
+    if (!body || typeof body !== "object") {
+      sendJson(res, 400, {
+        error: "Invalid request body",
+        message: "Request body must be JSON object",
       });
       return true;
     }
 
-    if (!body.provider || !body.taskType || !body.prompt || typeof body.success !== 'boolean') {
-      sendJson(res, 400, { 
-        error: "Missing required fields", 
-        message: "Required: provider, taskType, prompt, success" 
+    if (!body.provider || !body.taskType || !body.prompt || typeof body.success !== "boolean") {
+      sendJson(res, 400, {
+        error: "Missing required fields",
+        message: "Required: provider, taskType, prompt, success",
       });
       return true;
     }
@@ -579,23 +581,23 @@ export async function handleOracleFeedbackRequest(
       latencyMs: body.latencyMs || 0,
       cost: body.cost,
       userFeedback: body.userFeedback,
-      responseLength: body.responseLength
+      responseLength: body.responseLength,
     });
 
     sendJson(res, 200, {
       success: true,
-      interactionId
+      interactionId,
     });
 
     return true;
   } catch (error) {
-    console.error('[Oracle API] Error handling feedback request:', error);
-    
+    console.error("[Oracle API] Error handling feedback request:", error);
+
     sendJson(res, 500, {
       error: "Internal server error",
-      message: error instanceof Error ? error.message : "Unknown error occurred"
+      message: error instanceof Error ? error.message : "Unknown error occurred",
     });
-    
+
     return true;
   }
 }
@@ -611,7 +613,7 @@ export async function handleOracleReflectRequest(
     trustedProxies?: string[];
     allowRealIpFallback?: boolean;
     rateLimiter?: AuthRateLimiter;
-  }
+  },
 ): Promise<boolean> {
   const endpointResult = await handleGatewayPostJsonEndpoint(req, res, {
     pathname: "/api/v1/skynet/oracle/reflect",
@@ -636,18 +638,18 @@ export async function handleOracleReflectRequest(
 
     sendJson(res, 200, {
       success: true,
-      reflection
+      reflection,
     });
 
     return true;
   } catch (error) {
-    console.error('[Oracle API] Error handling reflection request:', error);
-    
+    console.error("[Oracle API] Error handling reflection request:", error);
+
     sendJson(res, 500, {
       error: "Internal server error",
-      message: error instanceof Error ? error.message : "Unknown error occurred"
+      message: error instanceof Error ? error.message : "Unknown error occurred",
     });
-    
+
     return true;
   }
 }
@@ -663,7 +665,7 @@ export async function handleSelfEvolveRequest(
     trustedProxies?: string[];
     allowRealIpFallback?: boolean;
     rateLimiter?: AuthRateLimiter;
-  }
+  },
 ): Promise<boolean> {
   const endpointResult = await handleGatewayPostJsonEndpoint(req, res, {
     pathname: "/api/v1/skynet/evolve",
@@ -674,8 +676,12 @@ export async function handleSelfEvolveRequest(
     rateLimiter: opts.rateLimiter,
   });
 
-  if (endpointResult === false) return false;
-  if (endpointResult === undefined) return true;
+  if (endpointResult === false) {
+    return false;
+  }
+  if (endpointResult === undefined) {
+    return true;
+  }
 
   try {
     const body = endpointResult.body as any;
@@ -787,7 +793,7 @@ export async function handleSuperClawApiRequest(
     trustedProxies?: string[];
     allowRealIpFallback?: boolean;
     rateLimiter?: AuthRateLimiter;
-  }
+  },
 ): Promise<boolean> {
   // Try swarm endpoint first
   const swarmHandled = await handleSkynetSwarmRequest(req, res, opts);

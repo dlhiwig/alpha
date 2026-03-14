@@ -15,6 +15,7 @@ import { loadConfig } from "../config/config.js";
 import type { createSubsystemLogger } from "../logging/subsystem.js";
 import { safeEqualSecret } from "../security/secret-equal.js";
 import { handleSlackHttpRequest } from "../slack/http/index.js";
+import { handleSuperClawApiRequest } from "../superclaw/api-endpoint.js";
 import {
   AUTH_RATE_LIMIT_SCOPE_HOOK_AUTH,
   createAuthRateLimiter,
@@ -72,7 +73,6 @@ import {
 import type { ReadinessChecker } from "./server/readiness.js";
 import type { GatewayWsClient } from "./server/ws-types.js";
 import { handleToolsInvokeHttpRequest } from "./tools-invoke-http.js";
-import { handleSuperClawApiRequest } from "../superclaw/api-endpoint.js";
 
 type SubsystemLogger = ReturnType<typeof createSubsystemLogger>;
 

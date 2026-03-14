@@ -10,8 +10,8 @@
  * 3. Collects results and merges with majority consensus
  */
 
-import type { TaskClassification } from "./types.js";
 import { JudgeStep } from "./consensus.js";
+import type { TaskClassification } from "./types.js";
 
 export interface SwarmTask {
   id: string;
@@ -134,7 +134,7 @@ export class LightweightSwarm {
     spawnFn: (task: string, label: string) => Promise<{ sessionKey: string }>,
   ): Promise<SubtaskResult[]> {
     const startTime = Date.now();
-    const results: SubtaskResult[] = [];
+    const _results: SubtaskResult[] = [];
 
     // Spawn all agents in parallel
     const spawnPromises = subtasks.map(async (subtask) => {
@@ -154,7 +154,7 @@ export class LightweightSwarm {
           agentId: "failed",
           subtaskId: subtask.id,
           success: false,
-          output: `Error: ${error}`,
+          output: `Error: ${String(error)}`,
           latencyMs: Date.now() - startTime,
           confidence: 0,
         };
