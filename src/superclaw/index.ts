@@ -153,6 +153,14 @@ export {
   type RiskLevel as NemotronRiskLevel,
 } from "./nemotron-integration.js";
 
+// LLM output sanitization (CVE fix — CVSS 7.5)
+export {
+  sanitizeLLMOutput,
+  safeCommitMessage,
+  sanitizeShellArg,
+  escapeForShell,
+} from "./sanitize.js";
+
 // Types
 export type {
   TaskComplexity,

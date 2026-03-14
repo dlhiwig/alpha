@@ -7,12 +7,13 @@
 
 import crypto from "node:crypto";
 import { promises as fs } from "node:fs";
-import { homedir } from "node:os";
 import path from "node:path";
+import { resolveSecureStatePath } from "./secure-state.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { createEmbeddingProvider, type EmbeddingProvider } from "../memory/embeddings.js";
 import { requireNodeSqlite } from "../memory/sqlite.js";
+import { validateDbPath } from "./validate-db-path.js";
 
 const log = createSubsystemLogger("shared-memory");
 
@@ -124,7 +125,11 @@ export class SharedMemory {
 
   constructor(config?: OpenClawConfig) {
     this.config = config || null;
-    this.dbPath = path.join(homedir(), ".alpha", "memory", "shared.sqlite");
+    // resolveSecureStatePath already prevents path breakout from stateDir;
+    // validateDbPath adds extension check + symlink rejection (CVE fix)
+    const candidatePath = resolveSecureStatePath("memory", "shared.sqlite");
+    const stateDir = path.dirname(candidatePath); // .alpha/memory
+    this.dbPath = validateDbPath(candidatePath, stateDir, "shared-memory");
   }
 
   /**
@@ -132,7 +137,7 @@ export class SharedMemory {
    */
   async initialize(): Promise<void> {
     try {
-      // Ensure directory exists
+      // Ensure directory exists (validateDbPath already created with 0o700)
       await fs.mkdir(path.dirname(this.dbPath), { recursive: true });
 
       // Initialize database

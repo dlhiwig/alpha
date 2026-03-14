@@ -35,6 +35,7 @@ import {
   type RiskScore,
   type AdaptationRecord,
 } from "./adaptive-safety.js";
+import { resolveAndValidateDbPath, validateDbPath } from "./validate-db-path.js";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -422,10 +423,11 @@ export class Cortex {
   private totalQueries = 0;
 
   constructor(stateDir: string) {
-    const dbPath = path.join(stateDir, "cortex.db");
-    if (!fs.existsSync(stateDir)) {
-      fs.mkdirSync(stateDir, { recursive: true });
-    }
+    const dbPath = validateDbPath(
+      path.join(stateDir, "cortex.db"),
+      stateDir,
+      "cortex",
+    );
 
     this.db = new DatabaseSync(dbPath);
     this.db.exec("PRAGMA journal_mode = WAL");
@@ -931,12 +933,13 @@ export class Skynet extends EventEmitter {
       return;
     }
 
-    // Initialize audit DB
-    const dbPath = this.config.dbPath ?? path.join(this.config.stateDir, "skynet-audit.db");
-    const dbDir = path.dirname(dbPath);
-    if (!fs.existsSync(dbDir)) {
-      fs.mkdirSync(dbDir, { recursive: true });
-    }
+    // Initialize audit DB — validated against path injection (CVSS 8.1)
+    const dbPath = resolveAndValidateDbPath(
+      this.config.dbPath,
+      this.config.stateDir,
+      "skynet-audit.db",
+      "skynet-audit",
+    );
 
     this.db = new DatabaseSync(dbPath);
     this.db.exec("PRAGMA journal_mode = WAL");
@@ -1127,10 +1130,13 @@ export class Skynet extends EventEmitter {
         );
     }
 
-    // Adaptive safety: feed current metrics and run adaptation
+    // Adaptive safety: feed system-level metrics and run adaptation
+    // SECURITY: Only system-observable metrics (memory, error rate) are fed.
+    // Agent-reported metrics (tokensUsed, estimatedCost) are NOT used for
+    // safety scoring to prevent manipulation via metrics gaming (CVSS 7.2).
     if (this.adaptiveSafety) {
-      this.adaptiveSafety.updateValue("memory_mb", metrics.memoryUsageMB);
-      // Compute stress from error rate + memory pressure
+      this.adaptiveSafety.updateValue("memory_mb", metrics.memoryUsageMB, "system");
+      // Compute stress from error rate + memory pressure (system-observable only)
       const stressLevel = Math.min(
         metrics.errorRate + (metrics.memoryUsageMB / (this.config.thresholds?.maxMemoryMB ?? 8_192)),
         1,

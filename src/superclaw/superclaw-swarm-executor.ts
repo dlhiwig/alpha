@@ -7,6 +7,7 @@
 
 import { spawn } from "child_process";
 import type { SwarmConfig, SwarmResult, SwarmHandle, SwarmProgress } from "./types.js";
+import { escapeForShell } from "./sanitize.js";
 
 export interface ProviderConfig {
   name: string;
@@ -172,11 +173,16 @@ export class SuperClawSwarmExecutor {
       // Build role-specific prompt
       const rolePrompt = this.buildRolePrompt(task, provider.role);
 
-      // Escape single quotes in the prompt for shell safety
-      const escapedPrompt = rolePrompt.replace(/'/g, "'\\''");
+      // CVE fix: sanitize LLM-derived prompt AND escape for shell safety
+      // escapeForShell strips command substitution, ANSI, non-printable chars,
+      // then properly escapes single quotes for bash -c '...' context
+      const escapedPrompt = escapeForShell(rolePrompt);
+
+      // Also sanitize provider.name (defense-in-depth: should be trusted, but verify)
+      const safeProviderName = provider.name.replace(/[^a-zA-Z0-9_-]/g, "");
 
       // Execute llm-run via bash
-      const child = spawn("/bin/bash", ["-c", `llm-run ${provider.name} '${escapedPrompt}'`], {
+      const child = spawn("/bin/bash", ["-c", `llm-run ${safeProviderName} '${escapedPrompt}'`], {
         stdio: ["ignore", "pipe", "pipe"],
         env: {
           ...process.env,

@@ -7,8 +7,8 @@
 
 import * as crypto from "crypto";
 import * as fs from "fs/promises";
-import { homedir } from "node:os";
 import * as path from "path";
+import { resolveSecureStatePath } from "./secure-state.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { getSharedMemory } from "./shared-memory.js";
 
@@ -128,7 +128,7 @@ export class OracleLearning {
   private reflectionCounter: number = 0;
 
   constructor() {
-    this.stateFile = path.join(homedir(), ".alpha", "data", "oracle-state.json");
+    this.stateFile = resolveSecureStatePath("data", "oracle-state.json");
     this.state = this.getInitialState();
   }
 

@@ -14,11 +14,169 @@
 import { execFile } from "node:child_process";
 import crypto from "node:crypto";
 import * as fs from "node:fs/promises";
-import { homedir } from "node:os";
+import { resolveSecureStatePath } from "./secure-state.js";
 import * as path from "node:path";
 import { promisify } from "node:util";
 
+import { sanitizeLLMOutput, safeCommitMessage } from "./sanitize.js";
+
 const execFileAsync = promisify(execFile);
+
+// ─── Security: CVE Mitigation — Path Injection → RCE ─────────
+
+/**
+ * Allowlist of directory prefixes permitted for self-evolution file operations.
+ * Any file path outside these directories is rejected before it reaches git.
+ *
+ * CVE mitigation: prevents attackers from injecting paths like
+ * `../../.git/hooks/pre-commit` to achieve arbitrary code execution.
+ */
+const PATH_ALLOWLIST: readonly string[] = ["src/", "docs/", "config/", "tests/"] as const;
+
+/**
+ * Directories that must NEVER be written to, regardless of allowlist.
+ * Targets executable/workflow locations that could lead to RCE.
+ */
+const PATH_DENYLIST: readonly string[] = [
+  ".git/hooks/",
+  ".git/",
+  ".github/workflows/",
+  ".github/actions/",
+  ".husky/",
+  "node_modules/.bin/",
+  "scripts/",
+] as const;
+
+/**
+ * Security error thrown when path validation or git operation safety checks fail.
+ * Distinguishes intentional security rejections from generic runtime errors.
+ */
+export class SecurityError extends Error {
+  public readonly code = "SECURITY_PATH_VIOLATION";
+
+  constructor(message: string) {
+    super(message);
+    this.name = "SecurityError";
+  }
+}
+
+/**
+ * Sanitize and validate a file path against traversal, symlink, and allowlist attacks.
+ *
+ * **CVE mitigation (CVSS 9.8):** The self-evolution engine receives `filePaths`
+ * from `EvolutionOpportunity` objects which may originate from untrusted sources
+ * (oracle patterns, external suggestions). Without sanitization, an attacker can
+ * inject paths like `../../.git/hooks/pre-commit` to achieve arbitrary code
+ * execution when the path is passed to `git add` / `git commit`.
+ *
+ * Checks performed:
+ * 1. Rejects paths containing `..` segments (traversal)
+ * 2. Resolves to absolute and verifies it stays under `baseDir`
+ * 3. Rejects symlinks (prevents symlink-based escapes)
+ * 4. Rejects paths targeting executable locations (`.git/hooks/`, workflows, etc.)
+ * 5. Requires path falls under one of the `PATH_ALLOWLIST` prefixes
+ *
+ * @param filePath  - The untrusted path to validate
+ * @param baseDir   - The repository root directory (paths must stay within)
+ * @returns The sanitized absolute path
+ * @throws {SecurityError} if any check fails
+ */
+export async function sanitizeFilePath(filePath: string, baseDir: string): Promise<string> {
+  // 1. Reject path traversal sequences early (before any resolution)
+  if (filePath.includes("..")) {
+    throw new SecurityError(
+      `Path traversal rejected: "${filePath}" contains ".." segment`,
+    );
+  }
+
+  // 2. Resolve to absolute and verify containment
+  const resolvedBase = path.resolve(baseDir);
+  const resolved = path.resolve(resolvedBase, filePath);
+
+  if (!resolved.startsWith(resolvedBase + path.sep) && resolved !== resolvedBase) {
+    throw new SecurityError(
+      `Path escape rejected: "${filePath}" resolves outside base directory "${resolvedBase}"`,
+    );
+  }
+
+  // 3. Compute the relative path for allowlist / denylist checks
+  const relative = path.relative(resolvedBase, resolved);
+
+  // Normalize to forward slashes for consistent matching
+  const relativeNorm = relative.replace(/\\/g, "/");
+
+  // 4. Check denylist — reject executable / dangerous locations
+  for (const denied of PATH_DENYLIST) {
+    if (relativeNorm.startsWith(denied) || relativeNorm === denied.replace(/\/$/, "")) {
+      throw new SecurityError(
+        `Denied path rejected: "${filePath}" targets restricted location "${denied}"`,
+      );
+    }
+  }
+
+  // 5. Check allowlist — must be under a permitted prefix
+  const allowed = PATH_ALLOWLIST.some((prefix) => relativeNorm.startsWith(prefix));
+  if (!allowed) {
+    throw new SecurityError(
+      `Path not in allowlist: "${filePath}" (relative: "${relativeNorm}"). ` +
+      `Permitted prefixes: ${PATH_ALLOWLIST.join(", ")}`,
+    );
+  }
+
+  // 6. Check for symlinks (prevents symlink-based escapes)
+  try {
+    const stat = await fs.lstat(resolved);
+    if (stat.isSymbolicLink()) {
+      throw new SecurityError(
+        `Symlink rejected: "${filePath}" is a symbolic link — potential escape vector`,
+      );
+    }
+  } catch (err) {
+    // File doesn't exist yet (new file creation) — that's OK, no symlink risk
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+      throw err; // Re-throw SecurityError or unexpected errors
+    }
+  }
+
+  return resolved;
+}
+
+/**
+ * Execute a git operation with mandatory path sanitization and allowlist enforcement.
+ *
+ * **CVE mitigation:** Wraps all git CLI invocations that accept file paths from
+ * `EvolutionOpportunity` data. Every path is validated through `sanitizeFilePath()`
+ * before being passed to `execFileAsync("git", ...)`.
+ *
+ * @param operation - Git sub-command (e.g., "add", "rm")
+ * @param files     - Untrusted file paths to validate and pass to git
+ * @param baseDir   - Repository root directory for containment checks
+ * @param extraArgs - Additional git arguments (flags, NOT file paths)
+ * @returns stdout/stderr from the git command
+ * @throws {SecurityError} if any file path fails validation
+ */
+async function safeGitOperation(
+  operation: string,
+  files: string[],
+  baseDir: string,
+  extraArgs: string[] = [],
+): Promise<{ stdout: string; stderr: string }> {
+  if (files.length === 0) {
+    throw new SecurityError("safeGitOperation called with no files");
+  }
+
+  // Sanitize every path — throws SecurityError on first violation
+  const sanitizedPaths: string[] = [];
+  for (const file of files) {
+    const sanitized = await sanitizeFilePath(file, baseDir);
+    sanitizedPaths.push(sanitized);
+  }
+
+  return execFileAsync("git", [operation, ...extraArgs, ...sanitizedPaths], {
+    cwd: baseDir,
+    timeout: 30_000,
+  });
+}
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -86,7 +244,7 @@ const DEFAULT_CONFIG: SelfEvolverConfig = {
   repoName: "alpha",
   baseBranch: "alpha/main",
   branchPrefix: "self-evolve",
-  stateDir: path.join(homedir(), ".alpha", "self-evolve"),
+  stateDir: resolveSecureStatePath("self-evolve"),
   autoCommitEnabled: true,
   maxAutoCommitPatches: 5,
 };
@@ -162,7 +320,8 @@ export class SelfEvolver {
       const opp: EvolutionOpportunity = {
         id: this.generateId("opp"),
         source: "oracle-pattern",
-        description: insight.recommendation,
+        // CVE fix: sanitize LLM-generated recommendation at ingestion boundary
+        description: sanitizeLLMOutput(insight.recommendation),
         priority: insight.confidence >= 0.8 ? "medium" : "low",
         impact: insight.frequency >= 10 ? "medium" : "low",
         timestamp: Date.now(),
@@ -183,8 +342,9 @@ export class SelfEvolver {
       const opp: EvolutionOpportunity = {
         id: this.generateId("opp"),
         source: "oracle-mistake",
-        description: `Fix: ${mistake.pattern} — ${mistake.rootCause}`,
-        suggestedFix: mistake.correction,
+        // CVE fix: sanitize LLM-generated mistake text at ingestion boundary
+        description: `Fix: ${sanitizeLLMOutput(mistake.pattern, 200)} — ${sanitizeLLMOutput(mistake.rootCause, 200)}`,
+        suggestedFix: sanitizeLLMOutput(mistake.correction),
         priority: mistake.severity,
         impact: mistake.severity,
         timestamp: Date.now(),
@@ -202,8 +362,13 @@ export class SelfEvolver {
 
   /**
    * Manually register an evolution opportunity.
+   *
+   * **Security (CVE mitigation):** If `filePaths` are provided, each path
+   * is validated through `sanitizeFilePath()` at registration time to
+   * reject malicious paths early (fail-fast), before they enter the plan
+   * pipeline.
    */
-  addOpportunity(
+  async addOpportunity(
     description: string,
     opts: {
       priority?: RiskLevel;
@@ -211,7 +376,15 @@ export class SelfEvolver {
       suggestedFix?: string;
       filePaths?: string[];
     } = {},
-  ): EvolutionOpportunity {
+  ): Promise<EvolutionOpportunity> {
+    // Validate file paths at ingestion — fail fast on malicious input
+    if (opts.filePaths && opts.filePaths.length > 0) {
+      const baseDir = process.cwd();
+      for (const fp of opts.filePaths) {
+        await sanitizeFilePath(fp, baseDir);
+      }
+    }
+
     const opp: EvolutionOpportunity = {
       id: this.generateId("opp"),
       source: "manual",
@@ -308,27 +481,42 @@ export class SelfEvolver {
 
   // ─── Auto-Commit (low/low only) ──────────────────────────
 
+  /**
+   * Auto-commit low-risk changes directly to the working branch.
+   *
+   * **Security (CVE mitigation):** All file paths from `plan.patches` are
+   * validated through `sanitizeFilePath()` before any filesystem or git
+   * operation. Paths outside the allowlist or targeting executable locations
+   * will throw `SecurityError` and abort the entire commit.
+   */
   private async autoCommit(plan: EvolutionPlan): Promise<void> {
     console.log(`[SELF-EVOLVE] Auto-committing: "${plan.title}" (low/low)`);
+    const baseDir = process.cwd();
 
-    // Apply patches to working tree
+    // Apply patches to working tree — sanitize every path first
     for (const patch of plan.patches) {
+      const safePath = await sanitizeFilePath(patch.file, baseDir);
+
       if (patch.action === "delete") {
-        await this.ghExec(["rm", "-f", patch.file]);
+        await safeGitOperation("rm", [patch.file], baseDir, ["-f"]);
         continue;
       }
       if (patch.content) {
-        const fullPath = path.resolve(patch.file);
-        await fs.mkdir(path.dirname(fullPath), { recursive: true });
-        await fs.writeFile(fullPath, patch.content, "utf8");
+        await fs.mkdir(path.dirname(safePath), { recursive: true });
+        await fs.writeFile(safePath, patch.content, "utf8");
       }
     }
 
-    // Stage and commit
+    // Stage and commit via safe wrapper
     const files = plan.patches.map((p) => p.file);
-    await this.gitExec(["add", ...files]);
+    await safeGitOperation("add", files, baseDir);
 
-    const commitMsg = `self-evolve(auto): ${plan.title}\n\nPlan: ${plan.id}\nSource: ${plan.opportunity.source}\nGovernance: auto-commit (low priority, low impact)`;
+    // CVE fix: sanitize LLM-derived title before interpolation into commit message
+    const commitMsg = safeCommitMessage({
+      type: "self-evolve",
+      scope: "auto",
+      description: plan.title,
+    });
     const result = await this.gitExec(["commit", "-m", commitMsg]);
 
     // Extract commit SHA from output
@@ -341,38 +529,57 @@ export class SelfEvolver {
 
   // ─── PR Creation (medium/high) ────────────────────────────
 
+  /**
+   * Create a PR for medium/high-risk changes requiring human review.
+   *
+   * **Security (CVE mitigation):** All file paths from `plan.patches` are
+   * validated through `sanitizeFilePath()` before any filesystem or git
+   * operation. Paths outside the allowlist or targeting executable locations
+   * will throw `SecurityError` and abort the PR creation.
+   */
   private async createPR(plan: EvolutionPlan): Promise<void> {
     const branchName = `${this.config.branchPrefix}/${plan.id}`;
     console.log(`[SELF-EVOLVE] Creating PR: "${plan.title}" on branch ${branchName}`);
+    const baseDir = process.cwd();
 
     // Create branch
     await this.gitExec(["checkout", "-b", branchName]);
 
     try {
-      // Apply patches
+      // Apply patches — sanitize every path first
       for (const patch of plan.patches) {
+        const safePath = await sanitizeFilePath(patch.file, baseDir);
+
         if (patch.action === "delete") {
-          await this.gitExec(["rm", "-f", patch.file]);
+          await safeGitOperation("rm", [patch.file], baseDir, ["-f"]);
           continue;
         }
         if (patch.content) {
-          const fullPath = path.resolve(patch.file);
-          await fs.mkdir(path.dirname(fullPath), { recursive: true });
-          await fs.writeFile(fullPath, patch.content, "utf8");
+          await fs.mkdir(path.dirname(safePath), { recursive: true });
+          await fs.writeFile(safePath, patch.content, "utf8");
         }
       }
 
-      // Stage and commit
+      // Stage and commit via safe wrapper
       const files = plan.patches.map((p) => p.file);
-      await this.gitExec(["add", ...files]);
+      await safeGitOperation("add", files, baseDir);
 
-      const commitMsg = `self-evolve: ${plan.title}\n\nPlan: ${plan.id}\nSource: ${plan.opportunity.source}\nPriority: ${plan.opportunity.priority}\nImpact: ${plan.opportunity.impact}`;
+      // CVE fix: sanitize LLM-derived title before interpolation into commit message
+      const commitMsg = safeCommitMessage({
+        type: "self-evolve",
+        description: plan.title,
+      });
       await this.gitExec(["commit", "-m", commitMsg]);
 
       // Push branch
       await this.gitExec(["push", "-u", "origin", branchName]);
 
-      // Create PR via gh CLI
+      // Create PR via gh CLI — sanitize all LLM-derived content
+      const safeDescription = sanitizeLLMOutput(plan.description, 2000);
+      const safeOppDescription = sanitizeLLMOutput(plan.opportunity.description, 1000);
+      const safeSuggestedFix = plan.opportunity.suggestedFix
+        ? sanitizeLLMOutput(plan.opportunity.suggestedFix, 500)
+        : "";
       const prBody = [
         "## Self-Evolution PR",
         "",
@@ -382,27 +589,29 @@ export class SelfEvolver {
         `**Governance:** PR required (human review)`,
         "",
         "### Description",
-        plan.description,
+        safeDescription,
         "",
         "### Opportunity",
-        plan.opportunity.description,
-        plan.opportunity.suggestedFix
-          ? `\n**Suggested fix:** ${plan.opportunity.suggestedFix}`
+        safeOppDescription,
+        safeSuggestedFix
+          ? `\n**Suggested fix:** ${safeSuggestedFix}`
           : "",
         "",
         "### Changes",
-        ...plan.patches.map((p) => `- \`${p.file}\`: ${p.action}${p.diff ? ` — ${p.diff}` : ""}`),
+        ...plan.patches.map((p) => `- \`${sanitizeLLMOutput(p.file, 200)}\`: ${p.action}${p.diff ? ` — ${sanitizeLLMOutput(p.diff, 200)}` : ""}`),
         "",
         "---",
         `*Auto-generated by Alpha Self-Evolution Engine*`,
         `*Plan ID: \`${plan.id}\`*`,
       ].join("\n");
 
+      // CVE fix: sanitize PR title (LLM-derived plan.title)
+      const safePrTitle = `self-evolve: ${sanitizeLLMOutput(plan.title, 100)}`;
       const prResult = await this.ghExec([
         "pr",
         "create",
         "--title",
-        `self-evolve: ${plan.title}`,
+        safePrTitle,
         "--body",
         prBody,
         "--base",

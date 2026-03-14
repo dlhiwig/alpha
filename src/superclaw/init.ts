@@ -7,8 +7,8 @@ import { SuperClawBridge } from "./bridge.js";
 import { getSkynet, shutdownSkynet, type Skynet, type SkynetConfig } from "./skynet.js";
 import { attachNemotronModule, type NemotronModule } from "./nemotron-integration.js";
 import type { SuperClawConfig } from "./types.js";
-import * as os from "node:os";
 import * as path from "node:path";
+import { resolveSecureStateDir } from "./secure-state.js";
 
 let globalBridge: SuperClawBridge | null = null;
 let initPromise: Promise<SuperClawBridge> | null = null;
@@ -34,8 +34,7 @@ export async function getSuperclaw(config?: Partial<SuperClawConfig>): Promise<S
 
     // Initialize SKYNET governance layer
     try {
-      const stateDir =
-        globalThis.process.env.ALPHA_STATE_DIR ?? path.join(os.homedir(), ".alpha");
+      const stateDir = resolveSecureStateDir();
       const skynetConfig: SkynetConfig = {
         stateDir,
         dbPath: path.join(stateDir, "skynet-audit.db"),
