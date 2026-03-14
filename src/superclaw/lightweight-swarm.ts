@@ -11,6 +11,7 @@
  */
 
 import type { TaskClassification } from "./types.js";
+import { JudgeStep } from "./consensus.js";
 
 export interface SwarmTask {
   id: string;
@@ -58,9 +59,13 @@ const DEFAULT_SWARM_CONFIG: SwarmConfig = {
  */
 export class LightweightSwarm {
   private config: SwarmConfig;
+  private judge: JudgeStep;
 
   constructor(config: Partial<SwarmConfig> = {}) {
     this.config = { ...DEFAULT_SWARM_CONFIG, ...config };
+    this.judge = new JudgeStep({
+      quorumThreshold: this.config.consensusThreshold,
+    });
   }
 
   /**
@@ -171,32 +176,35 @@ export class LightweightSwarm {
   }
 
   /**
-   * Merge results using consensus
-   * Simple implementation: majority vote on success, concatenate outputs
+   * Merge results using quorum voting + judge arbitration.
+   * The judge scores each agent output on quality, completeness, and
+   * agreement with other agents, then picks the best one.
+   * Adaptive quorum: relaxes threshold when only 2 agents are available.
    */
   mergeResults(results: SubtaskResult[]): {
     success: boolean;
     output: string;
     consensusReached: boolean;
+    confidence?: number;
+    reasoning?: string;
   } {
     if (results.length === 0) {
       return { success: false, output: "No results from swarm", consensusReached: false };
     }
 
-    const successCount = results.filter((r) => r.success).length;
-    const successRate = successCount / results.length;
-    const consensusReached = successRate >= this.config.consensusThreshold;
+    const verdict = this.judge.mergeWithVerdict(results);
 
-    // Concatenate outputs with agent labels
-    const mergedOutput = results
-      .filter((r) => r.success && r.output)
-      .map((r) => `## Agent ${r.subtaskId}\n${r.output}`)
-      .join("\n\n---\n\n");
+    console.log(
+      `[Swarm] Judge verdict: confidence=${(verdict.confidence * 100).toFixed(0)}%, ` +
+        `quorum=${verdict.consensusReached ? "yes" : "no"}. ${verdict.reasoning}`,
+    );
 
     return {
-      success: consensusReached,
-      output: mergedOutput || "No successful outputs",
-      consensusReached,
+      success: verdict.success,
+      output: verdict.output,
+      consensusReached: verdict.consensusReached,
+      confidence: verdict.confidence,
+      reasoning: verdict.reasoning,
     };
   }
 

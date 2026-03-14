@@ -616,19 +616,11 @@ export function loadOpenClawPlugins(options: PluginLoadOptions = {}): PluginRegi
     if (jitiLoader) {
       return jitiLoader;
     }
-    const pluginSdkAlias = resolvePluginSdkAlias();
-    const aliasMap = {
-      ...(pluginSdkAlias ? { "openclaw/plugin-sdk": pluginSdkAlias } : {}),
-      ...resolvePluginSdkScopedAliasMap(),
-    };
+    // Disable custom alias resolution since the "openclaw" symlink in node_modules 
+    // provides proper module resolution through standard Node.js mechanisms
     jitiLoader = createJiti(import.meta.url, {
       interopDefault: true,
       extensions: [".ts", ".tsx", ".mts", ".cts", ".mtsx", ".ctsx", ".js", ".mjs", ".cjs", ".json"],
-      ...(Object.keys(aliasMap).length > 0
-        ? {
-            alias: aliasMap,
-          }
-        : {}),
     });
     return jitiLoader;
   };

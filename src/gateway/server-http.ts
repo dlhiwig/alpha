@@ -72,6 +72,7 @@ import {
 import type { ReadinessChecker } from "./server/readiness.js";
 import type { GatewayWsClient } from "./server/ws-types.js";
 import { handleToolsInvokeHttpRequest } from "./tools-invoke-http.js";
+import { handleSuperClawApiRequest } from "../superclaw/api-endpoint.js";
 
 type SubsystemLogger = ReturnType<typeof createSubsystemLogger>;
 
@@ -803,6 +804,16 @@ export function createGatewayHttpServer(opts: {
         {
           name: "slack",
           run: () => handleSlackHttpRequest(req, res),
+        },
+        {
+          name: "superclaw-api",
+          run: () =>
+            handleSuperClawApiRequest(req, res, {
+              auth: resolvedAuth,
+              trustedProxies,
+              allowRealIpFallback,
+              rateLimiter,
+            }),
         },
       ];
       if (openResponsesEnabled) {

@@ -1,6 +1,6 @@
 /**
  * SuperClaw Swarm Bridge
- * Bridges OpenClaw to Claude-Flow SwarmCoordinator
+ * Bridges OpenClaw to SuperClaw's real swarm implementation via llm-run CLI
  */
 
 import { EventEmitter } from "node:events";
@@ -14,66 +14,69 @@ import type {
   ConsensusType,
 } from "./types.js";
 
-// Type definitions for Claude-Flow (will be replaced with actual imports when integrated)
-interface ClaudeFlowSwarmConfig {
-  mode?: string;
-  strategy?: string;
-  logging?: { level: string };
-  maxAgents?: number;
-}
-
-interface ClaudeFlowObjective {
-  description: string;
-  priority?: string;
-  constraints?: Record<string, unknown>;
-}
-
-interface ClaudeFlowSwarmResult {
-  success: boolean;
-  output: string;
-  metrics?: {
-    agentsUsed: number;
-    executionTimeMs: number;
-    tokensUsed?: number;
-  };
-}
+// Import the real SuperClaw swarm executor
+import { SuperClawSwarmExecutor, createSuperClawSwarmExecutor } from "./superclaw-swarm-executor.js";
 
 // Import lightweight swarm as fallback
 import { LightweightSwarm, createLightweightSwarm } from "./lightweight-swarm.js";
 
-// Placeholder for Claude-Flow import
-// In real integration: import { SwarmCoordinator } from 'claude-flow';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SwarmCoordinator: any = null;
+// Import shared memory for storing swarm results
+import { getSharedMemory } from "./shared-memory.js";
+
+// Import ORACLE learning for self-improvement
+import { getOracleLearning } from "./oracle-learning.js";
+
+// Real SuperClaw swarm executor
+let superclawExecutor: SuperClawSwarmExecutor | null = null;
 
 // Lightweight swarm instance for fallback
 let lightweightSwarm: LightweightSwarm | null = null;
 
 /**
- * Check if Claude-Flow is available
+ * Check if SuperClaw real swarm is available
  */
-async function loadClaudeFlow(): Promise<boolean> {
-  if (SwarmCoordinator) {return true;}
+async function loadSuperClawSwarm(): Promise<boolean> {
+  if (superclawExecutor) {return true;}
 
   try {
-    // Dynamic import to avoid hard dependency
-    // @ts-expect-error - claude-flow may not be installed
-    const claudeFlow = await import("claude-flow");
-    SwarmCoordinator = claudeFlow.SwarmCoordinator;
+    // Initialize the real SuperClaw executor
+    superclawExecutor = createSuperClawSwarmExecutor();
+    
+    // Do a quick health check
+    const health = await superclawExecutor.healthCheck();
+    const workingProviders = health.filter(h => h.status === 'ok');
+    
+    if (workingProviders.length === 0) {
+      console.log("[SuperClaw] No working providers found, falling back to lightweight swarm");
+      lightweightSwarm = createLightweightSwarm();
+      superclawExecutor = null;
+      return false;
+    }
+    
+    console.log(`[SuperClaw] Real swarm available with ${workingProviders.length} providers: ${workingProviders.map(p => p.provider).join(', ')}`);
     return true;
-  } catch {
-    // Claude-Flow not installed - use lightweight swarm
+  } catch (error) {
+    // SuperClaw real swarm not available - use lightweight swarm
+    console.log(`[SuperClaw] Real swarm failed to initialize: ${error instanceof Error ? error.message : String(error)}`);
     console.log("[SuperClaw] Using lightweight swarm (OpenClaw native)");
     lightweightSwarm = createLightweightSwarm();
+    superclawExecutor = null;
     return false;
   }
+}
+
+/**
+ * Check if real SuperClaw swarm is available
+ */
+export function isSuperClawSwarmAvailable(): boolean {
+  return superclawExecutor !== null;
 }
 
 /**
  * Check if lightweight swarm is available (always true as fallback)
  */
 export function isLightweightSwarmAvailable(): boolean {
-  return lightweightSwarm !== null || SwarmCoordinator !== null;
+  return lightweightSwarm !== null || superclawExecutor !== null;
 }
 
 /**
@@ -86,17 +89,23 @@ export function getLightweightSwarm(): LightweightSwarm | null {
   return lightweightSwarm;
 }
 
+/**
+ * Get the real SuperClaw swarm executor
+ */
+export function getSuperClawExecutor(): SuperClawSwarmExecutor | null {
+  return superclawExecutor;
+}
+
 export class SwarmBridge extends EventEmitter {
   private config: SuperClawConfig;
   private activeSwarms: Map<
     string,
     {
-      coordinator: any;
       startTime: number;
       config: SwarmConfig;
     }
   > = new Map();
-  private claudeFlowAvailable: boolean | null = null;
+  private superclawAvailable: boolean | null = null;
 
   constructor(config: SuperClawConfig) {
     super();
@@ -104,16 +113,15 @@ export class SwarmBridge extends EventEmitter {
   }
 
   /**
-   * Initialize the bridge and check for Claude-Flow
+   * Initialize the bridge and check for SuperClaw real swarm
    */
   async initialize(): Promise<void> {
-    this.claudeFlowAvailable = await loadClaudeFlow();
+    this.superclawAvailable = await loadSuperClawSwarm();
 
-    if (this.claudeFlowAvailable) {
-      console.log("[SuperClaw] Claude-Flow swarm integration available");
+    if (this.superclawAvailable) {
+      console.log("[SuperClaw] Real swarm integration available via llm-run");
     } else {
-      console.log("[SuperClaw] Claude-Flow not installed - swarm features disabled");
-      console.log("[SuperClaw] To enable: npm install claude-flow@alpha");
+      console.log("[SuperClaw] Real swarm not available - using lightweight fallback");
     }
   }
 
@@ -121,7 +129,7 @@ export class SwarmBridge extends EventEmitter {
    * Check if swarm functionality is available
    */
   isAvailable(): boolean {
-    return this.claudeFlowAvailable === true && this.config.swarm.enabled;
+    return this.config.swarm.enabled && (this.superclawAvailable === true || lightweightSwarm !== null);
   }
 
   /**
@@ -130,36 +138,18 @@ export class SwarmBridge extends EventEmitter {
   async spawn(swarmConfig: SwarmConfig): Promise<SwarmHandle> {
     if (!this.isAvailable()) {
       throw new Error(
-        "Swarm functionality not available. Install claude-flow or enable swarms in config.",
+        "Swarm functionality not available. Enable swarms in config and ensure llm-run is available.",
       );
     }
 
     const swarmId = `swarm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const startTime = Date.now();
 
-    // Map topology to Claude-Flow mode
-    const mode = this.mapTopology(swarmConfig.topology || this.config.swarm.topology);
-
-    // Create Claude-Flow coordinator
-    const coordinator = new SwarmCoordinator({
-      mode,
-      strategy: "auto",
-      logging: { level: "error" }, // Keep it quiet
-      maxAgents: swarmConfig.maxAgents || this.config.swarm.maxAgents,
-    } as ClaudeFlowSwarmConfig);
-
     // Store reference
     this.activeSwarms.set(swarmId, {
-      coordinator,
       startTime,
       config: swarmConfig,
     });
-
-    // Initialize coordinator
-    await coordinator.initialize();
-
-    // Set up event forwarding
-    this.setupEventForwarding(swarmId, coordinator);
 
     // Emit start event
     this.emit("swarm:started", { id: swarmId, config: swarmConfig });
@@ -185,48 +175,154 @@ export class SwarmBridge extends EventEmitter {
       throw new Error(`Swarm ${swarmId} not found`);
     }
 
-    const { coordinator, startTime } = swarm;
+    const { startTime } = swarm;
+
+    // Get ORACLE recommendation before execution
+    let oracleRecommendation = null;
+    let bestProvider = null;
+    try {
+      const oracle = await getOracleLearning();
+      const taskType = this.classifyTaskType(config.task);
+      oracleRecommendation = await oracle.getRecommendation(taskType);
+      bestProvider = oracleRecommendation.bestProvider;
+      
+      console.log(`[Oracle] Recommendation for ${taskType}: ${bestProvider} (confidence: ${(oracleRecommendation.confidence * 100).toFixed(1)}%)`);
+      
+      // Log avoid patterns if any
+      if (oracleRecommendation.avoidPatterns.length > 0) {
+        console.log(`[Oracle] Avoid patterns: ${oracleRecommendation.avoidPatterns.join(', ')}`);
+      }
+    } catch (error) {
+      console.warn(`[Oracle] Failed to get recommendation: ${error instanceof Error ? error.message : String(error)}`);
+    }
 
     try {
-      // Set objective
-      await coordinator.setObjective({
-        description: config.task,
-        priority: "high",
-        constraints: config.context,
-      } as ClaudeFlowObjective);
+      // Use real SuperClaw executor if available, otherwise fallback to lightweight
+      let result: SwarmResult;
+      
+      if (this.superclawAvailable && superclawExecutor) {
+        console.log(`[SuperClaw] Executing swarm ${swarmId} with real SuperClaw via llm-run`);
+        
+        // Prepare config for SuperClaw executor
+        const executorConfig = {
+          ...config,
+          maxAgents: config.maxAgents || this.config.swarm.maxAgents,
+          timeout: config.timeout || this.config.swarm.timeout,
+        };
+        
+        result = await superclawExecutor.execute(executorConfig);
+      } else if (lightweightSwarm) {
+        console.log(`[SuperClaw] Executing swarm ${swarmId} with lightweight fallback`);
+        
+        // Use lightweight swarm as fallback
+        const taskClassification = {
+          complexity: 'complex' as const,
+          confidence: 0.8,
+          suggestedModel: 'anthropic/claude-sonnet-4-20250514',
+          suggestedAgents: ['coder', 'reviewer'],
+          reasoning: 'Swarm task'
+        };
+        
+        const swarmTasks = await lightweightSwarm.decomposeTask(config.task, taskClassification);
+        const swarmResult = await lightweightSwarm.executeSwarm(swarmTasks);
+        
+        // Map lightweight result to SwarmResult format
+        result = {
+          success: swarmResult.success,
+          output: swarmResult.mergedOutput,
+          agentsUsed: swarmResult.agentsUsed,
+          consensusReached: swarmResult.consensusReached,
+          executionTimeMs: swarmResult.totalLatencyMs,
+          metadata: { swarmId, mode: 'lightweight', consensus: true }
+        };
+      } else {
+        throw new Error('No swarm implementation available');
+      }
 
-      // Execute with timeout
-      const timeoutMs = config.timeout || this.config.swarm.timeout;
-      const resultPromise = coordinator.execute();
-
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error("Swarm execution timeout")), timeoutMs);
-      });
-
-      const result = (await Promise.race([resultPromise, timeoutPromise])) as ClaudeFlowSwarmResult;
-
-      const executionTimeMs = Date.now() - startTime;
-
-      const swarmResult: SwarmResult = {
-        success: result.success,
-        output: result.output || "",
-        agentsUsed: result.metrics?.agentsUsed || 1,
-        consensusReached: result.success,
-        executionTimeMs,
-        tokensUsed: result.metrics?.tokensUsed,
-        metadata: {
-          swarmId,
-          topology: config.topology,
-        },
+      // Add swarm metadata
+      result.metadata = {
+        ...result.metadata,
+        swarmId,
+        topology: config.topology,
       };
 
-      this.emit("swarm:completed", { id: swarmId, result: swarmResult });
+      // Store successful swarm results in shared memory
+      if (result.success) {
+        try {
+          const sharedMemory = await getSharedMemory();
+          await sharedMemory.store({
+            agentId: swarmId,
+            content: result.output,
+            type: result.consensusReached ? 'decision' : 'observation',
+            tags: [
+              'swarm',
+              config.topology || 'fanout',
+              ...(config.tags || [])
+            ],
+            importance: result.consensusReached ? 0.8 : 0.6,
+            source: `swarm:${swarmId}:${config.task.slice(0, 50)}`
+          });
+          console.log(`[SharedMemory] Stored swarm result ${swarmId} in shared memory`);
+        } catch (error) {
+          console.warn(`[SharedMemory] Failed to store swarm result: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
 
-      return swarmResult;
+      // Record interaction in ORACLE for learning
+      try {
+        const oracle = await getOracleLearning();
+        const taskType = this.classifyTaskType(config.task);
+        await oracle.recordInteraction({
+          provider: bestProvider || 'unknown',
+          taskType,
+          prompt: config.task,
+          success: result.success,
+          latencyMs: result.executionTimeMs,
+          cost: this.estimateSwarmCost(result),
+          responseLength: result.output.length
+        });
+        console.log(`[Oracle] Recorded swarm interaction: ${result.success ? '✓' : '✗'} ${taskType}`);
+      } catch (error) {
+        console.warn(`[Oracle] Failed to record interaction: ${error instanceof Error ? error.message : String(error)}`);
+      }
+
+      this.emit("swarm:completed", { id: swarmId, result });
+
+      return result;
     } catch (error) {
       const executionTimeMs = Date.now() - startTime;
 
       this.emit("swarm:failed", { id: swarmId, error });
+
+      // Learn from this failure in ORACLE
+      try {
+        const oracle = await getOracleLearning();
+        const taskType = this.classifyTaskType(config.task);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        // Record failed interaction
+        await oracle.recordInteraction({
+          provider: bestProvider || 'unknown',
+          taskType,
+          prompt: config.task,
+          success: false,
+          latencyMs: executionTimeMs
+        });
+
+        // Learn from the mistake pattern
+        await oracle.learnFromMistake({
+          pattern: `Swarm execution failed: ${errorMessage.slice(0, 100)}`,
+          rootCause: this.categorizeFailure(errorMessage),
+          correction: this.suggestCorrection(errorMessage),
+          severity: this.classifyFailureSeverity(errorMessage),
+          contexts: [taskType, config.topology || 'fanout'],
+          tags: ['swarm', 'failure', taskType]
+        });
+
+        console.log(`[Oracle] Learned from swarm failure: ${taskType} - ${errorMessage.slice(0, 50)}`);
+      } catch (oracleError) {
+        console.warn(`[Oracle] Failed to learn from failure: ${oracleError instanceof Error ? oracleError.message : String(oracleError)}`);
+      }
 
       return {
         success: false,
@@ -234,6 +330,7 @@ export class SwarmBridge extends EventEmitter {
         agentsUsed: 0,
         consensusReached: false,
         executionTimeMs,
+        metadata: { swarmId }
       };
     } finally {
       // Cleanup
@@ -249,7 +346,10 @@ export class SwarmBridge extends EventEmitter {
     if (!swarm) {return;}
 
     try {
-      await swarm.coordinator.shutdown();
+      if (this.superclawAvailable && superclawExecutor) {
+        await superclawExecutor.cancel(swarmId);
+      }
+      // For lightweight swarm, cancellation is not implemented yet
     } catch (e) {
       // Ignore shutdown errors
     }
@@ -274,30 +374,20 @@ export class SwarmBridge extends EventEmitter {
 
     const elapsedMs = Date.now() - swarm.startTime;
 
-    // Try to get metrics from coordinator
-    let metrics = {
-      phase: "running",
-      agentsActive: 1,
-      tasksCompleted: 0,
-      tasksTotal: 1,
-    };
-
-    try {
-      const status = swarm.coordinator.getStatus?.();
-      if (status) {
-        metrics = {
-          phase: status.phase || "running",
-          agentsActive: status.activeAgents || 1,
-          tasksCompleted: status.completedTasks || 0,
-          tasksTotal: status.totalTasks || 1,
-        };
+    // Try to get progress from SuperClaw executor
+    if (this.superclawAvailable && superclawExecutor) {
+      const progress = superclawExecutor.getProgress(swarmId);
+      if (progress) {
+        return progress;
       }
-    } catch (e) {
-      // Coordinator may not support getStatus
     }
 
+    // Default progress for lightweight swarm
     return {
-      ...metrics,
+      phase: "running",
+      agentsActive: swarm.config.maxAgents || 2,
+      tasksCompleted: 0,
+      tasksTotal: swarm.config.maxAgents || 2,
       elapsedMs,
     };
   }
@@ -310,52 +400,12 @@ export class SwarmBridge extends EventEmitter {
     if (!swarm) {return;}
 
     try {
-      if (swarm.coordinator.shutdown) {
-        await swarm.coordinator.shutdown();
-      }
+      // No special cleanup needed for llm-run based execution
     } catch (e) {
       // Ignore cleanup errors
     }
 
     this.activeSwarms.delete(swarmId);
-  }
-
-  /**
-   * Set up event forwarding from Claude-Flow to SuperClaw events
-   */
-  private setupEventForwarding(swarmId: string, coordinator: any): void {
-    if (!coordinator.on) {return;}
-
-    coordinator.on("agent.spawned", (event: any) => {
-      this.emit("swarm:progress", {
-        id: swarmId,
-        progress: this.getProgress(swarmId),
-      });
-    });
-
-    coordinator.on("task.completed", (event: any) => {
-      this.emit("swarm:progress", {
-        id: swarmId,
-        progress: this.getProgress(swarmId),
-      });
-    });
-
-    coordinator.on("error", (error: Error) => {
-      this.emit("swarm:failed", { id: swarmId, error });
-    });
-  }
-
-  /**
-   * Map SuperClaw topology to Claude-Flow mode
-   */
-  private mapTopology(topology: SwarmTopology): string {
-    const mapping: Record<SwarmTopology, string> = {
-      mesh: "mesh",
-      hierarchical: "hierarchical",
-      ring: "ring",
-      star: "star",
-    };
-    return mapping[topology] || "hierarchical";
   }
 
   /**
@@ -371,6 +421,145 @@ export class SwarmBridge extends EventEmitter {
   async shutdownAll(): Promise<void> {
     const swarmIds = Array.from(this.activeSwarms.keys());
     await Promise.all(swarmIds.map((id) => this.cancelSwarm(id)));
+  }
+
+  /**
+   * Get swarm health status
+   */
+  async getHealthStatus(): Promise<{ provider: string; status: 'ok' | 'error'; error?: string }[]> {
+    if (this.superclawAvailable && superclawExecutor) {
+      return await superclawExecutor.healthCheck();
+    }
+    
+    // For lightweight swarm, return basic status
+    return [
+      { provider: 'lightweight', status: 'ok' }
+    ];
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ORACLE INTEGRATION HELPERS
+  // ═══════════════════════════════════════════════════════════════════
+
+  /**
+   * Classify task type for ORACLE learning
+   */
+  private classifyTaskType(task: string): string {
+    const taskLower = task.toLowerCase();
+    
+    if (/\b(code|function|implement|class|api|programming|debug|fix)\b/.test(taskLower)) {
+      return 'coding';
+    }
+    if (/\b(research|analyze|investigate|study|find|search)\b/.test(taskLower)) {
+      return 'research';
+    }
+    if (/\b(write|create|generate|draft|compose|author)\b/.test(taskLower)) {
+      return 'generation';
+    }
+    if (/\b(explain|describe|summarize|clarify|interpret)\b/.test(taskLower)) {
+      return 'explanation';
+    }
+    if (/\b(test|validate|verify|check|review)\b/.test(taskLower)) {
+      return 'testing';
+    }
+    if (/\b(plan|strategy|design|architect|outline)\b/.test(taskLower)) {
+      return 'planning';
+    }
+    if (/\b(optimize|improve|enhance|refactor)\b/.test(taskLower)) {
+      return 'optimization';
+    }
+    
+    return 'general';
+  }
+
+  /**
+   * Estimate cost of a swarm execution
+   */
+  private estimateSwarmCost(result: SwarmResult): number {
+    // Rough estimation based on agents used and output length
+    const baseAgentCost = 0.002; // ~$0.002 per agent
+    const outputCostPerChar = 0.000001; // Very rough estimate
+    
+    return (result.agentsUsed * baseAgentCost) + (result.output.length * outputCostPerChar);
+  }
+
+  /**
+   * Categorize failure for better learning
+   */
+  private categorizeFailure(errorMessage: string): string {
+    const errorLower = errorMessage.toLowerCase();
+    
+    if (/timeout|time.*out|deadline|expired/.test(errorLower)) {
+      return 'timeout';
+    }
+    if (/quota|limit|rate.*limit|too.*many/.test(errorLower)) {
+      return 'rate_limit';
+    }
+    if (/auth|unauthorized|permission|forbidden|api.*key/.test(errorLower)) {
+      return 'authentication';
+    }
+    if (/network|connection|unreachable|dns/.test(errorLower)) {
+      return 'network';
+    }
+    if (/memory|resource|cpu|disk/.test(errorLower)) {
+      return 'resource';
+    }
+    if (/parsing|format|invalid.*json|syntax/.test(errorLower)) {
+      return 'format';
+    }
+    if (/provider|model|unavailable|not.*found/.test(errorLower)) {
+      return 'provider_unavailable';
+    }
+    
+    return 'unknown';
+  }
+
+  /**
+   * Suggest correction based on failure type
+   */
+  private suggestCorrection(errorMessage: string): string {
+    const failureType = this.categorizeFailure(errorMessage);
+    
+    switch (failureType) {
+      case 'timeout':
+        return 'Increase timeout or break task into smaller parts';
+      case 'rate_limit':
+        return 'Add delay between requests or use different provider';
+      case 'authentication':
+        return 'Check API credentials and permissions';
+      case 'network':
+        return 'Check network connectivity and retry';
+      case 'resource':
+        return 'Reduce task complexity or increase resource limits';
+      case 'format':
+        return 'Validate input format and fix syntax errors';
+      case 'provider_unavailable':
+        return 'Use alternative provider or retry later';
+      default:
+        return 'Review error details and adjust task parameters';
+    }
+  }
+
+  /**
+   * Classify failure severity for learning prioritization
+   */
+  private classifyFailureSeverity(errorMessage: string): 'low' | 'medium' | 'high' {
+    const failureType = this.categorizeFailure(errorMessage);
+    
+    switch (failureType) {
+      case 'timeout':
+      case 'rate_limit':
+      case 'network':
+        return 'medium';
+      case 'authentication':
+      case 'provider_unavailable':
+        return 'high';
+      case 'resource':
+      case 'format':
+        return 'low';
+      default:
+        return 'medium';
+    }
   }
 }
 

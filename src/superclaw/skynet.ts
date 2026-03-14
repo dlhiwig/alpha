@@ -18,7 +18,9 @@
 import { EventEmitter } from "node:events";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import * as crypto from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
+import { SelfEvolver, type SelfEvolverConfig, type EvolutionPlan, type SelfEvolveStats, type EvolutionOpportunity } from "./self-evolve.js";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -85,6 +87,38 @@ export interface GovernanceDecision {
   reason: string;
   outcome: "allow" | "block" | "escalate";
   timestamp: number;
+}
+
+// ─── CORTEX Types ────────────────────────────────────────────
+
+export type MemoryKind = "conversation" | "fact" | "decision" | "preference" | "task";
+
+export interface CortexMemory {
+  id: string;
+  kind: MemoryKind;
+  content: string;
+  summary: string;
+  tags: string[];
+  source: string;
+  importance: number;
+  accessCount: number;
+  createdAt: number;
+  lastAccessed: number | null;
+}
+
+export interface KnowledgeEdge {
+  sourceId: string;
+  targetId: string;
+  relation: string;
+  strength: number;
+}
+
+export interface CortexStats {
+  totalMemories: number;
+  totalQueries: number;
+  graphNodes: number;
+  graphEdges: number;
+  dbSizeBytes: number;
 }
 
 // ─── PULSE: Heartbeat Monitor ────────────────────────────────
@@ -359,6 +393,403 @@ class GovernanceEngine {
   }
 }
 
+// ─── CORTEX: Persistent Memory & Knowledge Graph ─────────────
+
+const EMBEDDING_DIMS = 256;
+
+export class Cortex {
+  private db: DatabaseSync;
+  private totalQueries = 0;
+
+  constructor(stateDir: string) {
+    const dbPath = path.join(stateDir, "cortex.db");
+    if (!fs.existsSync(stateDir)) {
+      fs.mkdirSync(stateDir, { recursive: true });
+    }
+
+    this.db = new DatabaseSync(dbPath);
+    this.db.exec("PRAGMA journal_mode = WAL");
+    this.db.exec("PRAGMA foreign_keys = ON");
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS memories (
+        id TEXT PRIMARY KEY,
+        kind TEXT NOT NULL,
+        content TEXT NOT NULL,
+        summary TEXT NOT NULL,
+        tags TEXT NOT NULL DEFAULT '[]',
+        source TEXT NOT NULL DEFAULT 'unknown',
+        importance REAL NOT NULL DEFAULT 0.5,
+        access_count INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        last_accessed INTEGER,
+        embedding BLOB
+      );
+
+      CREATE TABLE IF NOT EXISTS knowledge_graph (
+        source_id TEXT NOT NULL,
+        target_id TEXT NOT NULL,
+        relation TEXT NOT NULL,
+        strength REAL NOT NULL DEFAULT 1.0,
+        created_at INTEGER NOT NULL,
+        PRIMARY KEY (source_id, target_id, relation)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_memories_kind ON memories(kind);
+      CREATE INDEX IF NOT EXISTS idx_memories_created ON memories(created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_memories_importance ON memories(importance DESC);
+      CREATE INDEX IF NOT EXISTS idx_kg_source ON knowledge_graph(source_id);
+      CREATE INDEX IF NOT EXISTS idx_kg_target ON knowledge_graph(target_id);
+    `);
+  }
+
+  /** Store a memory, returns its ID */
+  memorize(
+    content: string,
+    kind: MemoryKind = "conversation",
+    source = "unknown",
+  ): string {
+    const id = `mem_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+    const summary = this.summarize(content);
+    const tags = JSON.stringify(this.extractTags(content));
+    const importance = this.scoreImportance(content, kind);
+    const embedding = this.embed(content);
+
+    this.db
+      .prepare(
+        `INSERT INTO memories (id, kind, content, summary, tags, source, importance, created_at, embedding)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(id, kind, content, summary, tags, source, importance, Date.now(), Buffer.from(new Float64Array(embedding).buffer));
+
+    // Auto-extract entities into knowledge graph
+    this.extractAndLinkEntities(id, content);
+
+    return id;
+  }
+
+  /** Semantic search across memories */
+  recall(query: string, limit = 10): CortexMemory[] {
+    this.totalQueries++;
+    const queryEmb = this.embed(query);
+    const queryTokens = this.tokenize(query);
+
+    // Get candidate memories (recent + all for scoring)
+    const rows = this.db
+      .prepare("SELECT * FROM memories ORDER BY created_at DESC")
+      .all() as any[];
+
+    const scored: { row: any; score: number }[] = [];
+
+    for (const row of rows) {
+      let score = 0;
+
+      // Embedding similarity
+      if (row.embedding) {
+        const memEmb = Array.from(new Float64Array((row.embedding as Buffer).buffer.slice(
+          row.embedding.byteOffset,
+          row.embedding.byteOffset + row.embedding.byteLength,
+        )));
+        score += this.cosineSim(queryEmb, memEmb) * 0.5;
+      }
+
+      // Token overlap (keyword match)
+      const memTokens = this.tokenize(row.content);
+      const overlap = queryTokens.filter((t) => memTokens.includes(t)).length;
+      if (queryTokens.length > 0) {
+        score += (overlap / queryTokens.length) * 0.3;
+      }
+
+      // Recency boost
+      const ageMs = Date.now() - row.created_at;
+      const recency = 1 / (1 + ageMs / (7 * 86_400_000));
+      score += recency * 0.1;
+
+      // Importance boost
+      score += (row.importance as number) * 0.1;
+
+      if (score > 0.05) {
+        scored.push({ row, score });
+      }
+    }
+
+    scored.sort((a, b) => b.score - a.score);
+
+    const results: CortexMemory[] = [];
+    const now = Date.now();
+
+    for (const { row } of scored.slice(0, limit)) {
+      // Update access count
+      this.db
+        .prepare("UPDATE memories SET access_count = access_count + 1, last_accessed = ? WHERE id = ?")
+        .run(now, row.id);
+
+      results.push({
+        id: row.id,
+        kind: row.kind,
+        content: row.content,
+        summary: row.summary,
+        tags: JSON.parse(row.tags),
+        source: row.source,
+        importance: row.importance,
+        accessCount: row.access_count + 1,
+        createdAt: row.created_at,
+        lastAccessed: now,
+      });
+    }
+
+    return results;
+  }
+
+  /** Get a single memory by ID */
+  getMemory(id: string): CortexMemory | null {
+    const row = this.db.prepare("SELECT * FROM memories WHERE id = ?").get(id) as any;
+    if (!row) return null;
+    return this.rowToMemory(row);
+  }
+
+  /** Delete a memory */
+  forget(id: string): boolean {
+    const result = this.db.prepare("DELETE FROM memories WHERE id = ?").run(id);
+    this.db.prepare("DELETE FROM knowledge_graph WHERE source_id = ? OR target_id = ?").run(id, id);
+    return result.changes > 0;
+  }
+
+  /** Get recent memories */
+  recent(limit = 10): CortexMemory[] {
+    const rows = this.db
+      .prepare("SELECT * FROM memories ORDER BY created_at DESC LIMIT ?")
+      .all(limit) as any[];
+    return rows.map((r) => this.rowToMemory(r));
+  }
+
+  /** Search by kind */
+  recallByKind(kind: MemoryKind, limit = 10): CortexMemory[] {
+    const rows = this.db
+      .prepare("SELECT * FROM memories WHERE kind = ? ORDER BY created_at DESC LIMIT ?")
+      .all(kind, limit) as any[];
+    return rows.map((r) => this.rowToMemory(r));
+  }
+
+  /** Search by tag */
+  recallByTag(tag: string, limit = 10): CortexMemory[] {
+    const tagLower = tag.toLowerCase();
+    const rows = this.db
+      .prepare("SELECT * FROM memories ORDER BY importance DESC, created_at DESC")
+      .all() as any[];
+
+    const results: CortexMemory[] = [];
+    for (const row of rows) {
+      const tags: string[] = JSON.parse(row.tags);
+      if (tags.some((t) => t.toLowerCase() === tagLower)) {
+        results.push(this.rowToMemory(row));
+        if (results.length >= limit) break;
+      }
+    }
+    return results;
+  }
+
+  /** Build context string for a query */
+  buildContext(query: string): string {
+    const relevant = this.recall(query, 5);
+    if (relevant.length === 0) return "";
+
+    const lines = relevant.map((m) => {
+      const date = new Date(m.createdAt).toISOString().split("T")[0];
+      return `[${date}] (${m.kind}) ${m.summary}`;
+    });
+
+    return `## Relevant Context from Memory\n\n${lines.join("\n")}\n`;
+  }
+
+  /** Add a relationship between memories */
+  addEdge(sourceId: string, targetId: string, relation: string, strength = 1.0): void {
+    this.db
+      .prepare(
+        `INSERT OR REPLACE INTO knowledge_graph (source_id, target_id, relation, strength, created_at)
+         VALUES (?, ?, ?, ?, ?)`,
+      )
+      .run(sourceId, targetId, relation, strength, Date.now());
+  }
+
+  /** Get related memories via knowledge graph */
+  getRelated(memoryId: string): CortexMemory[] {
+    const edges = this.db
+      .prepare("SELECT target_id FROM knowledge_graph WHERE source_id = ? UNION SELECT source_id FROM knowledge_graph WHERE target_id = ?")
+      .all(memoryId, memoryId) as any[];
+
+    const ids = [...new Set(edges.map((e) => e.target_id ?? e.source_id))];
+    const results: CortexMemory[] = [];
+
+    for (const id of ids) {
+      const mem = this.getMemory(id);
+      if (mem) results.push(mem);
+    }
+
+    return results;
+  }
+
+  /** Get knowledge graph edges */
+  getEdges(limit = 100): KnowledgeEdge[] {
+    const rows = this.db
+      .prepare("SELECT * FROM knowledge_graph ORDER BY created_at DESC LIMIT ?")
+      .all(limit) as any[];
+
+    return rows.map((r) => ({
+      sourceId: r.source_id,
+      targetId: r.target_id,
+      relation: r.relation,
+      strength: r.strength,
+    }));
+  }
+
+  /** Statistics */
+  stats(): CortexStats {
+    const memCount = (this.db.prepare("SELECT COUNT(*) as c FROM memories").get() as any).c;
+    const nodeCount = (this.db.prepare("SELECT COUNT(DISTINCT source_id) + COUNT(DISTINCT target_id) as c FROM knowledge_graph").get() as any).c;
+    const edgeCount = (this.db.prepare("SELECT COUNT(*) as c FROM knowledge_graph").get() as any).c;
+
+    const dbPath = (this.db as any).name ?? "";
+    let dbSize = 0;
+    try {
+      dbSize = fs.statSync(dbPath).size;
+    } catch {
+      // DB path not accessible, skip
+    }
+
+    return {
+      totalMemories: memCount,
+      totalQueries: this.totalQueries,
+      graphNodes: nodeCount,
+      graphEdges: edgeCount,
+      dbSizeBytes: dbSize,
+    };
+  }
+
+  /** Close the database */
+  close(): void {
+    this.db.close();
+  }
+
+  // ─── Private helpers ───────────────────────────────────
+
+  private rowToMemory(row: any): CortexMemory {
+    return {
+      id: row.id,
+      kind: row.kind,
+      content: row.content,
+      summary: row.summary,
+      tags: JSON.parse(row.tags),
+      source: row.source,
+      importance: row.importance,
+      accessCount: row.access_count,
+      createdAt: row.created_at,
+      lastAccessed: row.last_accessed,
+    };
+  }
+
+  private tokenize(text: string): string[] {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .split(/\s+/)
+      .filter((w) => w.length > 2);
+  }
+
+  private embed(text: string): number[] {
+    const tokens = this.tokenize(text);
+    const vec = new Array(EMBEDDING_DIMS).fill(0);
+
+    for (let i = 0; i < tokens.length; i++) {
+      const hash = crypto.createHash("md5").update(tokens[i]).digest();
+      for (let j = 0; j < 4; j++) {
+        const dim = hash.readUInt8(j) % EMBEDDING_DIMS;
+        vec[dim] += 1 / (1 + Math.log(i + 1));
+      }
+    }
+
+    const mag = Math.sqrt(vec.reduce((s, v) => s + v * v, 0));
+    if (mag > 0) {
+      for (let i = 0; i < vec.length; i++) vec[i] /= mag;
+    }
+
+    return vec;
+  }
+
+  private cosineSim(a: number[], b: number[]): number {
+    if (a.length !== b.length) return 0;
+    let dot = 0, magA = 0, magB = 0;
+    for (let i = 0; i < a.length; i++) {
+      dot += a[i] * b[i];
+      magA += a[i] * a[i];
+      magB += b[i] * b[i];
+    }
+    magA = Math.sqrt(magA);
+    magB = Math.sqrt(magB);
+    return magA === 0 || magB === 0 ? 0 : dot / (magA * magB);
+  }
+
+  private summarize(content: string, maxLen = 120): string {
+    const first = content.match(/^[^.!?]+[.!?]/);
+    if (first && first[0].length <= maxLen) return first[0].trim();
+    if (content.length <= maxLen) return content;
+    return content.slice(0, maxLen - 3).trim() + "...";
+  }
+
+  private extractTags(content: string): string[] {
+    const tags: string[] = [];
+    const hashtags = content.match(/#\w+/g);
+    if (hashtags) tags.push(...hashtags.map((t) => t.slice(1).toLowerCase()));
+
+    if (/\b(meeting|call|discussion)\b/i.test(content)) tags.push("meeting");
+    if (/\b(task|todo|action)\b/i.test(content)) tags.push("task");
+    if (/\b(decision|decided|agreed)\b/i.test(content)) tags.push("decision");
+    if (/\b(bug|error|issue|problem)\b/i.test(content)) tags.push("issue");
+    if (/\b(code|function|api|database)\b/i.test(content)) tags.push("technical");
+
+    return [...new Set(tags)];
+  }
+
+  private scoreImportance(content: string, kind: string): number {
+    let score = 0.5;
+    if (kind === "decision") score += 0.2;
+    if (kind === "task") score += 0.1;
+    if (kind === "preference") score += 0.15;
+    if (/\b(important|critical|urgent|must)\b/i.test(content)) score += 0.2;
+    if (/\b(remember|don't forget|note)\b/i.test(content)) score += 0.1;
+    score += Math.min(0.1, content.length / 5000);
+    return Math.min(1, score);
+  }
+
+  private extractAndLinkEntities(memoryId: string, content: string): void {
+    const entities: string[] = [];
+
+    // Named entities (capitalized words)
+    const names = content.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\b/g);
+    if (names) {
+      const skip = new Set(["The", "This", "That", "What", "When", "Where", "How", "They", "There"]);
+      for (const name of names) {
+        if (name.length > 2 && !skip.has(name)) entities.push(name);
+      }
+    }
+
+    // Link co-occurring entities
+    for (let i = 0; i < entities.length; i++) {
+      for (let j = i + 1; j < entities.length && j < i + 5; j++) {
+        const edgeId = `entity_${crypto.createHash("md5").update(entities[i]).digest("hex").slice(0, 8)}`;
+        const targetId = `entity_${crypto.createHash("md5").update(entities[j]).digest("hex").slice(0, 8)}`;
+
+        this.db
+          .prepare(
+            `INSERT OR REPLACE INTO knowledge_graph (source_id, target_id, relation, strength, created_at)
+             VALUES (?, ?, 'co-occurs', 1.0, ?)`,
+          )
+          .run(edgeId, targetId, Date.now());
+      }
+    }
+  }
+}
+
 // ─── SKYNET: Main Integration Class ──────────────────────────
 
 export class Skynet extends EventEmitter {
@@ -369,6 +800,12 @@ export class Skynet extends EventEmitter {
   private governance: GovernanceEngine;
   private db: DatabaseSync | null = null;
   private initialized = false;
+
+  /** CORTEX persistent memory — available after initialize() */
+  cortex: Cortex | null = null;
+
+  /** EVOLVE: self-evolution engine — available after initialize() */
+  selfEvolver: SelfEvolver | null = null;
 
   constructor(private config: SkynetConfig) {
     super();
@@ -455,6 +892,16 @@ export class Skynet extends EventEmitter {
       );
     `);
 
+    // Initialize CORTEX persistent memory
+    this.cortex = new Cortex(this.config.stateDir);
+    const cortexStats = this.cortex.stats();
+    console.log(`[SKYNET] CORTEX initialized — ${cortexStats.totalMemories} memories, ${cortexStats.graphNodes} graph nodes`);
+
+    // Initialize EVOLVE: self-evolution engine
+    this.selfEvolver = new SelfEvolver({ stateDir: this.config.stateDir });
+    await this.selfEvolver.initialize();
+    console.log("[SKYNET] EVOLVE initialized — self-evolution with PR governance active");
+
     // Start PULSE heartbeat
     this.pulse.start(() => {
       this.onPulse();
@@ -462,7 +909,7 @@ export class Skynet extends EventEmitter {
 
     this.initialized = true;
     this.emit("initialized");
-    console.log("[SKYNET] All waves initialized — PULSE, SENTINEL, ORACLE, GOVERNANCE active");
+    console.log("[SKYNET] All waves initialized — PULSE, SENTINEL, ORACLE, CORTEX, EVOLVE, GOVERNANCE active");
   }
 
   private onPulse(): void {
@@ -591,11 +1038,40 @@ export class Skynet extends EventEmitter {
     return insights;
   }
 
+  /** Trigger a self-evolution cycle: detect opportunities from Oracle data */
+  async triggerSelfEvolution(): Promise<{
+    opportunities: EvolutionOpportunity[];
+    stats: SelfEvolveStats;
+  }> {
+    if (!this.selfEvolver) {
+      throw new Error("[SKYNET] SelfEvolver not initialized");
+    }
+
+    // Gather Oracle data
+    const insights = this.oracle.getInsights();
+    const mistakes = this.oracle.getMistakes().map((m) => ({
+      pattern: m,
+      rootCause: "Detected by Oracle",
+      correction: "Review and fix",
+      severity: "low" as const,
+    }));
+
+    // Detect opportunities
+    const opportunities = this.selfEvolver.detectOpportunities(insights, mistakes);
+
+    return {
+      opportunities,
+      stats: this.selfEvolver.getStats(),
+    };
+  }
+
   /** Full status report */
   status(): {
     pulse: PulseStatus;
     sentinel: SentinelMetrics;
     oracle: OracleInsight[];
+    cortex: CortexStats | null;
+    selfEvolve: SelfEvolveStats | null;
     violations: ThresholdViolation[];
     decisions: GovernanceDecision[];
   } {
@@ -603,6 +1079,8 @@ export class Skynet extends EventEmitter {
       pulse: this.pulse.status(),
       sentinel: this.sentinel.metrics(),
       oracle: this.oracle.getInsights(),
+      cortex: this.cortex?.stats() ?? null,
+      selfEvolve: this.selfEvolver?.getStats() ?? null,
       violations: this.thresholds.getViolations(),
       decisions: this.governance.getDecisions(),
     };
@@ -611,6 +1089,14 @@ export class Skynet extends EventEmitter {
   /** Shutdown cleanly */
   shutdown(): void {
     this.pulse.stop();
+    if (this.selfEvolver) {
+      this.selfEvolver.shutdown().catch(() => {});
+      this.selfEvolver = null;
+    }
+    if (this.cortex) {
+      this.cortex.close();
+      this.cortex = null;
+    }
     if (this.db) {
       this.db.close();
       this.db = null;

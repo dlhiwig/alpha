@@ -40,7 +40,17 @@ export {
   FallbackExecutor,
   isLightweightSwarmAvailable,
   getLightweightSwarm,
+  isSuperClawSwarmAvailable,
+  getSuperClawExecutor,
 } from "./swarm-bridge.js";
+
+// Real SuperClaw swarm executor
+export {
+  SuperClawSwarmExecutor,
+  createSuperClawSwarmExecutor,
+  type ProviderConfig,
+  type ProviderResult,
+} from "./superclaw-swarm-executor.js";
 
 // Lightweight swarm (OpenClaw native, no Claude-Flow dependency)
 export {
@@ -51,6 +61,17 @@ export {
   type SwarmResult as LightweightSwarmResult,
   type SwarmConfig as LightweightSwarmConfig,
 } from "./lightweight-swarm.js";
+
+// Consensus algorithms (quorum + judge)
+export {
+  QuorumVoting,
+  JudgeStep,
+  createQuorumVoting,
+  createJudgeStep,
+  type ConsensusConfig,
+  type JudgeVerdict,
+  type CandidateScore,
+} from "./consensus.js";
 
 // Gateway integration
 export { createGatewayHook, wrapAgentHandler, type GatewayHookConfig } from "./gateway-hook.js";
@@ -78,7 +99,26 @@ export {
   type ThresholdViolation,
   type GovernanceDecision,
   type ThresholdConfig,
+  Cortex,
+  type CortexMemory,
+  type CortexStats,
+  type MemoryKind,
+  type KnowledgeEdge,
 } from "./skynet.js";
+
+// Self-evolution engine
+export {
+  SelfEvolver,
+  getSelfEvolver,
+  shutdownSelfEvolver,
+  type SelfEvolverConfig,
+  type EvolutionOpportunity,
+  type EvolutionPlan,
+  type CodePatch,
+  type SelfEvolveStats,
+  type RiskLevel,
+  type GovernanceRoute,
+} from "./self-evolve.js";
 
 // Agent tools
 export {

@@ -22,6 +22,7 @@ import type {
   BridgeMetrics,
   BridgeEvents,
 } from "./types.js";
+import { getOracleLearning } from "./oracle-learning.js";
 
 export interface ProcessResult {
   /** Whether SuperClaw handled the request */
@@ -95,6 +96,14 @@ export class SuperClawBridge extends EventEmitter {
     this.swarmBridge.on("swarm:progress", (data) => this.emit("swarm:progress", data));
     this.swarmBridge.on("swarm:completed", (data) => this.emit("swarm:completed", data));
     this.swarmBridge.on("swarm:failed", (data) => this.emit("swarm:failed", data));
+
+    // Initialize ORACLE learning system
+    try {
+      await getOracleLearning();
+      console.log("[SuperClaw] Oracle Learning system initialized");
+    } catch (error) {
+      console.warn("[SuperClaw] Failed to initialize Oracle Learning:", error);
+    }
 
     this.initialized = true;
     console.log("[SuperClaw] Bridge initialized");
