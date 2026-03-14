@@ -5,6 +5,7 @@
 
 import { SuperClawBridge } from "./bridge.js";
 import { getSkynet, shutdownSkynet, type Skynet, type SkynetConfig } from "./skynet.js";
+import { attachNemotronModule, type NemotronModule } from "./nemotron-integration.js";
 import type { SuperClawConfig } from "./types.js";
 import * as os from "node:os";
 import * as path from "node:path";
@@ -12,6 +13,7 @@ import * as path from "node:path";
 let globalBridge: SuperClawBridge | null = null;
 let initPromise: Promise<SuperClawBridge> | null = null;
 let skynetInstance: Skynet | null = null;
+let nemotronModule: NemotronModule | null = null;
 
 /**
  * Get or create the global SuperClaw bridge instance + SKYNET
@@ -44,6 +46,18 @@ export async function getSuperclaw(config?: Partial<SuperClawConfig>): Promise<S
       skynetInstance = getSkynet(skynetConfig);
       await skynetInstance.initialize();
       console.log("[SKYNET] Governance layer active — Laws I/II/III enforced");
+
+      // Attach Nemotron local LLM module (auditor + judge)
+      try {
+        nemotronModule = attachNemotronModule(skynetInstance, {
+          baseUrl: globalThis.process.env.OLLAMA_URL ?? "http://127.0.0.1:11434",
+          model: globalThis.process.env.NEMOTRON_MODEL ?? "nemotron-3-super",
+          fallbackModel: globalThis.process.env.NEMOTRON_FALLBACK ?? "qwen3.5:27b",
+        });
+        console.log("[SKYNET:NEMOTRON] Local audit + judge module active");
+      } catch (nemErr) {
+        console.warn("[SKYNET:NEMOTRON] Failed to attach (non-fatal):", (nemErr as Error).message);
+      }
     } catch (err) {
       console.warn("[SKYNET] Failed to initialize (non-fatal):", (err as Error).message);
     }
@@ -73,6 +87,13 @@ export function getBridge(): SuperClawBridge | null {
  */
 export function getSkynetInstance(): Skynet | null {
   return skynetInstance;
+}
+
+/**
+ * Get the Nemotron module (if attached)
+ */
+export function getNemotronModule(): NemotronModule | null {
+  return nemotronModule;
 }
 
 /**

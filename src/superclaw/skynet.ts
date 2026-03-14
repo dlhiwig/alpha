@@ -27,6 +27,14 @@ import {
   type SelfEvolveStats,
   type EvolutionOpportunity,
 } from "./self-evolve.js";
+import { MetaCognitiveEngine, type MetaCognitiveReport } from "./metacognitive.js";
+import { DeltaEvaluator, type DeltaResult, type RunData } from "./delta-eval.js";
+import {
+  AdaptiveSafetyManager,
+  type SafetySnapshot,
+  type RiskScore,
+  type AdaptationRecord,
+} from "./adaptive-safety.js";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -889,6 +897,15 @@ export class Skynet extends EventEmitter {
   /** EVOLVE: self-evolution engine — available after initialize() */
   selfEvolver: SelfEvolver | null = null;
 
+  /** DELTA: performance improvement evaluator — available after initialize() */
+  deltaEvaluator: DeltaEvaluator | null = null;
+
+  /** SAFETY: adaptive safety boundary manager — available after initialize() */
+  adaptiveSafety: AdaptiveSafetyManager | null = null;
+
+  /** META-COGNITIVE: self-awareness loop — available after initialize() */
+  metacognitive: MetaCognitiveEngine | null = null;
+
   constructor(private config: SkynetConfig) {
     super();
 
@@ -988,6 +1005,74 @@ export class Skynet extends EventEmitter {
     await this.selfEvolver.initialize();
     console.log("[SKYNET] EVOLVE initialized — self-evolution with PR governance active");
 
+    // Initialize META-COGNITIVE self-awareness loop
+    this.metacognitive = new MetaCognitiveEngine(60_000);
+    this.metacognitive.onAnomaly = (anomaly) => {
+      this.oracle.recordPattern(`anomaly:${anomaly.type}`);
+      console.log(
+        `[SKYNET:META] Anomaly detected: ${anomaly.type} (${anomaly.value.toFixed(2)} > ${anomaly.threshold})`,
+      );
+    };
+    this.metacognitive.onReport = (report) => {
+      if (report.anomalies.length > 0) {
+        this.oracle.recordPattern(`meta:anomalies_in_cycle:${report.cycleCount}`);
+      }
+      if (report.adaptationApplied) {
+        this.oracle.recordPattern("meta:adaptation_applied");
+      }
+    };
+    this.metacognitive.start();
+    console.log("[SKYNET] META-COGNITIVE initialized — self-awareness loop active (60s cycle)");
+
+    // Initialize DELTA evaluator — measures improvement over time
+    this.deltaEvaluator = new DeltaEvaluator(this.config.stateDir);
+    console.log("[SKYNET] DELTA evaluator initialized — performance improvement tracking active");
+
+    // Initialize ADAPTIVE SAFETY — dynamic threshold adjustment
+    this.adaptiveSafety = new AdaptiveSafetyManager(this.config.stateDir);
+    // Seed default adaptive constraints from current ThresholdEnforcer config
+    const tc = this.config.thresholds ?? {
+      maxContextChars: 400_000,
+      maxConcurrentAgents: 10,
+      maxToolCallsPerTurn: 50,
+      maxMemoryMB: 8_192,
+      dailySpendLimit: 100,
+      perAgentLimit: 25,
+      requireApprovalAbove: 50,
+    };
+    // Only add constraints if they don't already exist (persisted state takes precedence)
+    if (!this.adaptiveSafety.getConstraint("memory_mb")) {
+      this.adaptiveSafety.addConstraint({
+        name: "memory_mb",
+        type: "ADAPTIVE",
+        threshold: tc.maxMemoryMB,
+        adaptivityRate: 0.1,
+        minThreshold: tc.maxMemoryMB * 0.5,
+        maxThreshold: tc.maxMemoryMB * 1.5,
+      });
+    }
+    if (!this.adaptiveSafety.getConstraint("context_chars")) {
+      this.adaptiveSafety.addConstraint({
+        name: "context_chars",
+        type: "SOFT",
+        threshold: tc.maxContextChars,
+        adaptivityRate: 0.05,
+        minThreshold: tc.maxContextChars * 0.6,
+        maxThreshold: tc.maxContextChars * 1.2,
+      });
+    }
+    if (!this.adaptiveSafety.getConstraint("daily_spend")) {
+      this.adaptiveSafety.addConstraint({
+        name: "daily_spend",
+        type: "HARD",
+        threshold: tc.dailySpendLimit,
+        adaptivityRate: 0,
+        minThreshold: tc.dailySpendLimit,
+        maxThreshold: tc.dailySpendLimit,
+      });
+    }
+    console.log("[SKYNET] ADAPTIVE SAFETY initialized — dynamic boundary management active");
+
     // Start PULSE heartbeat
     this.pulse.start(() => {
       this.onPulse();
@@ -996,7 +1081,7 @@ export class Skynet extends EventEmitter {
     this.initialized = true;
     this.emit("initialized");
     console.log(
-      "[SKYNET] All waves initialized — PULSE, SENTINEL, ORACLE, CORTEX, EVOLVE, GOVERNANCE active",
+      "[SKYNET] All waves initialized — PULSE, SENTINEL, ORACLE, CORTEX, EVOLVE, META-COGNITIVE, DELTA, ADAPTIVE-SAFETY, GOVERNANCE active",
     );
   }
 
@@ -1042,6 +1127,20 @@ export class Skynet extends EventEmitter {
         );
     }
 
+    // Adaptive safety: feed current metrics and run adaptation
+    if (this.adaptiveSafety) {
+      this.adaptiveSafety.updateValue("memory_mb", metrics.memoryUsageMB);
+      // Compute stress from error rate + memory pressure
+      const stressLevel = Math.min(
+        metrics.errorRate + (metrics.memoryUsageMB / (this.config.thresholds?.maxMemoryMB ?? 8_192)),
+        1,
+      );
+      const adaptations = this.adaptiveSafety.adapt(stressLevel);
+      if (adaptations.length > 0) {
+        this.oracle.recordPattern(`safety:adapted:${adaptations.map((a) => a.constraintName).join(",")}`);
+      }
+    }
+
     this.emit("pulse", { status, metrics });
   }
 
@@ -1066,6 +1165,36 @@ export class Skynet extends EventEmitter {
   /** Record a mistake for ORACLE learning */
   recordMistake(description: string): void {
     this.oracle.recordMistake(description);
+  }
+
+  /** DELTA: evaluate improvement between current and previous run data */
+  evaluateDelta(current: RunData, previous: RunData, context?: string): DeltaResult | null {
+    if (!this.deltaEvaluator) return null;
+    const result = this.deltaEvaluator.evaluate(current, previous, context);
+    // Feed trend into Oracle
+    const trend = this.deltaEvaluator.trend();
+    if (trend.improving) {
+      this.oracle.recordPattern("delta:improving");
+    } else if (trend.avgDelta < -0.1) {
+      this.oracle.recordPattern("delta:degrading");
+      this.oracle.recordMistake(`Performance degrading: avg delta ${trend.avgDelta.toFixed(4)}`);
+    }
+    return result;
+  }
+
+  /** DELTA: get performance trend from recent evaluations */
+  getDeltaTrend(n = 10): { improving: boolean; avgDelta: number } {
+    return this.deltaEvaluator?.trend(n) ?? { improving: false, avgDelta: 0 };
+  }
+
+  /** SAFETY: score risk for an action */
+  scoreActionRisk(action: string, context: Record<string, unknown> = {}): RiskScore | null {
+    return this.adaptiveSafety?.scoreAction(action, context) ?? null;
+  }
+
+  /** SAFETY: get current safety snapshot */
+  safetySnapshot(): SafetySnapshot | null {
+    return this.adaptiveSafety?.snapshot() ?? null;
   }
 
   /** Check governance (Asimov Laws) for an action */
@@ -1160,8 +1289,11 @@ export class Skynet extends EventEmitter {
     oracle: OracleInsight[];
     cortex: CortexStats | null;
     selfEvolve: SelfEvolveStats | null;
+    metacognitive: ReturnType<MetaCognitiveEngine["status"]> | null;
     violations: ThresholdViolation[];
     decisions: GovernanceDecision[];
+    deltaTrend: { improving: boolean; avgDelta: number };
+    safety: SafetySnapshot | null;
   } {
     return {
       pulse: this.pulse.status(),
@@ -1169,14 +1301,21 @@ export class Skynet extends EventEmitter {
       oracle: this.oracle.getInsights(),
       cortex: this.cortex?.stats() ?? null,
       selfEvolve: this.selfEvolver?.getStats() ?? null,
+      metacognitive: this.metacognitive?.status() ?? null,
       violations: this.thresholds.getViolations(),
       decisions: this.governance.getDecisions(),
+      deltaTrend: this.deltaEvaluator?.trend() ?? { improving: false, avgDelta: 0 },
+      safety: this.adaptiveSafety?.snapshot() ?? null,
     };
   }
 
   /** Shutdown cleanly */
   shutdown(): void {
     this.pulse.stop();
+    if (this.metacognitive) {
+      this.metacognitive.stop();
+      this.metacognitive = null;
+    }
     if (this.selfEvolver) {
       this.selfEvolver.shutdown().catch(() => {});
       this.selfEvolver = null;

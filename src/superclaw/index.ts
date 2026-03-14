@@ -82,6 +82,7 @@ export {
   isInitialized,
   getBridge,
   getSkynetInstance,
+  getNemotronModule,
   shutdown,
   classify,
   process,
@@ -120,6 +121,15 @@ export {
   type GovernanceRoute,
 } from "./self-evolve.js";
 
+// Skill marketplace security scanner
+export {
+  SkillScanner,
+  type ScanResult,
+  type Finding,
+  type FindingCategory,
+  type Severity,
+} from "./skill-scanner.js";
+
 // Agent tools
 export {
   getSuperclawTools,
@@ -127,6 +137,21 @@ export {
   createSuperclawStatusTool,
   createSuperclawMetricsTool,
 } from "./tool.js";
+
+// Nemotron local LLM integration (auditor + judge)
+export {
+  NemotronClient,
+  NemotronAuditor,
+  NemotronJudge,
+  attachNemotronModule,
+  type NemotronClientConfig,
+  type NemotronModule,
+  type Finding,
+  type AuditResult,
+  type AgentResponse,
+  type JudgeResult,
+  type RiskLevel as NemotronRiskLevel,
+} from "./nemotron-integration.js";
 
 // Types
 export type {

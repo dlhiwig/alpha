@@ -6,8 +6,8 @@
  * stable conditions. ADAPTIVE constraints auto-tune continuously.
  */
 
-import fs from "node:fs";
-import path from "node:path";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -145,7 +145,7 @@ export class AdaptiveSafetyManager {
     }
 
     // Constraint pressure: if many constraints are near their limit, raise risk
-    for (const c of this.constraints.values()) {
+    for (const c of Array.from(this.constraints.values())) {
       if (c.threshold > 0) {
         const ratio = c.currentValue / c.threshold;
         if (ratio > 0.9) {
@@ -183,7 +183,7 @@ export class AdaptiveSafetyManager {
   adapt(stressLevel: number): AdaptationRecord[] {
     const records: AdaptationRecord[] = [];
 
-    for (const c of this.constraints.values()) {
+    for (const c of Array.from(this.constraints.values())) {
       if (c.type === "HARD") continue; // never adjust HARD constraints
 
       const old = c.threshold;
@@ -234,7 +234,7 @@ export class AdaptiveSafetyManager {
     let totalPressure = 0;
     let count = 0;
 
-    for (const c of this.constraints.values()) {
+    for (const c of Array.from(this.constraints.values())) {
       if (c.currentValue > c.threshold) violations++;
       if (c.threshold > 0) {
         totalPressure += c.currentValue / c.threshold;
