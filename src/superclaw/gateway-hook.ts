@@ -4,6 +4,14 @@
  */
 
 import type { SuperClawBridge, ProcessResult, SessionContext } from "./bridge.js";
+import type { Skynet } from "./skynet.js";
+import {
+  type MiddlewareChain,
+  type MiddlewareContext,
+  createDefaultMiddlewareChain,
+  createMiddlewareContext,
+  createMiddlewareResult,
+} from "./middleware.js";
 
 export interface GatewayHookConfig {
   /** Enable SuperClaw routing */
@@ -140,17 +148,21 @@ export function createGatewayHook(
 
 /**
  * Middleware-style wrapper for the agent handler
- * Wraps the existing handler and adds SuperClaw routing
+ * Wraps the existing handler and adds SuperClaw routing + middleware chain
  */
 export function wrapAgentHandler(
   bridge: SuperClawBridge,
   originalHandler: (params: any) => Promise<any>,
   config: Partial<GatewayHookConfig> = {},
+  skynet?: Skynet,
 ) {
   const hook = createGatewayHook(bridge, config);
+  const middlewareChain: MiddlewareChain | null = skynet
+    ? createDefaultMiddlewareChain(skynet)
+    : null;
 
   return async (params: any) => {
-    // Pre-process
+    // Pre-process (SuperClaw classification)
     const preResult = await hook.preProcess({
       message: params.message,
       sessionKey: params.sessionKey || params.sessionId,
@@ -164,11 +176,37 @@ export function wrapAgentHandler(
     }
 
     // If swarm should handle, we need special logic
-    // (In full integration, this would spawn a swarm instead of normal agent)
     if (preResult?.shouldUseSwarm) {
-      // For now, just mark it and let normal handler proceed
-      // Full integration would intercept here
       params._superclawSwarm = true;
+    }
+
+    // Run middleware chain beforeModel hooks
+    let mwContext: MiddlewareContext | null = null;
+    if (middlewareChain) {
+      mwContext = createMiddlewareContext({
+        message: params.message,
+        sessionKey: params.sessionKey || params.sessionId,
+        channel: params.channel,
+        userId: params.userId,
+        model: params.model,
+        activeSubagents: params._activeSubagents ?? 0,
+      });
+
+      mwContext = await middlewareChain.runBeforeModel(mwContext);
+
+      // If middleware blocked the request, return early
+      if (mwContext.blocked) {
+        console.warn(`[SuperClaw] Request blocked by middleware: ${mwContext.blockReason}`);
+        return {
+          response: `Request blocked: ${mwContext.blockReason}`,
+          blocked: true,
+        };
+      }
+
+      // Inject memory context into the message if available
+      if (mwContext.memoryContext) {
+        params._memoryContext = mwContext.memoryContext;
+      }
     }
 
     const startTime = Date.now();
@@ -181,13 +219,29 @@ export function wrapAgentHandler(
       success = false;
       throw error;
     } finally {
-      // Post-process
+      const latencyMs = Date.now() - startTime;
+
+      // Run middleware chain afterModel hooks
+      if (middlewareChain && mwContext) {
+        const mwResult = createMiddlewareResult({
+          response: result?.response || "",
+          success,
+          latencyMs,
+          tokensUsed: result?.tokensUsed,
+          model: params.model,
+          subagentCallCount: result?.subagentCallCount ?? 0,
+        });
+
+        await middlewareChain.runAfterModel(mwContext, mwResult);
+      }
+
+      // Post-process (SuperClaw recording)
       await hook.postProcess({
         message: params.message,
         response: result?.response || "",
         sessionKey: params.sessionKey || params.sessionId,
         success,
-        latencyMs: Date.now() - startTime,
+        latencyMs,
         tokensUsed: result?.tokensUsed,
         model: params.model,
       });
