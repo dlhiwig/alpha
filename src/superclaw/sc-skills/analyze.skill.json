@@ -1,0 +1,37 @@
+{
+  "id": "analyze",
+  "name": "Code Analysis",
+  "version": "1.0.0",
+  "description": "Analyze code, documents, or systems for insights",
+  "triggers": {
+    "keywords": ["analyze", "review", "examine", "inspect", "audit", "evaluate", "check", "look at"],
+    "patterns": ["what.*wrong.*with", "check.*for.*issues", "look.*at.*this"]
+  },
+  "agents": {
+    "required": [
+      { "role": "analyst", "focus": "Identify patterns, issues, and opportunities" }
+    ],
+    "optional": [
+      { "role": "reviewer", "focus": "Security and best practices audit" },
+      { "role": "architect", "focus": "Structural and design analysis" }
+    ]
+  },
+  "input": {
+    "required": [
+      { "name": "target", "type": "string", "description": "What to analyze" }
+    ]
+  },
+  "output": {
+    "format": "markdown",
+    "sections": [
+      { "name": "summary", "required": true },
+      { "name": "findings", "required": true },
+      { "name": "recommendations", "required": false }
+    ]
+  },
+  "hints": {
+    "maxAgents": 3,
+    "timeout": 60000,
+    "parallel": true
+  }
+}

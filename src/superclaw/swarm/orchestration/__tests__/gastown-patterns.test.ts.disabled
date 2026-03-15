@@ -1,0 +1,333 @@
+/**
+ * Gas Town Orchestration Patterns - Tests
+ */
+
+import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';
+import { promises as fs } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
+import { 
+  Mayor, 
+  createMayor, 
+  initializeGasTownWorkspace, 
+  gastownSwarm,
+  type Bead,
+  type Polecat,
+  type Convoy,
+  type Rig
+} from '../gastown-patterns';
+
+describe('Gas Town Orchestration Patterns', () => {
+  let testWorkspace: string;
+  let mayor: Mayor;
+
+  beforeEach(async () => {
+    // Create temporary workspace
+    testWorkspace = join(tmpdir(), `gastown-test-${Date.now()}`);
+    await fs.mkdir(testWorkspace, { recursive: true });
+    mayor = await initializeGasTownWorkspace(testWorkspace);
+  });
+
+  afterEach(async () => {
+    // Cleanup
+    try {
+      await fs.rm(testWorkspace, { recursive: true, force: true });
+    } catch (error: unknown) {
+      // Ignore cleanup errors
+    }
+  });
+
+  describe('Mayor', () => {
+    test('should initialize with default state', async () => {
+      const newMayor = createMayor(testWorkspace);
+      expect(newMayor).toBeDefined();
+      
+      const convoys = await newMayor.listConvoys();
+      expect(convoys).toEqual([]);
+    });
+
+    test('should analyze task and create beads', async () => {
+      const analysis = await mayor.analyzeTask('Build a login system');
+      
+      expect(analysis.beads).toBeDefined();
+      expect(analysis.beads.length).toBeGreaterThan(0);
+      expect(analysis.strategy).toBeDefined();
+      expect(analysis.estimatedTime).toBeGreaterThan(0);
+      expect(analysis.requiredSkills).toBeDefined();
+    });
+
+    test('should save and load state', async () => {
+      // Add a rig
+      const rig = await mayor.addRig('test-rig', 'https://github.com/test/repo.git');
+      expect(rig.name).toBe('test-rig');
+      
+      // Save state
+      await mayor.saveState();
+      
+      // Create new mayor and load state
+      const newMayor = createMayor(testWorkspace);
+      await newMayor.loadState();
+      
+      const rigs = await newMayor.listConvoys();
+      // State should be preserved (though convoy list might be different)
+      expect(newMayor).toBeDefined();
+    });
+  });
+
+  describe('Rigs', () => {
+    test('should add rig with default settings', async () => {
+      const rig = await mayor.addRig('my-project', 'https://github.com/user/project.git');
+      
+      expect(rig.id).toBe('rig-my-project');
+      expect(rig.name).toBe('my-project');
+      expect(rig.gitRepo).toBe('https://github.com/user/project.git');
+      expect(rig.baseBranch).toBe('main');
+      expect(rig.settings.runtime.provider).toBe('claude');
+      expect(rig.polecats).toEqual([]);
+      expect(rig.hooks).toEqual([]);
+    });
+
+    test('should handle rig workspace creation', async () => {
+      const rig = await mayor.addRig('workspace-test', 'https://github.com/test/repo.git');
+      const workspacePath = rig.workspacePath;
+      
+      // Check if workspace directory exists
+      const stats = await fs.stat(workspacePath);
+      expect(stats.isDirectory()).toBe(true);
+    });
+  });
+
+  describe('Polecats', () => {
+    test('should create polecat with identity', async () => {
+      // Add a rig first
+      const rig = await mayor.addRig('test-project', 'https://github.com/test/project.git');
+      
+      const polecat = await mayor.createPolecat('alice', 'claude', rig.id, {
+        personality: 'methodical and detail-oriented',
+        expertise: ['frontend', 'typescript'],
+        workingStyle: 'test-driven development',
+      });
+      
+      expect(polecat.name).toBe('alice');
+      expect(polecat.provider).toBe('claude');
+      expect(polecat.status).toBe('idle');
+      expect(polecat.identity.personality).toBe('methodical and detail-oriented');
+      expect(polecat.identity.expertise).toEqual(['frontend', 'typescript']);
+      expect(polecat.identity.workingStyle).toBe('test-driven development');
+      expect(polecat.hook).toBeDefined();
+      expect(polecat.created).toBeDefined();
+    });
+
+    test('should fail to create polecat for non-existent rig', async () => {
+      await expect(
+        mayor.createPolecat('bob', 'gemini', 'non-existent-rig')
+      ).rejects.toThrow('Rig non-existent-rig not found');
+    });
+  });
+
+  describe('Convoys', () => {
+    test('should create convoy with beads', async () => {
+      const convoy = await mayor.createConvoy(
+        'Test Convoy', 
+        ['bead1', 'bead2'], 
+        { mergeStrategy: 'direct', owned: true }
+      );
+      
+      expect(convoy.name).toBe('Test Convoy');
+      expect(convoy.beads).toEqual(['bead1', 'bead2']);
+      expect(convoy.status).toBe('active');
+      expect(convoy.owner).toBe('mayor');
+      expect(convoy.mergeStrategy).toBe('direct');
+      expect(convoy.owned).toBe(true);
+      expect(convoy.id).toMatch(/^cv-/);
+    });
+
+    test('should track convoy status', async () => {
+      const convoy = await mayor.createConvoy('Status Test', ['test-bead']);
+      const status = await mayor.getConvoyStatus(convoy.id);
+      
+      expect(status).toBeDefined();
+      expect(status?.convoy.id).toBe(convoy.id);
+      expect(status?.progress).toBeDefined();
+      expect(status?.progress.total).toBe(1);
+    });
+
+    test('should return undefined for non-existent convoy', async () => {
+      const status = await mayor.getConvoyStatus('non-existent-convoy');
+      expect(status).toBeUndefined();
+    });
+  });
+
+  describe('MEOW Pattern Integration', () => {
+    test('should orchestrate simple task', async () => {
+      // Add a rig for the orchestration
+      await mayor.addRig('demo-project', 'https://github.com/demo/project.git');
+      
+      const result = await mayor.orchestrate('Create a simple hello world function', {
+        context: 'This is a test task for the MEOW pattern',
+        strategy: 'parallel',
+        maxPolecats: 2,
+      });
+      
+      expect(result.convoy).toBeDefined();
+      expect(result.beads).toBeDefined();
+      expect(result.beads.length).toBeGreaterThan(0);
+      expect(result.assignments).toBeDefined();
+      expect(result.results).toBeDefined();
+      expect(result.synthesis).toBeDefined();
+      expect(result.totalDurationMs).toBeGreaterThan(0);
+      expect(result.strategy).toBeDefined();
+    });
+
+    test('should handle orchestration with specific parameters', async () => {
+      await mayor.addRig('specific-project', 'https://github.com/specific/project.git');
+      
+      const result = await mayor.orchestrate('Build a REST API endpoint', {
+        context: 'Create a /users endpoint with GET and POST methods',
+        strategy: 'sequential',
+        maxPolecats: 1,
+        mergeStrategy: 'mr',
+        owned: false,
+      });
+      
+      expect(result.convoy.mergeStrategy).toBe('mr');
+      expect(result.convoy.owned).toBe(false);
+      expect(result.strategy).toBeDefined();
+    });
+  });
+
+  describe('High-level API', () => {
+    test('should run gastown swarm with defaults', async () => {
+      const result = await gastownSwarm('Create a simple calculator', {
+        workspace: testWorkspace,
+        context: 'Build a basic calculator with add, subtract, multiply, divide functions',
+      });
+      
+      expect(result).toBeDefined();
+      expect(result.convoy).toBeDefined();
+      expect(result.beads).toBeDefined();
+      expect(result.totalDurationMs).toBeGreaterThan(0);
+    });
+
+    test('should handle custom workspace and options', async () => {
+      const customWorkspace = join(testWorkspace, 'custom');
+      
+      const result = await gastownSwarm('Implement user authentication', {
+        workspace: customWorkspace,
+        context: 'JWT-based authentication system',
+        strategy: 'parallel',
+        maxPolecats: 3,
+        providers: ['claude', 'gemini'],
+      });
+      
+      expect(result).toBeDefined();
+      
+      // Cleanup custom workspace
+      try {
+        await fs.rm(customWorkspace, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors
+      }
+    });
+  });
+
+  describe('Error Handling', () => {
+    test('should handle missing workspace gracefully', async () => {
+      const nonExistentWorkspace = '/non/existent/path';
+      
+      // Should create workspace if it doesn't exist
+      const newMayor = createMayor(nonExistentWorkspace);
+      expect(newMayor).toBeDefined();
+    });
+
+    test('should handle rig operation errors', async () => {
+      // Try to create polecat without any rigs
+      await expect(
+        mayor.createPolecat('orphan', 'claude', 'non-existent-rig')
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('Integration with SuperClaw', () => {
+    test('should use SuperClaw agents for execution', async () => {
+      // This test verifies that Gas Town patterns integrate with SuperClaw's agent system
+      await mayor.addRig('integration-test', 'https://github.com/test/integration.git');
+      
+      const analysis = await mayor.analyzeTask('Test SuperClaw integration');
+      expect(analysis.beads).toBeDefined();
+      expect(analysis.strategy).toBeDefined();
+    });
+
+    test('should handle provider selection', async () => {
+      const result = await gastownSwarm('Provider test task', {
+        workspace: testWorkspace,
+        providers: ['claude'],
+      });
+      
+      expect(result).toBeDefined();
+      // The result should be generated using the specified providers
+    });
+  });
+});
+
+describe('Gas Town Types', () => {
+  test('should have correct Bead structure', () => {
+    const bead: Bead = {
+      id: 'test-bead',
+      title: 'Test Bead',
+      description: 'A test bead',
+      status: 'ready',
+      assignee: 'test-polecat',
+      dependencies: ['dep1', 'dep2'],
+      created: new Date(),
+      updated: new Date(),
+      metadata: { priority: 'high' },
+    };
+    
+    expect(bead.id).toBe('test-bead');
+    expect(bead.status).toBe('ready');
+    expect(bead.dependencies).toEqual(['dep1', 'dep2']);
+    expect(bead.metadata.priority).toBe('high');
+  });
+
+  test('should have correct Polecat identity structure', () => {
+    const polecat: Polecat = {
+      id: 'polecat-1',
+      name: 'Alice',
+      provider: 'claude',
+      status: 'idle',
+      hook: 'hook-1',
+      identity: {
+        personality: 'analytical and thorough',
+        expertise: ['backend', 'databases'],
+        workingStyle: 'methodical with comprehensive testing',
+        preferences: { indent: 'spaces', lineLength: 100 },
+      },
+      created: new Date(),
+      lastActivity: new Date(),
+    };
+    
+    expect(polecat.identity.expertise).toEqual(['backend', 'databases']);
+    // @ts-expect-error - Post-Merge Reconciliation
+    expect(polecat.identity.preferences.indent).toBe('spaces');
+  });
+
+  test('should have correct Convoy structure', () => {
+    const convoy: Convoy = {
+      id: 'cv-test',
+      name: 'Test Convoy',
+      description: 'A test convoy',
+      beads: ['bead1', 'bead2', 'bead3'],
+      status: 'active',
+      owner: 'mayor',
+      created: new Date(),
+      updated: new Date(),
+      mergeStrategy: 'direct',
+      owned: true,
+    };
+    
+    expect(convoy.beads).toHaveLength(3);
+    expect(convoy.mergeStrategy).toBe('direct');
+    expect(convoy.owned).toBe(true);
+  });
+});

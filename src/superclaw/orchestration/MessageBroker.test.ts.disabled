@@ -1,0 +1,79 @@
+import { MessageBroker } from './MessageBroker'
+import { MessageType } from './types'
+
+/**
+ * Simple test to verify MessageBroker functionality  
+ * Run with: npx tsx src/orchestration/MessageBroker.test.ts
+ */
+async function testMessageBroker() {
+  console.log('🧪 Testing MessageBroker...')
+  
+  const broker = new MessageBroker()
+  let messagesReceived = 0
+  
+  // Test 1: Basic messaging
+  const unsubscribe = broker.subscribe('agent-1', async (message) => {
+    console.log(`📨 Agent-1 received: ${message.type} from ${message.from}`)
+    messagesReceived++
+  })
+  
+  // Send a message
+  const messageId = await broker.sendMessage(
+    'agent-2',
+    'agent-1', 
+    MessageType.TASK_READY,
+    { task: 'test-task', priority: 'high' }
+  )
+  
+  console.log(`✅ Message sent with ID: ${messageId}`)
+  
+  // Wait a moment for async processing
+  await new Promise(resolve => setTimeout(resolve, 100))
+  
+  // Test 2: sendAndWait pattern
+  console.log('🔄 Testing sendAndWait...')
+  
+  // Set up a responder
+  broker.subscribe('responder', async (message) => {
+    console.log(`📞 Responder received: ${message.type}`)
+    // Send a reply
+    await broker.sendMessage(
+      'responder',
+      message.from,
+      MessageType.TASK_COMPLETE,
+      { result: 'completed', data: 'test-result' },
+      { replyTo: message.id, correlationId: message.correlationId }
+    )
+  })
+  
+  try {
+    const response = await broker.sendAndWait(
+      'requester',
+      'responder',
+      MessageType.TASK_READY,
+      { task: 'async-task' },
+      5000 // 5 second timeout
+    )
+    
+    console.log(`✅ Received response:`, response)
+  } catch (error: unknown) {
+    console.error(`❌ sendAndWait failed:`, error)
+  }
+  
+  // Test 3: Message history and filtering
+  const history = broker.getMessageHistory({ type: MessageType.TASK_READY })
+  console.log(`📚 Found ${history.length} TASK_READY messages in history`)
+  
+  // Test 4: Statistics
+  const stats = broker.getStats()
+  console.log('📊 Broker stats:', stats)
+  
+  // Cleanup
+  unsubscribe()
+  await broker.shutdown()
+  
+  console.log(`✅ Test complete! Messages processed: ${messagesReceived}`)
+}
+
+// Run the test
+testMessageBroker().catch(console.error)

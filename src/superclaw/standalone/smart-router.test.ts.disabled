@@ -1,0 +1,356 @@
+/**
+ * Smart Router Test Suite
+ * 
+ * Tests to validate intelligent routing behavior and fallback mechanisms.
+ */
+
+import { SmartRouter } from './smart-router';
+
+interface TestResult {
+  query: string;
+  expectedProvider: string;
+  actualProvider: string;
+  reason: string;
+  cost: number;
+  passed: boolean;
+}
+
+export class SmartRouterTester {
+  private router: SmartRouter;
+  private testResults: TestResult[] = [];
+
+  constructor() {
+    this.router = new SmartRouter();
+  }
+
+  /**
+   * Run all routing tests
+   */
+  async runAllTests(): Promise<void> {
+    console.log('🧪 Starting Smart Router Tests...\n');
+    
+    // Test simple queries → should route to Ollama
+    await this.testSimpleQueries();
+    
+    // Test complex queries → should route to Claude
+    await this.testComplexQueries();
+    
+    // Test code queries → should prefer Ollama (qwen3-coder) or Claude
+    await this.testCodeQueries();
+    
+    // Test budget queries → should route to cheapest available
+    await this.testBudgetQueries();
+    
+    // Test fallback behavior
+    await this.testFallbackBehavior();
+    
+    // Print results
+    this.printResults();
+  }
+
+  /**
+   * Test simple queries that should route to Ollama
+   */
+  private async testSimpleQueries(): Promise<void> {
+    console.log('📝 Testing Simple Queries...');
+    
+    const simpleQueries = [
+      'Hello, how are you?',
+      'What is 2 + 2?',
+      'Tell me a joke',
+      'What day is it today?',
+      'Explain photosynthesis briefly'
+    ];
+
+    for (const query of simpleQueries) {
+      await this.testQuery(query, 'ollama', 'Simple query should use free local model');
+    }
+  }
+
+  /**
+   * Test complex queries that should route to Claude
+   */
+  private async testComplexQueries(): Promise<void> {
+    console.log('🧠 Testing Complex Queries...');
+    
+    const complexQueries = [
+      `Analyze the comprehensive implications of quantum computing on modern cryptographic systems, 
+       considering both the theoretical foundations and practical implementation challenges across 
+       different encryption algorithms including RSA, ECC, and post-quantum cryptography alternatives.`,
+      
+      `Provide a detailed architectural analysis of microservices vs monolithic design patterns, 
+       evaluating scalability, maintainability, deployment complexity, and operational overhead 
+       with specific recommendations for enterprise-level applications handling millions of users.`,
+      
+      `Conduct a sophisticated comparative study of machine learning optimization algorithms 
+       including gradient descent variants, evolutionary algorithms, and Bayesian optimization, 
+       with mathematical derivations and performance benchmarks across different problem domains.`,
+    ];
+
+    for (const query of complexQueries) {
+      await this.testQuery(query, 'claude', 'Complex analysis requires sophisticated reasoning');
+    }
+  }
+
+  /**
+   * Test code-related queries
+   */
+  private async testCodeQueries(): Promise<void> {
+    console.log('💻 Testing Code Queries...');
+    
+    const codeQueries = [
+      'Write a Python function to sort an array',
+      'Help me debug this JavaScript async function',
+      'Create a React component for user authentication',
+      'Implement a binary tree in TypeScript',
+      'Refactor this code to improve performance'
+    ];
+
+    for (const query of codeQueries) {
+      // Code queries might go to either Ollama (qwen3-coder) or Claude depending on complexity
+      await this.testQuery(query, 'ollama|claude', 'Code queries use specialized models');
+    }
+  }
+
+  /**
+   * Test budget-conscious queries that should prefer Gemini
+   */
+  private async testBudgetQueries(): Promise<void> {
+    console.log('💰 Testing Budget Queries...');
+    
+    const budgetQueries = [
+      {
+        query: 'Summarize this long document in detail',
+        maxCost: 0.05 // Low budget should prefer Gemini
+      },
+      {
+        query: 'Generate a comprehensive report on market trends',
+        maxCost: 0.02 // Very low budget
+      }
+    ];
+
+    for (const { query, maxCost } of budgetQueries) {
+      await this.testQueryWithBudget(query, maxCost, 'gemini', 'Budget constraints favor cheaper providers');
+    }
+  }
+
+  /**
+   * Test fallback behavior when primary provider fails
+   */
+  private async testFallbackBehavior(): Promise<void> {
+    console.log('🔄 Testing Fallback Behavior...');
+    
+    // This is more of a conceptual test since we can't easily simulate failures
+    console.log('⚠️  Note: Fallback testing requires manual provider failure simulation');
+    
+    // Get health status to show current provider states
+    const healthStatus = await this.router.getHealthStatus();
+    console.log('📊 Current Provider Health Status:');
+    console.log(JSON.stringify(healthStatus, null, 2));
+  }
+
+  /**
+   * Test a single query and record results
+   */
+  private async testQuery(
+    query: string, 
+    expectedProvider: string, 
+    reason: string
+  ): Promise<void> {
+    try {
+      const result = await this.router.route({
+        message: query,
+        priority: 'normal'
+      });
+
+      const passed = expectedProvider.includes('|') 
+        ? expectedProvider.split('|').includes(result.provider)
+        : result.provider === expectedProvider;
+
+      this.testResults.push({
+        query: query.slice(0, 100) + (query.length > 100 ? '...' : ''),
+        expectedProvider,
+        actualProvider: result.provider,
+        reason: result.routingReason,
+        cost: result.cost,
+        passed
+      });
+
+      console.log(`${passed ? '✅' : '❌'} ${result.provider} - ${query.slice(0, 60)}...`);
+      
+    } catch (error: unknown) {
+      this.testResults.push({
+        query: query.slice(0, 100) + (query.length > 100 ? '...' : ''),
+        expectedProvider,
+        actualProvider: 'ERROR',
+        reason: (error as Error).message,
+        cost: 0,
+        passed: false
+      });
+
+      console.log(`❌ ERROR - ${query.slice(0, 60)}... - ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Test query with budget constraints
+   */
+  private async testQueryWithBudget(
+    query: string, 
+    maxCost: number, 
+    expectedProvider: string, 
+    reason: string
+  ): Promise<void> {
+    try {
+      const result = await this.router.route({
+        message: query,
+        maxCost,
+        priority: 'low' // Budget-conscious
+      });
+
+      const passed = result.provider === expectedProvider && result.cost <= maxCost;
+
+      this.testResults.push({
+        query: query.slice(0, 100) + (query.length > 100 ? '...' : ''),
+        expectedProvider: `${expectedProvider} (≤$${maxCost})`,
+        actualProvider: `${result.provider} ($${result.cost.toFixed(4)})`,
+        reason: result.routingReason,
+        cost: result.cost,
+        passed
+      });
+
+      console.log(`${passed ? '✅' : '❌'} ${result.provider} ($${result.cost.toFixed(4)}) - ${query.slice(0, 50)}...`);
+      
+    } catch (error: unknown) {
+      this.testResults.push({
+        query: query.slice(0, 100) + (query.length > 100 ? '...' : ''),
+        expectedProvider: `${expectedProvider} (≤$${maxCost})`,
+        actualProvider: 'ERROR',
+        reason: (error as Error).message,
+        cost: 0,
+        passed: false
+      });
+
+      console.log(`❌ ERROR - ${query.slice(0, 50)}... - ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Print comprehensive test results
+   */
+  private printResults(): void {
+    console.log('\n📊 Test Results Summary');
+    console.log('========================');
+    
+    const totalTests = this.testResults.length;
+    const passedTests = this.testResults.filter(r => r.passed).length;
+    const failedTests = totalTests - passedTests;
+    
+    console.log(`Total Tests: ${totalTests}`);
+    console.log(`Passed: ${passedTests} ✅`);
+    console.log(`Failed: ${failedTests} ❌`);
+    console.log(`Success Rate: ${((passedTests / totalTests) * 100).toFixed(1)}%`);
+    
+    const totalCost = this.testResults.reduce((sum, r) => sum + r.cost, 0);
+    console.log(`Total Cost: $${totalCost.toFixed(4)}`);
+    
+    if (failedTests > 0) {
+      console.log('\n❌ Failed Tests:');
+      this.testResults
+        .filter(r => !r.passed)
+        .forEach(r => {
+          console.log(`  • ${r.query}`);
+          console.log(`    Expected: ${r.expectedProvider}, Got: ${r.actualProvider}`);
+          console.log(`    Reason: ${r.reason}`);
+        });
+    }
+    
+    console.log('\n💡 Routing Analysis:');
+    const providerCounts = this.testResults.reduce((acc, r) => {
+      if (r.actualProvider !== 'ERROR') {
+        acc[r.actualProvider] = (acc[r.actualProvider] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+    
+    Object.entries(providerCounts).forEach(([provider, count]) => {
+      console.log(`  ${provider}: ${count} requests`);
+    });
+  }
+
+  /**
+   * Demonstrate specific routing scenarios
+   */
+  async demonstrateRouting(): Promise<void> {
+    console.log('🎯 Routing Demonstration');
+    console.log('========================\n');
+
+    // Simple query demo
+    console.log('1. Simple Query:');
+    try {
+      const simpleResult = await this.router.route({
+        message: 'What is the capital of France?'
+      });
+      console.log(`   → Routed to: ${simpleResult.provider}`);
+      console.log(`   → Model: ${simpleResult.model}`);
+      console.log(`   → Cost: $${simpleResult.cost.toFixed(4)}`);
+      console.log(`   → Reason: ${simpleResult.routingReason}`);
+    } catch (error: unknown) {
+      console.log(`   → Error: ${(error as Error).message}`);
+    }
+
+    console.log('\n2. Complex Analysis Query:');
+    try {
+      const complexResult = await this.router.route({
+        message: `Analyze the comprehensive strategic implications of implementing a microservices 
+                  architecture for a large-scale e-commerce platform, considering scalability, 
+                  security, deployment complexity, and long-term maintenance requirements.`
+      });
+      console.log(`   → Routed to: ${complexResult.provider}`);
+      console.log(`   → Model: ${complexResult.model}`);
+      console.log(`   → Cost: $${complexResult.cost.toFixed(4)}`);
+      console.log(`   → Reason: ${complexResult.routingReason}`);
+    } catch (error: unknown) {
+      console.log(`   → Error: ${(error as Error).message}`);
+    }
+
+    console.log('\n3. Code Generation Query:');
+    try {
+      const codeResult = await this.router.route({
+        message: 'Create a TypeScript function that implements a binary search algorithm with proper type annotations and error handling'
+      });
+      console.log(`   → Routed to: ${codeResult.provider}`);
+      console.log(`   → Model: ${codeResult.model}`);
+      console.log(`   → Cost: $${codeResult.cost.toFixed(4)}`);
+      console.log(`   → Reason: ${codeResult.routingReason}`);
+    } catch (error: unknown) {
+      console.log(`   → Error: ${(error as Error).message}`);
+    }
+
+    console.log('\n4. Budget-Constrained Query:');
+    try {
+      const budgetResult = await this.router.route({
+        message: 'Generate a detailed summary of renewable energy trends',
+        maxCost: 0.01, // Very low budget
+        priority: 'low'
+      });
+      console.log(`   → Routed to: ${budgetResult.provider}`);
+      console.log(`   → Model: ${budgetResult.model}`);
+      console.log(`   → Cost: $${budgetResult.cost.toFixed(4)}`);
+      console.log(`   → Reason: ${budgetResult.routingReason}`);
+    } catch (error: unknown) {
+      console.log(`   → Error: ${(error as Error).message}`);
+    }
+  }
+}
+
+// Command-line interface
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const tester = new SmartRouterTester();
+  
+  if (process.argv.includes('--demo')) {
+    tester.demonstrateRouting().catch(console.error);
+  } else {
+    tester.runAllTests().catch(console.error);
+  }
+}

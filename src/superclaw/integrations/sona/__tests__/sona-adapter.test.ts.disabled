@@ -1,0 +1,572 @@
+/**
+ * SONA Adapter Tests
+ * 
+ * Tests for the SuperClaw integration adapter including:
+ * - Task embedding generation
+ * - Swarm task optimization
+ * - Outcome feedback integration
+ * - Statistics tracking
+ * - Error handling and graceful degradation
+ */
+
+import { jest } from '@jest/globals';
+import { SonaAdapter, type SonaAdapterConfig, type SwarmTask, type SwarmOutcome } from '../sona-adapter';
+
+// Mock the SONA engine
+jest.mock('../sona-engine', () => ({
+  SonaEngine: jest.fn().mockImplementation(() => ({
+    beginTrajectory: jest.fn().mockReturnValue('mock-trajectory-id'),
+    // @ts-expect-error - Post-Merge Reconciliation
+    applyMicroLoraOptimization: jest.fn().mockResolvedValue(new Array(256).fill(0.5)),
+    // @ts-expect-error - Post-Merge Reconciliation
+    findSimilarPatterns: jest.fn().mockResolvedValue([]),
+    // @ts-expect-error - Post-Merge Reconciliation
+    endTrajectory: jest.fn().mockResolvedValue(undefined),
+    getStats: jest.fn().mockReturnValue({
+      totalLearningEvents: 0,
+      activeTrajectories: 0,
+      reasoningBankStats: { totalPatterns: 0 }
+    }),
+    // @ts-expect-error - Post-Merge Reconciliation
+    shutdown: jest.fn().mockResolvedValue(undefined),
+    // @ts-expect-error - Post-Merge Reconciliation
+    reset: jest.fn().mockResolvedValue(undefined),
+    on: jest.fn(),
+    off: jest.fn(),
+    emit: jest.fn()
+  }))
+}));
+
+describe('SonaAdapter', () => {
+  let adapter: SonaAdapter;
+  let mockConfig: SonaAdapterConfig;
+
+  beforeEach(() => {
+    mockConfig = {
+      enabled: true,
+      sonaConfig: {
+        embeddingDim: 256,
+        microLoraRank: 2,
+        baseLoraRank: 8,
+        qualityThreshold: 0.7
+      },
+      embeddingProvider: 'simple',
+      minComplexity: 0.2,
+      maxActiveTrajectories: 10
+    };
+    
+    adapter = new SonaAdapter(mockConfig);
+  });
+
+  afterEach(async () => {
+    await adapter.shutdown();
+  });
+
+  describe('Initialization', () => {
+    test('should initialize with SONA engine enabled', () => {
+      const stats = adapter.getStats();
+      
+      expect(stats.enabled).toBe(true);
+      expect(stats.totalTasks).toBe(0);
+      expect(stats.learningEvents).toBe(0);
+    });
+
+    test('should handle SONA engine initialization failure gracefully', () => {
+      const disabledConfig: SonaAdapterConfig = {
+        enabled: false
+      };
+      
+      const disabledAdapter = new SonaAdapter(disabledConfig);
+      const stats = disabledAdapter.getStats();
+      
+      expect(stats.enabled).toBe(false);
+      
+      disabledAdapter.shutdown();
+    });
+
+    test('should use default configuration when minimal config provided', () => {
+      const minimalAdapter = new SonaAdapter();
+      const stats = minimalAdapter.getStats();
+      
+      expect(stats.enabled).toBe(true);
+      
+      minimalAdapter.shutdown();
+    });
+  });
+
+  describe('Task Optimization', () => {
+    test('should optimize task routing for complex tasks', async () => {
+      const swarmTask: SwarmTask = {
+        id: 'test-task-1',
+        objective: 'Implement a complex neural network architecture',
+        instructions: 'Design and implement a transformer model with attention mechanisms',
+        complexity: 0.8,
+        role: 'architect'
+      };
+
+      const routing = await adapter.optimizeTaskRouting(swarmTask);
+      
+      expect(routing).toBeDefined();
+      expect(routing?.trajectoryId).toBeDefined();
+      expect(routing?.recommendedTier).toBeGreaterThanOrEqual(1);
+      expect(routing?.recommendedTier).toBeLessThanOrEqual(3);
+      expect(routing?.confidence).toBeGreaterThanOrEqual(0);
+      expect(routing?.confidence).toBeLessThanOrEqual(1);
+    });
+
+    test('should skip optimization for simple tasks below complexity threshold', async () => {
+      const simpleTask: SwarmTask = {
+        id: 'simple-task',
+        objective: 'Fix typo',
+        instructions: 'Fix the typo in the documentation',
+        complexity: 0.1 // Below minComplexity threshold
+      };
+
+      const routing = await adapter.optimizeTaskRouting(simpleTask);
+      
+      expect(routing).toBeNull();
+    });
+
+    test('should skip optimization when SONA is disabled', async () => {
+      const disabledAdapter = new SonaAdapter({ enabled: false });
+      
+      const swarmTask: SwarmTask = {
+        id: 'test-task-2',
+        objective: 'Complex task',
+        instructions: 'Do something complex',
+        complexity: 0.8
+      };
+
+      const routing = await disabledAdapter.optimizeTaskRouting(swarmTask);
+      
+      expect(routing).toBeNull();
+      
+      disabledAdapter.shutdown();
+    });
+
+    test('should handle optimization errors gracefully', async () => {
+      // Create a mock that throws an error
+      const errorAdapter = new SonaAdapter(mockConfig);
+      
+      const swarmTask: SwarmTask = {
+        id: 'error-task',
+        objective: 'Task that will cause an error',
+        instructions: 'This should trigger an error in the mock',
+        complexity: 0.8
+      };
+
+      // Mock the optimization to throw an error
+      jest.spyOn(adapter, 'optimizeTaskRouting').mockRejectedValueOnce(new Error('Mock optimization error'));
+
+      const routing = await adapter.optimizeTaskRouting(swarmTask).catch(() => null);
+      
+      expect(routing).toBeNull();
+      
+      errorAdapter.shutdown();
+    });
+
+    test('should respect maximum active trajectories limit', async () => {
+      const maxTrajectories = 2;
+      const limitedAdapter = new SonaAdapter({
+        ...mockConfig,
+        maxActiveTrajectories: maxTrajectories
+      });
+
+      // Create tasks exceeding the limit
+      const tasks: SwarmTask[] = [];
+      for (let i = 0; i < maxTrajectories + 2; i++) {
+        tasks.push({
+          id: `task-${i}`,
+          objective: `Task ${i}`,
+          instructions: `Instructions for task ${i}`,
+          complexity: 0.5
+        });
+      }
+
+      // Optimize all tasks
+      for (const task of tasks) {
+        await limitedAdapter.optimizeTaskRouting(task);
+      }
+
+      const stats = limitedAdapter.getStats();
+      expect(stats.activeTrajectories).toBeLessThanOrEqual(maxTrajectories);
+      
+      limitedAdapter.shutdown();
+    });
+  });
+
+  describe('Outcome Recording', () => {
+    test('should record successful swarm outcomes', async () => {
+      const swarmTask: SwarmTask = {
+        id: 'outcome-task-1',
+        objective: 'Test task',
+        instructions: 'Test instructions',
+        complexity: 0.5
+      };
+
+      // First optimize the task to create a trajectory
+      await adapter.optimizeTaskRouting(swarmTask);
+
+      const outcome: SwarmOutcome = {
+        taskId: 'outcome-task-1',
+        success: true,
+        quality: 0.85,
+        latency: 1500,
+        cost: 0.05,
+        modelUsed: 'claude-sonnet-4',
+        modelTier: 3,
+        timestamp: Date.now()
+      };
+
+      await expect(adapter.recordSwarmOutcome(outcome)).resolves.toBeUndefined();
+      
+      const stats = adapter.getStats();
+      expect(stats.learningEvents).toBe(1);
+    });
+
+    test('should record failed swarm outcomes', async () => {
+      const swarmTask: SwarmTask = {
+        id: 'outcome-task-2',
+        objective: 'Test task',
+        instructions: 'Test instructions',
+        complexity: 0.5
+      };
+
+      await adapter.optimizeTaskRouting(swarmTask);
+
+      const failedOutcome: SwarmOutcome = {
+        taskId: 'outcome-task-2',
+        success: false,
+        quality: 0.3,
+        latency: 500,
+        cost: 0.01,
+        modelUsed: 'claude-haiku',
+        modelTier: 2,
+        error: 'Task execution failed',
+        timestamp: Date.now()
+      };
+
+      await expect(adapter.recordSwarmOutcome(failedOutcome)).resolves.toBeUndefined();
+    });
+
+    test('should handle outcome recording for non-existent trajectory', async () => {
+      const outcome: SwarmOutcome = {
+        taskId: 'non-existent-task',
+        success: true,
+        quality: 0.8,
+        latency: 1000,
+        cost: 0.03,
+        modelUsed: 'claude-sonnet',
+        modelTier: 3,
+        timestamp: Date.now()
+      };
+
+      // Should not throw error, just log and return
+      await expect(adapter.recordSwarmOutcome(outcome)).resolves.toBeUndefined();
+    });
+
+    test('should skip outcome recording when SONA is disabled', async () => {
+      const disabledAdapter = new SonaAdapter({ enabled: false });
+
+      const outcome: SwarmOutcome = {
+        taskId: 'disabled-task',
+        success: true,
+        quality: 0.8,
+        latency: 1000,
+        cost: 0.03,
+        modelUsed: 'claude-sonnet',
+        modelTier: 3,
+        timestamp: Date.now()
+      };
+
+      await expect(disabledAdapter.recordSwarmOutcome(outcome)).resolves.toBeUndefined();
+      
+      disabledAdapter.shutdown();
+    });
+  });
+
+  describe('Embedding Generation', () => {
+    test('should generate simple embeddings by default', async () => {
+      const task: SwarmTask = {
+        id: 'embedding-task',
+        objective: 'Test embedding generation',
+        instructions: 'Generate an embedding for this task',
+        complexity: 0.5
+      };
+
+      const routing = await adapter.optimizeTaskRouting(task);
+      
+      expect(routing).toBeDefined();
+      expect(routing?.originalEmbedding).toHaveLength(256); // Default embedding dimension
+    });
+
+    test('should estimate task complexity from content', async () => {
+      const simpleTask: SwarmTask = {
+        id: 'simple-embed',
+        objective: 'Fix typo',
+        instructions: 'Fix typo in doc',
+        role: 'editor'
+      };
+
+      const complexTask: SwarmTask = {
+        id: 'complex-embed',
+        objective: 'Design and implement a complex distributed system architecture with microservices, event sourcing, CQRS patterns, and advanced monitoring',
+        instructions: 'Analyze requirements, research best practices, design system architecture, implement core components, set up monitoring, write comprehensive tests, and deploy to production',
+        role: 'architect'
+      };
+
+      // Simple task should be skipped due to low complexity
+      const simpleRouting = await adapter.optimizeTaskRouting(simpleTask);
+      
+      // Complex task should be optimized
+      const complexRouting = await adapter.optimizeTaskRouting(complexTask);
+
+      expect(simpleRouting).toBeNull(); // Below complexity threshold
+      expect(complexRouting).toBeDefined(); // Above complexity threshold
+    });
+  });
+
+  describe('Statistics and Monitoring', () => {
+    test('should provide comprehensive statistics', async () => {
+      const task: SwarmTask = {
+        id: 'stats-task',
+        objective: 'Test statistics',
+        instructions: 'Generate statistics',
+        complexity: 0.5
+      };
+
+      await adapter.optimizeTaskRouting(task);
+
+      const outcome: SwarmOutcome = {
+        taskId: 'stats-task',
+        success: true,
+        quality: 0.8,
+        latency: 1000,
+        cost: 0.03,
+        modelUsed: 'claude-sonnet',
+        modelTier: 3,
+        timestamp: Date.now()
+      };
+
+      await adapter.recordSwarmOutcome(outcome);
+
+      const stats = adapter.getStats();
+      
+      expect(stats).toHaveProperty('enabled');
+      expect(stats).toHaveProperty('totalTasks');
+      expect(stats).toHaveProperty('learningEvents');
+      expect(stats).toHaveProperty('activeTrajectories');
+      expect(stats).toHaveProperty('avgOptimizationLatency');
+      expect(stats).toHaveProperty('patternMatchRate');
+      expect(stats).toHaveProperty('qualityImprovement');
+      expect(stats).toHaveProperty('engineStats');
+      
+      expect(stats.totalTasks).toBeGreaterThan(0);
+      expect(stats.learningEvents).toBeGreaterThan(0);
+    });
+
+    test('should calculate pattern match rate correctly', async () => {
+      // Create multiple tasks to test pattern matching statistics
+      for (let i = 0; i < 5; i++) {
+        const task: SwarmTask = {
+          id: `pattern-task-${i}`,
+          objective: `Test task ${i}`,
+          instructions: `Instructions for task ${i}`,
+          complexity: 0.5
+        };
+
+        await adapter.optimizeTaskRouting(task);
+      }
+
+      const stats = adapter.getStats();
+      expect(stats.patternMatchRate).toBeGreaterThanOrEqual(0);
+      expect(stats.patternMatchRate).toBeLessThanOrEqual(100);
+    });
+
+    test('should track optimization latencies', async () => {
+      const task: SwarmTask = {
+        id: 'latency-task',
+        objective: 'Test latency tracking',
+        instructions: 'Track optimization latency',
+        complexity: 0.5
+      };
+
+      await adapter.optimizeTaskRouting(task);
+
+      const stats = adapter.getStats();
+      expect(stats.avgOptimizationLatency).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Event Emission', () => {
+    test('should emit routing optimization events', async () => {
+      const eventHandler = jest.fn();
+      adapter.on('routing-optimized', eventHandler);
+
+      const task: SwarmTask = {
+        id: 'event-task',
+        objective: 'Test event emission',
+        instructions: 'Emit routing optimization event',
+        complexity: 0.5
+      };
+
+      await adapter.optimizeTaskRouting(task);
+
+      expect(eventHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          taskId: 'event-task',
+          latencyMs: expect.any(Number),
+          patternsFound: expect.any(Number)
+        })
+      );
+    });
+
+    test('should emit outcome recording events', async () => {
+      const eventHandler = jest.fn();
+      adapter.on('outcome-recorded', eventHandler);
+
+      const task: SwarmTask = {
+        id: 'outcome-event-task',
+        objective: 'Test outcome events',
+        instructions: 'Emit outcome recording event',
+        complexity: 0.5
+      };
+
+      await adapter.optimizeTaskRouting(task);
+
+      const outcome: SwarmOutcome = {
+        taskId: 'outcome-event-task',
+        success: true,
+        quality: 0.8,
+        latency: 1000,
+        cost: 0.03,
+        modelUsed: 'claude-sonnet',
+        modelTier: 3,
+        timestamp: Date.now()
+      };
+
+      await adapter.recordSwarmOutcome(outcome);
+
+      expect(eventHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          taskId: 'outcome-event-task',
+          quality: 0.8
+        })
+      );
+    });
+  });
+
+  describe('Reset and Shutdown', () => {
+    test('should reset adapter state', async () => {
+      const task: SwarmTask = {
+        id: 'reset-task',
+        objective: 'Test reset functionality',
+        instructions: 'This task will be reset',
+        complexity: 0.5
+      };
+
+      await adapter.optimizeTaskRouting(task);
+      
+      let stats = adapter.getStats();
+      expect(stats.totalTasks).toBeGreaterThan(0);
+
+      await adapter.reset();
+      
+      stats = adapter.getStats();
+      expect(stats.totalTasks).toBe(0);
+      expect(stats.learningEvents).toBe(0);
+      expect(stats.activeTrajectories).toBe(0);
+    });
+
+    test('should shutdown gracefully', async () => {
+      const task: SwarmTask = {
+        id: 'shutdown-task',
+        objective: 'Test shutdown functionality',
+        instructions: 'This task will be shut down',
+        complexity: 0.5
+      };
+
+      await adapter.optimizeTaskRouting(task);
+      
+      await expect(adapter.shutdown()).resolves.toBeUndefined();
+      
+      // Should have cleaned up active trajectories
+      const stats = adapter.getStats();
+      expect(stats.activeTrajectories).toBe(0);
+    });
+  });
+
+  describe('Error Handling', () => {
+    test('should handle embedding generation errors gracefully', async () => {
+      const invalidTask: SwarmTask = {
+        id: 'invalid-task',
+        objective: '', // Empty objective
+        instructions: '', // Empty instructions
+        complexity: 0.5
+      };
+
+      const routing = await adapter.optimizeTaskRouting(invalidTask);
+      
+      // Should either return null or handle gracefully
+      expect(routing === null || routing !== undefined).toBe(true);
+    });
+
+    test('should handle outcome recording errors gracefully', async () => {
+      const invalidOutcome: SwarmOutcome = {
+        taskId: '', // Invalid task ID
+        success: true,
+        quality: 1.5, // Invalid quality (> 1.0)
+        latency: -100, // Invalid latency
+        cost: -0.01, // Invalid cost
+        modelUsed: '',
+        modelTier: 5, // Invalid tier
+        timestamp: Date.now()
+      };
+
+      // Should not throw error
+      await expect(adapter.recordSwarmOutcome(invalidOutcome)).resolves.toBeUndefined();
+    });
+  });
+
+  describe('Different Embedding Providers', () => {
+    test('should handle OpenAI embedding provider configuration', async () => {
+      const openaiAdapter = new SonaAdapter({
+        ...mockConfig,
+        embeddingProvider: 'openai'
+      });
+
+      const task: SwarmTask = {
+        id: 'openai-task',
+        objective: 'Test OpenAI embeddings',
+        instructions: 'Use OpenAI embedding provider',
+        complexity: 0.5
+      };
+
+      const routing = await openaiAdapter.optimizeTaskRouting(task);
+      
+      expect(routing).toBeDefined();
+      
+      openaiAdapter.shutdown();
+    });
+
+    test('should handle local embedding provider configuration', async () => {
+      const localAdapter = new SonaAdapter({
+        ...mockConfig,
+        embeddingProvider: 'local'
+      });
+
+      const task: SwarmTask = {
+        id: 'local-task',
+        objective: 'Test local embeddings',
+        instructions: 'Use local embedding provider',
+        complexity: 0.5
+      };
+
+      const routing = await localAdapter.optimizeTaskRouting(task);
+      
+      expect(routing).toBeDefined();
+      
+      localAdapter.shutdown();
+    });
+  });
+});

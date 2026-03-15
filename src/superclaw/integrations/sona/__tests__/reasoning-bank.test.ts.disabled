@@ -1,0 +1,563 @@
+/**
+ * ReasoningBank Tests
+ * 
+ * Tests for the pattern storage and retrieval system including:
+ * - K-means++ clustering
+ * - Sub-millisecond pattern search
+ * - Pattern storage and quality filtering
+ * - Cluster rebalancing
+ * - Temporal decay
+ */
+
+import { jest } from '@jest/globals';
+import { ReasoningBank, type ReasoningBankConfig } from '../reasoning-bank';
+import { type LearningOutcome } from '../sona-engine';
+
+describe('ReasoningBank', () => {
+  let reasoningBank: ReasoningBank;
+  let mockConfig: ReasoningBankConfig;
+
+  beforeEach(() => {
+    mockConfig = {
+      capacity: 1000,
+      embeddingDim: 256,
+      qualityThreshold: 0.7,
+      numClusters: 10,
+      decayFactor: 0.95,
+      rebalanceFrequency: 100
+    };
+    
+    reasoningBank = new ReasoningBank(mockConfig);
+  });
+
+  afterEach(async () => {
+    await reasoningBank.shutdown();
+  });
+
+  describe('Initialization', () => {
+    test('should initialize with correct configuration', () => {
+      const stats = reasoningBank.getStats();
+      
+      expect(stats.capacity).toBe(1000);
+      expect(stats.numClusters).toBe(10);
+      expect(stats.totalPatterns).toBe(0);
+    });
+
+    test('should initialize empty clusters', () => {
+      const stats = reasoningBank.getStats();
+      
+      expect(stats.clusterStats).toHaveLength(10);
+      stats.clusterStats.forEach(cluster => {
+        expect(cluster.patternCount).toBe(0);
+      });
+    });
+
+    test('should use default configuration when partially specified', () => {
+      const partialConfig: ReasoningBankConfig = {
+        capacity: 500,
+        embeddingDim: 128,
+        qualityThreshold: 0.8
+      };
+      
+      const partialBank = new ReasoningBank(partialConfig);
+      const stats = partialBank.getStats();
+      
+      expect(stats.capacity).toBe(500);
+      expect(stats.numClusters).toBe(100); // Default value
+      
+      partialBank.shutdown();
+    });
+  });
+
+  describe('Pattern Storage', () => {
+    test('should store high-quality patterns', async () => {
+      const embedding = new Array(256).fill(0.5);
+      const outcome: LearningOutcome = {
+        taskId: 'test-task-1',
+        taskEmbedding: {
+          vector: embedding,
+          metadata: { taskType: 'test', complexity: 0.5 }
+        },
+        quality: 0.8,
+        latency: 100,
+        cost: 0.01,
+        success: true,
+        modelTier: 2,
+        timestamp: Date.now()
+      };
+
+      const patternId = await reasoningBank.storePattern(embedding, outcome);
+      
+      expect(patternId).toBeDefined();
+      expect(patternId).not.toBe('');
+      
+      const stats = reasoningBank.getStats();
+      expect(stats.totalPatterns).toBe(1);
+    });
+
+    test('should reject low-quality patterns', async () => {
+      const embedding = new Array(256).fill(0.5);
+      const lowQualityOutcome: LearningOutcome = {
+        taskId: 'test-task-2',
+        taskEmbedding: {
+          vector: embedding,
+          metadata: { taskType: 'test', complexity: 0.5 }
+        },
+        quality: 0.5, // Below threshold of 0.7
+        latency: 100,
+        cost: 0.01,
+        success: false,
+        modelTier: 2,
+        timestamp: Date.now()
+      };
+
+      const patternId = await reasoningBank.storePattern(embedding, lowQualityOutcome);
+      
+      expect(patternId).toBe(''); // Should return empty string for rejected patterns
+      
+      const stats = reasoningBank.getStats();
+      expect(stats.totalPatterns).toBe(0);
+    });
+
+    test('should handle capacity limits with eviction', async () => {
+      const embedding = new Array(256).fill(0.5);
+      
+      // Store patterns up to capacity + 1
+      for (let i = 0; i < 1001; i++) {
+        const outcome: LearningOutcome = {
+          taskId: `test-task-${i}`,
+          taskEmbedding: {
+            vector: embedding,
+            metadata: { taskType: 'test', complexity: 0.5 }
+          },
+          quality: 0.8,
+          latency: 100,
+          cost: 0.01,
+          success: true,
+          modelTier: 2,
+          timestamp: Date.now() + i // Different timestamps for eviction ordering
+        };
+
+        await reasoningBank.storePattern(embedding, outcome);
+      }
+      
+      const stats = reasoningBank.getStats();
+      expect(stats.totalPatterns).toBe(1000); // Should not exceed capacity
+    });
+
+    test('should distribute patterns across clusters', async () => {
+      // Store patterns with different embeddings to test clustering
+      for (let i = 0; i < 50; i++) {
+        const embedding = new Array(256).fill(0).map(() => Math.random());
+        const outcome: LearningOutcome = {
+          taskId: `test-task-${i}`,
+          taskEmbedding: {
+            vector: embedding,
+            metadata: { taskType: 'test', complexity: 0.5 }
+          },
+          quality: 0.8,
+          latency: 100,
+          cost: 0.01,
+          success: true,
+          modelTier: 2,
+          timestamp: Date.now()
+        };
+
+        await reasoningBank.storePattern(embedding, outcome);
+      }
+      
+      const stats = reasoningBank.getStats();
+      expect(stats.totalPatterns).toBe(50);
+      
+      // Should have patterns distributed across multiple clusters
+      const occupiedClusters = stats.clusterStats.filter(cluster => cluster.patternCount > 0);
+      expect(occupiedClusters.length).toBeGreaterThan(1);
+    });
+  });
+
+  describe('Pattern Search', () => {
+    beforeEach(async () => {
+      // Populate with some test patterns
+      for (let i = 0; i < 10; i++) {
+        const embedding = new Array(256).fill(0.1 + i * 0.1); // Different embeddings
+        const outcome: LearningOutcome = {
+          taskId: `setup-task-${i}`,
+          taskEmbedding: {
+            vector: embedding,
+            metadata: { taskType: `type-${i % 3}`, complexity: 0.5 + i * 0.05 }
+          },
+          quality: 0.7 + i * 0.02,
+          latency: 100 + i * 10,
+          cost: 0.01,
+          success: true,
+          modelTier: 2,
+          timestamp: Date.now()
+        };
+
+        await reasoningBank.storePattern(embedding, outcome);
+      }
+    });
+
+    test('should find similar patterns within latency target', async () => {
+      const queryEmbedding = new Array(256).fill(0.5);
+      
+      const startTime = process.hrtime.bigint();
+      const patterns = await reasoningBank.findSimilarPatterns(queryEmbedding, 3);
+      const endTime = process.hrtime.bigint();
+      
+      const latencyMs = Number(endTime - startTime) / 1000000;
+      
+      expect(patterns.length).toBeLessThanOrEqual(3);
+      expect(latencyMs).toBeLessThan(10); // Target <5ms, allow 10ms for test environment
+    });
+
+    test('should return patterns sorted by similarity', async () => {
+      const queryEmbedding = new Array(256).fill(0.5);
+      
+      const patterns = await reasoningBank.findSimilarPatterns(queryEmbedding, 5);
+      
+      expect(patterns.length).toBeGreaterThan(0);
+      expect(patterns.length).toBeLessThanOrEqual(5);
+      
+      // Check that quality scores are reasonable (weighted similarity should prioritize quality)
+      for (const pattern of patterns) {
+        expect(pattern.quality).toBeGreaterThanOrEqual(0.7);
+      }
+    });
+
+    test('should handle empty query gracefully', async () => {
+      const emptyEmbedding = new Array(256).fill(0);
+      
+      const patterns = await reasoningBank.findSimilarPatterns(emptyEmbedding, 3);
+      
+      expect(Array.isArray(patterns)).toBe(true);
+    });
+
+    test('should cache frequent searches', async () => {
+      const queryEmbedding = new Array(256).fill(0.5);
+      
+      // First search
+      await reasoningBank.findSimilarPatterns(queryEmbedding, 3);
+      
+      // Second identical search should hit cache
+      const startTime = process.hrtime.bigint();
+      const patterns = await reasoningBank.findSimilarPatterns(queryEmbedding, 3);
+      const endTime = process.hrtime.bigint();
+      
+      const latencyMs = Number(endTime - startTime) / 1000000;
+      
+      expect(patterns.length).toBeLessThanOrEqual(3);
+      expect(latencyMs).toBeLessThan(1); // Cache hit should be very fast
+      
+      const stats = reasoningBank.getStats();
+      expect(parseFloat(stats.searchStats.cacheHitRate)).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Cluster Management', () => {
+    test('should rebalance clusters when threshold is reached', async () => {
+      const rebalanceFrequency = 5; // Small number for testing
+      const testBank = new ReasoningBank({
+        ...mockConfig,
+        rebalanceFrequency
+      });
+
+      // Store patterns to trigger rebalancing
+      for (let i = 0; i < rebalanceFrequency; i++) {
+        const embedding = new Array(256).fill(0).map(() => Math.random());
+        const outcome: LearningOutcome = {
+          taskId: `test-task-${i}`,
+          taskEmbedding: {
+            vector: embedding,
+            metadata: { taskType: 'test', complexity: 0.5 }
+          },
+          quality: 0.8,
+          latency: 100,
+          cost: 0.01,
+          success: true,
+          modelTier: 2,
+          timestamp: Date.now()
+        };
+
+        await testBank.storePattern(embedding, outcome);
+      }
+      
+      const stats = testBank.getStats();
+      expect(stats.totalPatterns).toBe(rebalanceFrequency);
+      
+      testBank.shutdown();
+    });
+
+    test('should update cluster centroids after storing patterns', async () => {
+      const embedding = new Array(256).fill(0.7);
+      const outcome: LearningOutcome = {
+        taskId: 'centroid-test',
+        taskEmbedding: {
+          vector: embedding,
+          metadata: { taskType: 'test', complexity: 0.5 }
+        },
+        quality: 0.8,
+        latency: 100,
+        cost: 0.01,
+        success: true,
+        modelTier: 2,
+        timestamp: Date.now()
+      };
+
+      await reasoningBank.storePattern(embedding, outcome);
+      
+      const stats = reasoningBank.getStats();
+      const occupiedCluster = stats.clusterStats.find(cluster => cluster.patternCount > 0);
+      
+      expect(occupiedCluster).toBeDefined();
+      expect(occupiedCluster!.lastUpdated).toBeGreaterThan(Date.now() - 1000); // Recently updated
+    });
+  });
+
+  describe('Temporal Decay', () => {
+    test('should apply temporal decay to old patterns', async () => {
+      // Store an old pattern
+      const oldEmbedding = new Array(256).fill(0.5);
+      const oldOutcome: LearningOutcome = {
+        taskId: 'old-task',
+        taskEmbedding: {
+          vector: oldEmbedding,
+          metadata: { taskType: 'test', complexity: 0.5 }
+        },
+        quality: 0.8,
+        latency: 100,
+        cost: 0.01,
+        success: true,
+        modelTier: 2,
+        timestamp: Date.now() - 86400000 // 1 day ago
+      };
+
+      await reasoningBank.storePattern(oldEmbedding, oldOutcome);
+      
+      // Search should still find the pattern but with reduced weight
+      const patterns = await reasoningBank.findSimilarPatterns(oldEmbedding, 1);
+      
+      expect(patterns.length).toBe(1);
+      // The pattern should still be there, decay is handled internally during search
+    });
+  });
+
+  describe('Recent Patterns', () => {
+    test('should retrieve recent patterns for consolidation', async () => {
+      // Store several patterns with different timestamps
+      for (let i = 0; i < 5; i++) {
+        const embedding = new Array(256).fill(0.1 + i * 0.1);
+        const outcome: LearningOutcome = {
+          taskId: `recent-task-${i}`,
+          taskEmbedding: {
+            vector: embedding,
+            metadata: { taskType: 'test', complexity: 0.5 }
+          },
+          quality: 0.8,
+          latency: 100,
+          cost: 0.01,
+          success: true,
+          modelTier: 2,
+          timestamp: Date.now() - i * 1000 // Different timestamps
+        };
+
+        await reasoningBank.storePattern(embedding, outcome);
+      }
+
+      const recentPatterns = await reasoningBank.getRecentPatterns(3);
+      
+      expect(recentPatterns).toHaveLength(3);
+      
+      // Should be sorted by timestamp (newest first)
+      for (let i = 1; i < recentPatterns.length; i++) {
+        expect(recentPatterns[i - 1].timestamp).toBeGreaterThanOrEqual(recentPatterns[i].timestamp);
+      }
+    });
+  });
+
+  describe('Statistics and Monitoring', () => {
+    test('should provide comprehensive statistics', () => {
+      const stats = reasoningBank.getStats();
+      
+      expect(stats).toHaveProperty('totalPatterns');
+      expect(stats).toHaveProperty('capacity');
+      expect(stats).toHaveProperty('utilizationPercent');
+      expect(stats).toHaveProperty('numClusters');
+      expect(stats).toHaveProperty('searchStats');
+      expect(stats).toHaveProperty('clusterStats');
+      expect(stats).toHaveProperty('lastRebalance');
+      expect(stats).toHaveProperty('config');
+    });
+
+    test('should track search statistics', async () => {
+      const queryEmbedding = new Array(256).fill(0.5);
+      
+      // Perform some searches
+      await reasoningBank.findSimilarPatterns(queryEmbedding, 3);
+      await reasoningBank.findSimilarPatterns(queryEmbedding, 3);
+      
+      const stats = reasoningBank.getStats();
+      
+      // @ts-expect-error - Post-Merge Reconciliation
+      expect(parseInt(stats.searchStats.totalSearches)).toBeGreaterThan(0);
+      expect(parseFloat(stats.searchStats.avgLatencyMs)).toBeGreaterThan(0);
+    });
+
+    test('should calculate utilization percentage', async () => {
+      // Store some patterns
+      for (let i = 0; i < 10; i++) {
+        const embedding = new Array(256).fill(0.5);
+        const outcome: LearningOutcome = {
+          taskId: `util-task-${i}`,
+          taskEmbedding: {
+            vector: embedding,
+            metadata: { taskType: 'test', complexity: 0.5 }
+          },
+          quality: 0.8,
+          latency: 100,
+          cost: 0.01,
+          success: true,
+          modelTier: 2,
+          timestamp: Date.now()
+        };
+
+        await reasoningBank.storePattern(embedding, outcome);
+      }
+
+      const stats = reasoningBank.getStats();
+      const utilization = parseFloat(stats.utilizationPercent);
+      
+      expect(utilization).toBeGreaterThan(0);
+      expect(utilization).toBeLessThanOrEqual(100);
+      expect(utilization).toBe(1.0); // 10/1000 * 100 = 1.0%
+    });
+  });
+
+  describe('Event Emission', () => {
+    test('should emit pattern storage events', async () => {
+      const eventHandler = jest.fn();
+      reasoningBank.on('pattern-stored', eventHandler);
+
+      const embedding = new Array(256).fill(0.5);
+      const outcome: LearningOutcome = {
+        taskId: 'event-task',
+        taskEmbedding: {
+          vector: embedding,
+          metadata: { taskType: 'test', complexity: 0.5 }
+        },
+        quality: 0.8,
+        latency: 100,
+        cost: 0.01,
+        success: true,
+        modelTier: 2,
+        timestamp: Date.now()
+      };
+
+      await reasoningBank.storePattern(embedding, outcome);
+
+      expect(eventHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          patternId: expect.any(String),
+          clusterId: expect.any(Number),
+          quality: 0.8
+        })
+      );
+    });
+
+    test('should emit pattern search events', async () => {
+      const eventHandler = jest.fn();
+      reasoningBank.on('pattern-search', eventHandler);
+
+      const queryEmbedding = new Array(256).fill(0.5);
+      
+      await reasoningBank.findSimilarPatterns(queryEmbedding, 3);
+
+      expect(eventHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          latencyMs: expect.any(Number),
+          clustersSearched: expect.any(Number),
+          resultsReturned: expect.any(Number)
+        })
+      );
+    });
+  });
+
+  describe('Reset and Shutdown', () => {
+    test('should reset reasoning bank state', async () => {
+      // Store some patterns first
+      const embedding = new Array(256).fill(0.5);
+      const outcome: LearningOutcome = {
+        taskId: 'reset-task',
+        taskEmbedding: {
+          vector: embedding,
+          metadata: { taskType: 'test', complexity: 0.5 }
+        },
+        quality: 0.8,
+        latency: 100,
+        cost: 0.01,
+        success: true,
+        modelTier: 2,
+        timestamp: Date.now()
+      };
+
+      await reasoningBank.storePattern(embedding, outcome);
+      
+      let stats = reasoningBank.getStats();
+      expect(stats.totalPatterns).toBe(1);
+
+      await reasoningBank.reset();
+      
+      stats = reasoningBank.getStats();
+      expect(stats.totalPatterns).toBe(0);
+    });
+
+    test('should shutdown gracefully', async () => {
+      const embedding = new Array(256).fill(0.5);
+      const outcome: LearningOutcome = {
+        taskId: 'shutdown-task',
+        taskEmbedding: {
+          vector: embedding,
+          metadata: { taskType: 'test', complexity: 0.5 }
+        },
+        quality: 0.8,
+        latency: 100,
+        cost: 0.01,
+        success: true,
+        modelTier: 2,
+        timestamp: Date.now()
+      };
+
+      await reasoningBank.storePattern(embedding, outcome);
+      
+      await expect(reasoningBank.shutdown()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('Error Handling', () => {
+    test('should handle storage errors gracefully', async () => {
+      const invalidEmbedding = new Array(100).fill(0.5); // Wrong dimension
+      const outcome: LearningOutcome = {
+        taskId: 'error-task',
+        taskEmbedding: {
+          vector: invalidEmbedding,
+          metadata: { taskType: 'test', complexity: 0.5 }
+        },
+        quality: 0.8,
+        latency: 100,
+        cost: 0.01,
+        success: true,
+        modelTier: 2,
+        timestamp: Date.now()
+      };
+
+      // Should handle dimension mismatch gracefully
+      await expect(reasoningBank.storePattern(invalidEmbedding, outcome)).rejects.toThrow();
+    });
+
+    test('should handle search errors gracefully', async () => {
+      const invalidEmbedding = new Array(100).fill(0.5); // Wrong dimension
+      
+      await expect(reasoningBank.findSimilarPatterns(invalidEmbedding, 3)).rejects.toThrow();
+    });
+  });
+});

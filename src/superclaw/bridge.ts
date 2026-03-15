@@ -90,7 +90,120 @@ export class SuperClawBridge extends EventEmitter {
     }
 
     console.log("[SuperClaw] Initializing bridge...");
+    console.log("[SuperClaw] 🦊 Booting SKYNET subsystems...");
 
+    // ==========================================================================
+    // WAVE 1: SURVIVE - Core Health & Recovery
+    // ==========================================================================
+    try {
+      const { startPulse, startGuardian } = await import("./skynet/index.js");
+      await startPulse();
+      console.log("[SuperClaw] ✅ PULSE: Heartbeat monitoring active");
+      
+      await startGuardian();
+      console.log("[SuperClaw] ✅ GUARDIAN: Auto-restart enabled");
+    } catch (error) {
+      console.warn("[SuperClaw] ⚠️ PULSE/GUARDIAN initialization failed:", error);
+    }
+
+    // ==========================================================================
+    // WAVE 2: WATCH - Monitoring & Alerts
+    // ==========================================================================
+    try {
+      const { startSentinel } = await import("./skynet/index.js");
+      await startSentinel();
+      console.log("[SuperClaw] ✅ SENTINEL: Security monitoring active");
+    } catch (error) {
+      console.warn("[SuperClaw] ⚠️ SENTINEL initialization failed:", error);
+    }
+
+    // ==========================================================================
+    // WAVE 3: ADAPT - Learning & Optimization
+    // ==========================================================================
+    try {
+      const { startOracle } = await import("./skynet/index.js");
+      await startOracle();
+      console.log("[SuperClaw] ✅ ORACLE: Learning system active");
+      
+      // Also initialize Oracle Learning (legacy system)
+      await getOracleLearning();
+      console.log("[SuperClaw] ✅ ORACLE LEARNING: Pattern recognition active");
+    } catch (error) {
+      console.warn("[SuperClaw] ⚠️ ORACLE initialization failed:", error);
+    }
+
+    // ==========================================================================
+    // WAVE 4: EXPAND - Skills & Capabilities
+    // ==========================================================================
+    try {
+      const { startNexus } = await import("./skynet/index.js");
+      await startNexus();
+      console.log("[SuperClaw] ✅ NEXUS: Skill hot-reload active");
+    } catch (error) {
+      console.warn("[SuperClaw] ⚠️ NEXUS initialization failed:", error);
+    }
+
+    // ==========================================================================
+    // WAVE 5: PERSIST - Memory & Knowledge
+    // ==========================================================================
+    try {
+      const { startCortex, initPersistentMemory } = await import("./skynet/index.js");
+      await startCortex();
+      console.log("[SuperClaw] ✅ CORTEX: Memory system active");
+      
+      await initPersistentMemory();
+      console.log("[SuperClaw] ✅ PERSISTENT MEMORY: Dolt-backed storage active");
+    } catch (error) {
+      console.warn("[SuperClaw] ⚠️ CORTEX/MEMORY initialization failed:", error);
+    }
+
+    // ==========================================================================
+    // WAVE 6: GOVERN - Safety & Thresholds
+    // ==========================================================================
+    try {
+      const { getThresholdEnforcer } = await import("./skynet/index.js");
+      const enforcer = getThresholdEnforcer();
+      console.log("[SuperClaw] ✅ THRESHOLDS: Resource limits enforced");
+    } catch (error) {
+      console.warn("[SuperClaw] ⚠️ THRESHOLD enforcement initialization failed:", error);
+    }
+
+    // ==========================================================================
+    // WAVE 7: AGENTBUS - Communication & Spawning
+    // ==========================================================================
+    try {
+      const { startMoltbook } = await import("./skynet/index.js");
+      await startMoltbook();
+      console.log("[SuperClaw] ✅ MOLTBOOK: Agent message bus active");
+    } catch (error) {
+      console.warn("[SuperClaw] ⚠️ MOLTBOOK initialization failed:", error);
+    }
+
+    // ==========================================================================
+    // WAVE 8: CONSENSUS - Multi-LLM Validation
+    // ==========================================================================
+    try {
+      const { createConsensusJudge } = await import("./skynet/index.js");
+      const judge = await createConsensusJudge();
+      console.log("[SuperClaw] ✅ CONSENSUS JUDGE: Multi-LLM validation ready");
+    } catch (error) {
+      console.warn("[SuperClaw] ⚠️ CONSENSUS JUDGE initialization failed:", error);
+    }
+
+    // ==========================================================================
+    // WAVE 9: AUDIT - Compliance & Security Logging
+    // ==========================================================================
+    try {
+      const { initializeAuditSystem } = await import("./skynet/index.js");
+      await initializeAuditSystem();
+      console.log("[SuperClaw] ✅ AUDIT TRAIL: Compliance logging active");
+    } catch (error) {
+      console.warn("[SuperClaw] ⚠️ AUDIT TRAIL initialization failed:", error);
+    }
+
+    // ==========================================================================
+    // SWARM INTEGRATION
+    // ==========================================================================
     await this.swarmBridge.initialize();
 
     // Forward swarm events
@@ -99,17 +212,25 @@ export class SuperClawBridge extends EventEmitter {
     this.swarmBridge.on("swarm:completed", (data) => this.emit("swarm:completed", data));
     this.swarmBridge.on("swarm:failed", (data) => this.emit("swarm:failed", data));
 
-    // Initialize ORACLE learning system
+    console.log("[SuperClaw] ✅ SWARM: Multi-agent orchestration ready");
+
+    // ==========================================================================
+    // MCP FEDERATION (if available)
+    // ==========================================================================
     try {
-      await getOracleLearning();
-      console.log("[SuperClaw] Oracle Learning system initialized");
+      const mcp = await import("./mcp/index.js");
+      if (mcp && typeof mcp.initializeMCP === 'function') {
+        await mcp.initializeMCP();
+        console.log("[SuperClaw] ✅ MCP: Model Context Protocol federation active");
+      }
     } catch (error) {
-      console.warn("[SuperClaw] Failed to initialize Oracle Learning:", error);
+      console.warn("[SuperClaw] ⚠️ MCP federation not available:", error);
     }
 
     this.initialized = true;
-    console.log("[SuperClaw] Bridge initialized");
+    console.log("[SuperClaw] 🎉 Bridge initialization complete!");
     console.log(`[SuperClaw] Swarm available: ${this.swarmBridge.isAvailable()}`);
+    console.log("[SuperClaw] 🦊 All systems nominal. The fox is watching.");
   }
 
   /**

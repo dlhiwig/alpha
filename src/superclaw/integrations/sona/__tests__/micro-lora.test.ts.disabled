@@ -1,0 +1,348 @@
+/**
+ * MicroLoRA Adapter Tests
+ * 
+ * Tests for the fast per-request adaptation layer including:
+ * - Ultra-fast adaptation (<100μs target)
+ * - Weight updates based on feedback
+ * - Matrix initialization and operations
+ * - EWC regularization
+ * - Consolidation to BaseLoRA
+ */
+
+import { jest } from '@jest/globals';
+import { MicroLoraAdapter, type MicroLoraConfig, type TaskMetadata } from '../micro-lora';
+
+describe('MicroLoraAdapter', () => {
+  let adapter: MicroLoraAdapter;
+  let mockConfig: MicroLoraConfig;
+
+  beforeEach(() => {
+    mockConfig = {
+      rank: 2,
+      learningRate: 0.001,
+      embeddingDim: 256,
+      adaptationStrength: 0.1,
+      maxAdaptation: 0.5,
+      weightDecay: 1e-5
+    };
+    
+    adapter = new MicroLoraAdapter(mockConfig);
+  });
+
+  afterEach(async () => {
+    await adapter.shutdown();
+  });
+
+  describe('Initialization', () => {
+    test('should initialize with correct configuration', () => {
+      const stats = adapter.getStats();
+      
+      expect(stats.config.rank).toBe(2);
+      expect(stats.config.embeddingDim).toBe(256);
+      expect(stats.config.learningRate).toBe(0.001);
+    });
+
+    test('should initialize with default values for optional config', () => {
+      const minimalConfig: MicroLoraConfig = {
+        rank: 2,
+        learningRate: 0.001,
+        embeddingDim: 256
+      };
+      
+      const minimalAdapter = new MicroLoraAdapter(minimalConfig);
+      const stats = minimalAdapter.getStats();
+      
+      expect(stats.config.adaptationStrength).toBe(0.1);
+      expect(stats.config.maxAdaptation).toBe(0.5);
+      expect(stats.config.weightDecay).toBe(1e-5);
+      
+      minimalAdapter.shutdown();
+    });
+  });
+
+  describe('Fast Adaptation', () => {
+    test('should adapt embedding within latency target', async () => {
+      const embedding = new Array(256).fill(0.5);
+      const metadata: TaskMetadata = {
+        taskType: 'test',
+        complexity: 0.5
+      };
+
+      const startTime = process.hrtime.bigint();
+      const adaptedEmbedding = await adapter.adapt(embedding, metadata);
+      const endTime = process.hrtime.bigint();
+      
+      const latencyUs = Number(endTime - startTime) / 1000;
+      
+      expect(adaptedEmbedding).toHaveLength(256);
+      expect(latencyUs).toBeLessThan(500); // Target <100μs, allow 500μs for test environment
+      expect(adaptedEmbedding).not.toEqual(embedding); // Should be different after adaptation
+    });
+
+    test('should handle different embedding dimensions', async () => {
+      const config128: MicroLoraConfig = {
+        rank: 1,
+        learningRate: 0.001,
+        embeddingDim: 128
+      };
+      
+      const adapter128 = new MicroLoraAdapter(config128);
+      const embedding = new Array(128).fill(0.3);
+      const metadata: TaskMetadata = {
+        taskType: 'test',
+        complexity: 0.3
+      };
+
+      const adaptedEmbedding = await adapter128.adapt(embedding, metadata);
+      
+      expect(adaptedEmbedding).toHaveLength(128);
+      
+      adapter128.shutdown();
+    });
+
+    test('should track adaptation history', async () => {
+      const embedding = new Array(256).fill(0.5);
+      const metadata: TaskMetadata = {
+        taskType: 'test',
+        complexity: 0.5
+      };
+
+      await adapter.adapt(embedding, metadata);
+      await adapter.adapt(embedding, metadata);
+      
+      const stats = adapter.getStats();
+      expect(stats.adaptationHistory).toBe(2);
+    });
+
+    test('should limit adaptation history for memory management', async () => {
+      const embedding = new Array(256).fill(0.5);
+      const metadata: TaskMetadata = {
+        taskType: 'test',
+        complexity: 0.5
+      };
+
+      // Simulate many adaptations
+      for (let i = 0; i < 1100; i++) {
+        await adapter.adapt(embedding, metadata);
+      }
+      
+      const stats = adapter.getStats();
+      expect(stats.adaptationHistory).toBeLessThanOrEqual(1000); // Should be capped at 1000
+    });
+  });
+
+  describe('Weight Updates', () => {
+    test('should update weights based on positive feedback', async () => {
+      const originalEmbedding = new Array(256).fill(0.5);
+      const adaptedEmbedding = new Array(256).fill(0.6);
+      
+      const initialStats = adapter.getStats();
+      const initialNorm = initialStats.matrixStats.aNorm;
+      
+      await adapter.updateWeights(originalEmbedding, adaptedEmbedding, 0.9, true);
+      
+      const updatedStats = adapter.getStats();
+      expect(updatedStats.updateCount).toBe(1);
+      
+      // Matrix norms should have changed (indicating weight updates)
+      expect(updatedStats.matrixStats.aNorm).not.toBe(initialNorm);
+    });
+
+    test('should not update weights for poor quality outcomes', async () => {
+      const originalEmbedding = new Array(256).fill(0.5);
+      const adaptedEmbedding = new Array(256).fill(0.6);
+      
+      const initialStats = adapter.getStats();
+      const initialUpdateCount = initialStats.updateCount;
+      
+      await adapter.updateWeights(originalEmbedding, adaptedEmbedding, 0.2, false);
+      
+      const updatedStats = adapter.getStats();
+      expect(updatedStats.updateCount).toBe(initialUpdateCount); // Should not increment
+    });
+
+    test('should scale learning rate by quality', async () => {
+      const originalEmbedding = new Array(256).fill(0.5);
+      const adaptedEmbedding = new Array(256).fill(0.6);
+      
+      // High quality update
+      await adapter.updateWeights(originalEmbedding, adaptedEmbedding, 0.9, true);
+      const highQualityStats = adapter.getStats();
+      
+      // Reset for comparison
+      await adapter.reset();
+      
+      // Low quality update
+      await adapter.updateWeights(originalEmbedding, adaptedEmbedding, 0.4, true);
+      const lowQualityStats = adapter.getStats();
+      
+      expect(highQualityStats.updateCount).toBe(1);
+      expect(lowQualityStats.updateCount).toBe(1);
+    });
+  });
+
+  describe('Consolidation', () => {
+    test('should consolidate MicroLoRA to BaseLoRA', async () => {
+      // First, do some adaptations to populate MicroLoRA
+      const embedding = new Array(256).fill(0.5);
+      const metadata: TaskMetadata = {
+        taskType: 'test',
+        complexity: 0.5
+      };
+
+      await adapter.adapt(embedding, metadata);
+      await adapter.updateWeights(embedding, embedding, 0.8, true);
+      
+      const preConsolidationStats = adapter.getStats();
+      const preBaseNorm = preConsolidationStats.matrixStats.baseANorm;
+      
+      await adapter.consolidateToBase();
+      
+      const postConsolidationStats = adapter.getStats();
+      
+      // BaseLoRA matrices should have changed (absorbed MicroLoRA patterns)
+      expect(postConsolidationStats.matrixStats.baseANorm).not.toBe(preBaseNorm);
+    });
+  });
+
+  describe('EWC Regularization', () => {
+    test('should apply EWC regularization', async () => {
+      const fisherMatrix = new Float32Array(256);
+      fisherMatrix.fill(0.1); // Uniform Fisher information
+      
+      const preRegularizationStats = adapter.getStats();
+      const preNorm = preRegularizationStats.matrixStats.aNorm;
+      
+      await adapter.applyEwcRegularization(fisherMatrix, 10.0);
+      
+      const postRegularizationStats = adapter.getStats();
+      
+      // Matrix norms should have changed due to regularization
+      expect(postRegularizationStats.matrixStats.aNorm).not.toBe(preNorm);
+    });
+
+    test('should handle zero Fisher information', async () => {
+      const fisherMatrix = new Float32Array(256);
+      fisherMatrix.fill(0); // No Fisher information
+      
+      await expect(adapter.applyEwcRegularization(fisherMatrix, 10.0)).resolves.toBeUndefined();
+    });
+  });
+
+  describe('Statistics and Monitoring', () => {
+    test('should provide comprehensive statistics', () => {
+      const stats = adapter.getStats();
+      
+      expect(stats).toHaveProperty('updateCount');
+      expect(stats).toHaveProperty('adaptationHistory');
+      expect(stats).toHaveProperty('avgLatencyUs');
+      expect(stats).toHaveProperty('config');
+      expect(stats).toHaveProperty('matrixStats');
+      
+      expect(stats.matrixStats).toHaveProperty('aNorm');
+      expect(stats.matrixStats).toHaveProperty('bNorm');
+      expect(stats.matrixStats).toHaveProperty('baseANorm');
+      expect(stats.matrixStats).toHaveProperty('baseBNorm');
+    });
+
+    test('should calculate average latency correctly', async () => {
+      const embedding = new Array(256).fill(0.5);
+      const metadata: TaskMetadata = {
+        taskType: 'test',
+        complexity: 0.5
+      };
+
+      // Do multiple adaptations
+      await adapter.adapt(embedding, metadata);
+      await adapter.adapt(embedding, metadata);
+      await adapter.adapt(embedding, metadata);
+      
+      const stats = adapter.getStats();
+      expect(parseFloat(stats.avgLatencyUs)).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Event Emission', () => {
+    test('should emit adaptation events', async () => {
+      const eventHandler = jest.fn();
+      adapter.on('adaptation-completed', eventHandler);
+
+      const embedding = new Array(256).fill(0.5);
+      const metadata: TaskMetadata = {
+        taskType: 'test',
+        complexity: 0.5
+      };
+
+      await adapter.adapt(embedding, metadata);
+
+      expect(eventHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          originalEmbedding: embedding,
+          adaptedEmbedding: expect.any(Array),
+          latencyUs: expect.any(Number),
+          adaptationStrength: expect.any(Number),
+          similarityScore: expect.any(Number)
+        })
+      );
+    });
+  });
+
+  describe('Reset and Shutdown', () => {
+    test('should reset adapter state', async () => {
+      const embedding = new Array(256).fill(0.5);
+      const metadata: TaskMetadata = {
+        taskType: 'test',
+        complexity: 0.5
+      };
+
+      await adapter.adapt(embedding, metadata);
+      await adapter.updateWeights(embedding, embedding, 0.8, true);
+      
+      let stats = adapter.getStats();
+      expect(stats.updateCount).toBeGreaterThan(0);
+      expect(stats.adaptationHistory).toBeGreaterThan(0);
+
+      await adapter.reset();
+      
+      stats = adapter.getStats();
+      expect(stats.updateCount).toBe(0);
+      expect(stats.adaptationHistory).toBe(0);
+    });
+
+    test('should shutdown gracefully', async () => {
+      const embedding = new Array(256).fill(0.5);
+      const metadata: TaskMetadata = {
+        taskType: 'test',
+        complexity: 0.5
+      };
+
+      await adapter.adapt(embedding, metadata);
+      
+      await expect(adapter.shutdown()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('Error Handling', () => {
+    test('should handle adaptation errors gracefully', async () => {
+      const invalidEmbedding = new Array(100).fill(0.5); // Wrong dimension
+      const metadata: TaskMetadata = {
+        taskType: 'test',
+        complexity: 0.5
+      };
+
+      // Should throw error for dimension mismatch
+      await expect(adapter.adapt(invalidEmbedding, metadata)).rejects.toThrow();
+    });
+
+    test('should handle weight update errors gracefully', async () => {
+      const mismatchedEmbeddings = [
+        new Array(256).fill(0.5),
+        new Array(100).fill(0.6) // Different dimension
+      ];
+
+      await expect(
+        adapter.updateWeights(mismatchedEmbeddings[0], mismatchedEmbeddings[1], 0.8, true)
+      ).resolves.toBeUndefined(); // Should not crash
+    });
+  });
+});

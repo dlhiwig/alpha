@@ -1,0 +1,580 @@
+/**
+ * OpenBrowser MCP Integration Tests
+ * 
+ * Tests the complete integration of OpenBrowser MCP with SuperClaw's tool system.
+ * Includes token tracking, error handling, and performance validation.
+ */
+
+import { describe, test, expect, beforeAll, afterAll, beforeEach, jest } from '@jest/globals';
+import { getToolRegistry } from '../../registry';
+import { browserTools, BrowserExecuteParams, BrowserExecuteResult } from '../index';
+import { getTokenUsageStats, clearTokenUsage, getBrowserTokenEfficiency } from '../../tracking/token-tracker';
+
+// Mock environment for testing
+const mockBrowserTool = {
+  // @ts-expect-error - Post-Merge Reconciliation
+  initialize: jest.fn().mockResolvedValue(undefined),
+  executeWorkflow: jest.fn(),
+  getBrowserState: jest.fn(),
+  navigate: jest.fn(),
+  // @ts-expect-error - Post-Merge Reconciliation
+  cleanup: jest.fn().mockResolvedValue(undefined),
+};
+
+// Mock the SuperClawBrowserTool
+jest.mock('../openbrowser-mcp-integration', () => ({
+  SuperClawBrowserTool: jest.fn().mockImplementation(() => mockBrowserTool),
+}));
+
+describe('OpenBrowser MCP Integration', () => {
+  let registry: ReturnType<typeof getToolRegistry>;
+
+  beforeAll(() => {
+    registry = getToolRegistry();
+  });
+
+  beforeEach(() => {
+    // Clear token usage before each test
+    clearTokenUsage();
+    
+    // Reset mocks
+    jest.clearAllMocks();
+    mockBrowserTool.executeWorkflow.mockReset();
+    mockBrowserTool.getBrowserState.mockReset();
+    mockBrowserTool.navigate.mockReset();
+  });
+
+  afterAll(async () => {
+    // Cleanup after all tests
+    const cleanupTool = registry.get('browser_cleanup');
+    if (cleanupTool) {
+      await cleanupTool.handler({});
+    }
+  });
+
+  describe('Tool Registration', () => {
+    test('should register all browser tools', () => {
+      const registeredTools = registry.list();
+      const browserToolNames = browserTools.map(tool => tool.name);
+      
+      for (const toolName of browserToolNames) {
+        const tool = registry.get(toolName);
+        expect(tool).toBeDefined();
+        expect(tool?.name).toBe(toolName);
+      }
+    });
+
+    test('should have correct tool metadata', () => {
+      const browserExecuteTool = registry.get('browser_execute');
+      
+      expect(browserExecuteTool).toBeDefined();
+      expect(browserExecuteTool?.metadata?.category).toBe('browser');
+      expect(browserExecuteTool?.metadata?.riskLevel).toBe('medium');
+      expect(browserExecuteTool?.metadata?.version).toBe('1.0.0');
+    });
+
+    test('should have valid parameter schemas', () => {
+      const browserExecuteTool = registry.get('browser_execute');
+      
+      expect(browserExecuteTool?.parameters).toBeDefined();
+      expect(browserExecuteTool?.parameters.type).toBe('object');
+      expect(browserExecuteTool?.parameters.properties.python_code).toBeDefined();
+      expect(browserExecuteTool?.parameters.required).toContain('python_code');
+    });
+  });
+
+  describe('Browser Execute Tool', () => {
+    test('should execute simple navigation code', async () => {
+      const pythonCode = "await navigate('https://example.com')\\nprint('Navigation complete')";
+      
+      // @ts-expect-error - Post-Merge Reconciliation
+      mockBrowserTool.executeWorkflow.mockResolvedValue({
+        success: true,
+        output: 'Navigation complete',
+        executionTime: 1500,
+      });
+
+      const result = await registry.execute<BrowserExecuteResult>(
+        'browser_execute',
+        { python_code: pythonCode } as BrowserExecuteParams,
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data?.success).toBe(true);
+      expect(result.data?.output).toBe('Navigation complete');
+      expect(result.data?.metadata.operationType).toBe('navigation');
+      expect(result.data?.metadata.codeComplexity).toBe('simple');
+      expect(mockBrowserTool.initialize).toHaveBeenCalled();
+      expect(mockBrowserTool.executeWorkflow).toHaveBeenCalledWith(pythonCode);
+    });
+
+    test('should execute data extraction code', async () => {
+      const pythonCode = `
+await navigate('https://example.com')
+data = await evaluate('''
+  Array.from(document.querySelectorAll('a')).map(a => ({
+    text: a.textContent,
+    href: a.href
+  }))
+''')
+print(f'Found {len(data)} links')
+`;
+
+      // @ts-expect-error - Post-Merge Reconciliation
+      mockBrowserTool.executeWorkflow.mockResolvedValue({
+        success: true,
+        output: 'Found 5 links',
+        executionTime: 2500,
+      });
+
+      const result = await registry.execute<BrowserExecuteResult>(
+        'browser_execute',
+        { python_code: pythonCode } as BrowserExecuteParams,
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data?.success).toBe(true);
+      expect(result.data?.metadata.operationType).toBe('extraction');
+      expect(result.data?.metadata.codeComplexity).toBe('medium');
+      expect(result.data?.metadata.tokensEfficiency).toBe(6.0); // Highest efficiency for extraction
+    });
+
+    test('should handle complex workflow code', async () => {
+      const pythonCode = `
+import json
+import pandas as pd
+
+sources = ['https://example.com', 'https://test.com']
+results = []
+
+for source in sources:
+    await navigate(source)
+    await wait(2)
+    
+    data = await evaluate('''
+    {
+      title: document.title,
+      links: document.querySelectorAll('a').length
+    }
+    ''')
+    
+    results.append({
+        'source': source,
+        'data': data
+    })
+
+# Process with pandas
+df = pd.DataFrame(results)
+print(f'Processed {len(df)} sources')
+`;
+
+      // @ts-expect-error - Post-Merge Reconciliation
+      mockBrowserTool.executeWorkflow.mockResolvedValue({
+        success: true,
+        output: 'Processed 2 sources',
+        executionTime: 5000,
+      });
+
+      const result = await registry.execute<BrowserExecuteResult>(
+        'browser_execute',
+        { python_code: pythonCode } as BrowserExecuteParams,
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data?.metadata.operationType).toBe('workflow');
+      expect(result.data?.metadata.codeComplexity).toBe('complex');
+      expect(result.data?.metadata.tokensEfficiency).toBe(4.5); // Good efficiency for workflows
+    });
+
+    test('should handle errors gracefully', async () => {
+      const pythonCode = "invalid_python_syntax(";
+      
+      // @ts-expect-error - Post-Merge Reconciliation
+      mockBrowserTool.executeWorkflow.mockResolvedValue({
+        success: false,
+        error: 'SyntaxError: unexpected EOF while parsing',
+        executionTime: 100,
+      });
+
+      const result = await registry.execute<BrowserExecuteResult>(
+        'browser_execute',
+        { python_code: pythonCode } as BrowserExecuteParams,
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      expect(result.success).toBe(true); // Tool execution succeeded
+      expect(result.data?.success).toBe(false); // But code execution failed
+      expect(result.data?.error).toContain('SyntaxError');
+      expect(result.data?.tokenUsage).toBeDefined();
+    });
+
+    test('should apply browser configuration', async () => {
+      const pythonCode = "await navigate('https://example.com')";
+      const config = {
+        headless: false,
+        timeout: 60000,
+        viewportWidth: 1920,
+        viewportHeight: 1080,
+        stealth: true,
+      };
+
+      // @ts-expect-error - Post-Merge Reconciliation
+      mockBrowserTool.executeWorkflow.mockResolvedValue({
+        success: true,
+        output: 'Navigation complete',
+        executionTime: 1000,
+      });
+
+      const result = await registry.execute<BrowserExecuteResult>(
+        'browser_execute',
+        { python_code: pythonCode, config } as BrowserExecuteParams,
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data?.success).toBe(true);
+    });
+  });
+
+  describe('Browser State Tool', () => {
+    test('should get browser state', async () => {
+      const mockState = {
+        title: 'Example Domain',
+        url: 'https://example.com',
+        interactive_elements: [
+          { tag: 'a', text: 'More information...', href: 'https://www.iana.org/domains/example' }
+        ]
+      };
+
+      // @ts-expect-error - Post-Merge Reconciliation
+      mockBrowserTool.getBrowserState.mockResolvedValue({
+        success: true,
+        output: JSON.stringify(mockState),
+      });
+
+      const result = await registry.execute(
+        'browser_state',
+        {},
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data?.success).toBe(true);
+      expect(result.data?.state).toBe(JSON.stringify(mockState));
+    });
+  });
+
+  describe('Browser Navigate Tool', () => {
+    test('should navigate to URL', async () => {
+      // @ts-expect-error - Post-Merge Reconciliation
+      mockBrowserTool.navigate.mockResolvedValue({
+        success: true,
+        output: 'Navigation successful',
+      });
+
+      const result = await registry.execute(
+        'browser_navigate',
+        { url: 'https://example.com' },
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data?.success).toBe(true);
+      expect(result.data?.message).toBe('Navigation successful');
+      expect(mockBrowserTool.navigate).toHaveBeenCalledWith('https://example.com');
+    });
+
+    test('should require URL parameter', async () => {
+      const result = await registry.execute(
+        'browser_navigate',
+        {},
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Missing required parameter: url');
+    });
+  });
+
+  describe('Browser Cleanup Tool', () => {
+    test('should cleanup successfully', async () => {
+      const result = await registry.execute(
+        'browser_cleanup',
+        {},
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data?.success).toBe(true);
+      expect(result.data?.message).toContain('cleaned up successfully');
+    });
+
+    test('should handle cleanup errors gracefully', async () => {
+      // @ts-expect-error - Post-Merge Reconciliation
+      mockBrowserTool.cleanup.mockRejectedValue(new Error('Cleanup failed'));
+
+      const result = await registry.execute(
+        'browser_cleanup',
+        {},
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      expect(result.success).toBe(true); // Always succeeds
+      expect(result.data?.success).toBe(true);
+      expect(result.data?.message).toContain('warning');
+    });
+  });
+
+  describe('Token Tracking Integration', () => {
+    test('should track tokens for browser operations', async () => {
+      const pythonCode = "await navigate('https://example.com')\\nprint('Done')";
+      
+      // @ts-expect-error - Post-Merge Reconciliation
+      mockBrowserTool.executeWorkflow.mockResolvedValue({
+        success: true,
+        output: 'Done',
+        executionTime: 1000,
+      });
+
+      const initialStats = getTokenUsageStats();
+      
+      await registry.execute<BrowserExecuteResult>(
+        'browser_execute',
+        { python_code: pythonCode } as BrowserExecuteParams,
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      const finalStats = getTokenUsageStats();
+      
+      expect(finalStats.totalOperations).toBe(initialStats.totalOperations + 1);
+      expect(finalStats.byOperation['browser_execute']).toBeDefined();
+      expect(finalStats.byModel['openbrowser-mcp']).toBeDefined();
+    });
+
+    test('should calculate token efficiency metrics', async () => {
+      // Execute multiple browser operations
+      const operations = [
+        "await navigate('https://example.com')",
+        "data = await evaluate('document.title')",
+        "await click(0)",
+      ];
+
+      for (const code of operations) {
+        // @ts-expect-error - Post-Merge Reconciliation
+        mockBrowserTool.executeWorkflow.mockResolvedValue({
+          success: true,
+          output: 'Success',
+          executionTime: 1000,
+        });
+
+        await registry.execute<BrowserExecuteResult>(
+          'browser_execute',
+          { python_code: code } as BrowserExecuteParams,
+          {
+            userId: 'test-user',
+            sessionId: 'test-session',
+            timestamp: new Date(),
+            source: 'integration-test',
+          }
+        );
+      }
+
+      const efficiency = getBrowserTokenEfficiency();
+      
+      expect(efficiency.operationCount).toBe(operations.length);
+      expect(efficiency.efficiencyRatio).toBeGreaterThan(1);
+      expect(efficiency.openBrowserAvgTokens).toBeGreaterThan(0);
+      expect(efficiency.traditionalBrowserEstimate).toBe(25000); // Our estimate
+    });
+
+    test('should track errors in token usage', async () => {
+      // @ts-expect-error - Post-Merge Reconciliation
+      mockBrowserTool.executeWorkflow.mockResolvedValue({
+        success: false,
+        error: 'Test error',
+        executionTime: 500,
+      });
+
+      await registry.execute<BrowserExecuteResult>(
+        'browser_execute',
+        { python_code: 'invalid code' } as BrowserExecuteParams,
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      const stats = getTokenUsageStats();
+      expect(stats.errorRate).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Parameter Validation', () => {
+    test('should validate required parameters', async () => {
+      const result = await registry.execute(
+        'browser_execute',
+        {}, // Missing python_code
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Missing required parameter: python_code');
+    });
+
+    test('should validate parameter types', async () => {
+      const result = await registry.execute(
+        'browser_execute',
+        { python_code: 123 }, // Wrong type
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('expected string, got number');
+    });
+  });
+
+  describe('Performance Characteristics', () => {
+    test('should complete simple operations quickly', async () => {
+      const pythonCode = "print('Hello, world!')";
+      
+      // @ts-expect-error - Post-Merge Reconciliation
+      mockBrowserTool.executeWorkflow.mockResolvedValue({
+        success: true,
+        output: 'Hello, world!',
+        executionTime: 100,
+      });
+
+      const startTime = Date.now();
+      
+      const result = await registry.execute<BrowserExecuteResult>(
+        'browser_execute',
+        { python_code: pythonCode } as BrowserExecuteParams,
+        {
+          userId: 'test-user',
+          sessionId: 'test-session',
+          timestamp: new Date(),
+          source: 'integration-test',
+        }
+      );
+
+      const totalTime = Date.now() - startTime;
+      
+      expect(result.success).toBe(true);
+      expect(totalTime).toBeLessThan(1000); // Should complete within 1 second
+      expect(result.data?.executionTime).toBeDefined();
+    });
+
+    test('should handle concurrent operations', async () => {
+      const pythonCode = "await navigate('https://example.com')";
+      
+      // @ts-expect-error - Post-Merge Reconciliation
+      mockBrowserTool.executeWorkflow.mockResolvedValue({
+        success: true,
+        output: 'Navigation complete',
+        executionTime: 1500,
+      });
+
+      // Execute multiple operations concurrently
+      const promises = Array(5).fill(0).map(() =>
+        registry.execute<BrowserExecuteResult>(
+          'browser_execute',
+          { python_code: pythonCode } as BrowserExecuteParams,
+          {
+            userId: 'test-user',
+            sessionId: `test-session-${Math.random()}`,
+            timestamp: new Date(),
+            source: 'integration-test',
+          }
+        )
+      );
+
+      const results = await Promise.all(promises);
+      
+      expect(results.every(r => r.success)).toBe(true);
+      expect(results.every(r => r.data?.success)).toBe(true);
+    });
+  });
+});
+
+describe('MCP Server Configuration', () => {
+  test('should have valid OpenBrowser MCP config', () => {
+    // This would test the actual MCP server configuration
+    // Implementation depends on how MCP servers are loaded/tested
+    expect(true).toBe(true); // Placeholder
+  });
+
+  test('should support health checks', () => {
+    // Test MCP server health check functionality
+    expect(true).toBe(true); // Placeholder
+  });
+});

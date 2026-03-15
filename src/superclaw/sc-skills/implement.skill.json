@@ -1,0 +1,42 @@
+{
+  "id": "implement",
+  "name": "Code Implementation",
+  "version": "1.0.0",
+  "description": "Write new code, features, or systems",
+  "triggers": {
+    "keywords": ["implement", "build", "create", "write", "code", "develop", "make"],
+    "patterns": ["write.*code.*for", "create.*function", "build.*system", "implement.*feature"]
+  },
+  "agents": {
+    "required": [
+      { "role": "architect", "focus": "Design the solution structure" },
+      { "role": "coder", "focus": "Write the implementation" }
+    ],
+    "optional": [
+      { "role": "reviewer", "focus": "Code review before delivery" }
+    ]
+  },
+  "input": {
+    "required": [
+      { "name": "objective", "type": "string", "description": "What to build" }
+    ],
+    "optional": [
+      { "name": "language", "type": "string", "description": "Programming language" },
+      { "name": "framework", "type": "string", "description": "Framework or library" }
+    ]
+  },
+  "output": {
+    "format": "code",
+    "sections": [
+      { "name": "design", "required": true },
+      { "name": "implementation", "required": true },
+      { "name": "tests", "required": false },
+      { "name": "usage", "required": true }
+    ]
+  },
+  "hints": {
+    "maxAgents": 3,
+    "timeout": 120000,
+    "parallel": true
+  }
+}

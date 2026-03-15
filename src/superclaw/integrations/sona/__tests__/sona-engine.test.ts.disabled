@@ -1,0 +1,287 @@
+/**
+ * SONA Engine Tests
+ * 
+ * Tests for the core SONA self-learning engine including:
+ * - Trajectory management
+ * - MicroLoRA optimization
+ * - Pattern consolidation
+ * - EWC++ regularization
+ */
+
+import { jest } from '@jest/globals';
+import { SonaEngine, type SonaConfig, type TaskEmbedding, type LearningOutcome } from '../sona-engine';
+
+// Mock the @ruvector/sona package
+jest.mock('@ruvector/sona', () => ({
+  SONA: jest.fn().mockImplementation(() => ({
+    beginTrajectory: jest.fn(),
+    endTrajectory: jest.fn(),
+    applyMicroLora: jest.fn().mockReturnValue(new Float32Array(256)),
+    findPatterns: jest.fn().mockReturnValue([])
+  }))
+}));
+
+describe('SonaEngine', () => {
+  let engine: SonaEngine;
+  let mockConfig: SonaConfig;
+
+  beforeEach(() => {
+    mockConfig = {
+      embeddingDim: 256,
+      microLoraRank: 2,
+      baseLoraRank: 8,
+      learningRate: 0.001,
+      ewcStrength: 100,
+      patternCapacity: 1000,
+      qualityThreshold: 0.7
+    };
+    
+    engine = new SonaEngine(mockConfig);
+  });
+
+  afterEach(async () => {
+    await engine.shutdown();
+  });
+
+  describe('Trajectory Management', () => {
+    test('should begin and track trajectory', () => {
+      const taskEmbedding: TaskEmbedding = {
+        vector: new Array(256).fill(0.5),
+        metadata: {
+          taskType: 'test',
+          complexity: 0.5
+        }
+      };
+
+      const trajectoryId = engine.beginTrajectory(taskEmbedding);
+      
+      expect(trajectoryId).toBeDefined();
+      expect(trajectoryId).toMatch(/^traj_\d+_[a-z0-9]+$/);
+    });
+
+    test('should apply MicroLoRA optimization within latency target', async () => {
+      const taskEmbedding: TaskEmbedding = {
+        vector: new Array(256).fill(0.5),
+        metadata: {
+          taskType: 'test',
+          complexity: 0.5
+        }
+      };
+
+      const trajectoryId = engine.beginTrajectory(taskEmbedding);
+      
+      const startTime = process.hrtime.bigint();
+      const optimizedEmbedding = await engine.applyMicroLoraOptimization(trajectoryId);
+      const endTime = process.hrtime.bigint();
+      
+      const latencyUs = Number(endTime - startTime) / 1000;
+      
+      expect(optimizedEmbedding).toHaveLength(256);
+      expect(latencyUs).toBeLessThan(200); // Target <100μs, allow 200μs for test environment
+    });
+
+    test('should end trajectory with learning outcome', async () => {
+      const taskEmbedding: TaskEmbedding = {
+        vector: new Array(256).fill(0.5),
+        metadata: {
+          taskType: 'test',
+          complexity: 0.5
+        }
+      };
+
+      const trajectoryId = engine.beginTrajectory(taskEmbedding);
+      await engine.applyMicroLoraOptimization(trajectoryId);
+
+      const outcome: LearningOutcome = {
+        taskId: 'test-task-1',
+        taskEmbedding,
+        quality: 0.8,
+        latency: 100,
+        cost: 0.01,
+        success: true,
+        modelTier: 2,
+        timestamp: Date.now()
+      };
+
+      await expect(engine.endTrajectory(trajectoryId, outcome)).resolves.toBeUndefined();
+    });
+
+    test('should handle trajectory not found gracefully', async () => {
+      await expect(engine.applyMicroLoraOptimization('nonexistent')).rejects.toThrow('Trajectory nonexistent not found');
+    });
+  });
+
+  describe('Pattern Finding', () => {
+    test('should find similar patterns', async () => {
+      const taskEmbedding = new Array(256).fill(0.5);
+      
+      const patterns = await engine.findSimilarPatterns(taskEmbedding, 3);
+      
+      expect(Array.isArray(patterns)).toBe(true);
+      expect(patterns.length).toBeLessThanOrEqual(3);
+    });
+
+    test('should handle pattern search errors gracefully', async () => {
+      const invalidEmbedding = new Array(100).fill(0.5); // Wrong dimension
+      
+      const patterns = await engine.findSimilarPatterns(invalidEmbedding);
+      
+      expect(Array.isArray(patterns)).toBe(true);
+      expect(patterns.length).toBe(0);
+    });
+  });
+
+  describe('Statistics and Monitoring', () => {
+    test('should provide engine statistics', () => {
+      const stats = engine.getStats();
+      
+      expect(stats).toHaveProperty('totalLearningEvents');
+      expect(stats).toHaveProperty('activeTrajectories');
+      expect(stats).toHaveProperty('lastConsolidation');
+      expect(stats).toHaveProperty('config');
+      expect(stats.totalLearningEvents).toBe(0);
+      expect(stats.activeTrajectories).toBe(0);
+    });
+
+    test('should track learning events', async () => {
+      const taskEmbedding: TaskEmbedding = {
+        vector: new Array(256).fill(0.5),
+        metadata: {
+          taskType: 'test',
+          complexity: 0.5
+        }
+      };
+
+      const trajectoryId = engine.beginTrajectory(taskEmbedding);
+      await engine.applyMicroLoraOptimization(trajectoryId);
+
+      const outcome: LearningOutcome = {
+        taskId: 'test-task-1',
+        taskEmbedding,
+        quality: 0.8,
+        latency: 100,
+        cost: 0.01,
+        success: true,
+        modelTier: 2,
+        timestamp: Date.now()
+      };
+
+      await engine.endTrajectory(trajectoryId, outcome);
+
+      const stats = engine.getStats();
+      expect(stats.totalLearningEvents).toBe(1);
+    });
+  });
+
+  describe('Event Emission', () => {
+    test('should emit trajectory completion events', async () => {
+      const eventHandler = jest.fn();
+      engine.on('trajectory-completed', eventHandler);
+
+      const taskEmbedding: TaskEmbedding = {
+        vector: new Array(256).fill(0.5),
+        metadata: {
+          taskType: 'test',
+          complexity: 0.5
+        }
+      };
+
+      const trajectoryId = engine.beginTrajectory(taskEmbedding);
+      await engine.applyMicroLoraOptimization(trajectoryId);
+
+      const outcome: LearningOutcome = {
+        taskId: 'test-task-1',
+        taskEmbedding,
+        quality: 0.8,
+        latency: 100,
+        cost: 0.01,
+        success: true,
+        modelTier: 2,
+        timestamp: Date.now()
+      };
+
+      await engine.endTrajectory(trajectoryId, outcome);
+
+      expect(eventHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          trajectoryId,
+          outcome
+        })
+      );
+    });
+  });
+
+  describe('Reset and Shutdown', () => {
+    test('should reset engine state', async () => {
+      const taskEmbedding: TaskEmbedding = {
+        vector: new Array(256).fill(0.5),
+        metadata: {
+          taskType: 'test',
+          complexity: 0.5
+        }
+      };
+
+      engine.beginTrajectory(taskEmbedding);
+      
+      let stats = engine.getStats();
+      expect(stats.activeTrajectories).toBe(1);
+
+      await engine.reset();
+      
+      stats = engine.getStats();
+      expect(stats.activeTrajectories).toBe(0);
+      expect(stats.totalLearningEvents).toBe(0);
+    });
+
+    test('should shutdown gracefully', async () => {
+      const taskEmbedding: TaskEmbedding = {
+        vector: new Array(256).fill(0.5),
+        metadata: {
+          taskType: 'test',
+          complexity: 0.5
+        }
+      };
+
+      engine.beginTrajectory(taskEmbedding);
+      
+      await expect(engine.shutdown()).resolves.toBeUndefined();
+      
+      // Should have cleaned up active trajectories
+      const stats = engine.getStats();
+      expect(stats.activeTrajectories).toBe(0);
+    });
+  });
+
+  describe('Configuration', () => {
+    test('should use default configuration when none provided', () => {
+      const defaultEngine = new SonaEngine();
+      const stats = defaultEngine.getStats();
+      
+      expect(stats.config.embeddingDim).toBe(256);
+      expect(stats.config.microLoraRank).toBe(2);
+      expect(stats.config.baseLoraRank).toBe(8);
+      expect(stats.config.qualityThreshold).toBe(0.7);
+      
+      defaultEngine.shutdown();
+    });
+
+    test('should override default configuration', () => {
+      const customConfig: SonaConfig = {
+        embeddingDim: 512,
+        microLoraRank: 4,
+        qualityThreshold: 0.9
+      };
+      
+      const customEngine = new SonaEngine(customConfig);
+      const stats = customEngine.getStats();
+      
+      expect(stats.config.embeddingDim).toBe(512);
+      expect(stats.config.microLoraRank).toBe(4);
+      expect(stats.config.qualityThreshold).toBe(0.9);
+      // Should still have defaults for unspecified values
+      expect(stats.config.baseLoraRank).toBe(8);
+      
+      customEngine.shutdown();
+    });
+  });
+});

@@ -1,0 +1,40 @@
+{
+  "id": "research",
+  "name": "Research & Investigation",
+  "version": "1.0.0",
+  "description": "Gather information, compare options, investigate topics",
+  "triggers": {
+    "keywords": ["research", "investigate", "compare", "find", "discover", "explore", "learn", "how does"],
+    "patterns": ["what.*is.*best", "how.*does.*work", "compare.*vs", "find.*information"]
+  },
+  "agents": {
+    "required": [
+      { "role": "researcher", "focus": "Gather and synthesize information" }
+    ],
+    "optional": [
+      { "role": "analyst", "focus": "Compare and evaluate options" },
+      { "role": "writer", "focus": "Format findings clearly" }
+    ]
+  },
+  "input": {
+    "required": [
+      { "name": "topic", "type": "string", "description": "What to research" }
+    ],
+    "optional": [
+      { "name": "depth", "type": "string", "description": "shallow, medium, or deep" }
+    ]
+  },
+  "output": {
+    "format": "markdown",
+    "sections": [
+      { "name": "overview", "required": true },
+      { "name": "findings", "required": true },
+      { "name": "recommendations", "required": false }
+    ]
+  },
+  "hints": {
+    "maxAgents": 3,
+    "timeout": 90000,
+    "parallel": true
+  }
+}

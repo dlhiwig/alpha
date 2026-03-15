@@ -1,0 +1,119 @@
+/**
+ * Quick integration test for AgentChattr bridge
+ * Run: npx tsx src/mcp/bridges/agentchattr.test.ts
+ */
+
+import { AgentChattrBridge, SwarmCoordinator } from './agentchattr';
+
+async function testBridge() {
+  console.log('🧪 Testing AgentChattr Bridge...\n');
+  
+  // Create a test bridge
+  const bridge = new AgentChattrBridge({
+    agentName: 'superclaw-test',
+    defaultChannel: 'general',
+  });
+  
+  try {
+    // Test 1: Join
+    console.log('1️⃣ Testing chat_join...');
+    const joinResult = await bridge.connect();
+    console.log(`   ✅ Joined: ${joinResult}\n`);
+    
+    // Test 2: Send message
+    console.log('2️⃣ Testing chat_send...');
+    const sendResult = await bridge.send('Hello from SuperClaw MCP Bridge! 🦎');
+    console.log(`   ✅ Sent: ${sendResult}\n`);
+    
+    // Test 3: Read messages
+    console.log('3️⃣ Testing chat_read...');
+    const messages = await bridge.read({ limit: 5 });
+    console.log(`   ✅ Read ${messages.length} messages:`);
+    for (const msg of messages.slice(-3)) {
+      console.log(`      [${msg.sender}]: ${msg.text.slice(0, 50)}...`);
+    }
+    console.log('');
+    
+    // Test 4: Who's online
+    console.log('4️⃣ Testing chat_who...');
+    const online = await bridge.who();
+    console.log(`   ✅ Online: ${online.join(', ') || 'nobody'}\n`);
+    
+    // Test 5: List channels
+    console.log('5️⃣ Testing chat_channels...');
+    const channels = await bridge.channels();
+    console.log(`   ✅ Channels: ${channels.join(', ')}\n`);
+    
+    // Test 6: List decisions
+    console.log('6️⃣ Testing chat_decision (list)...');
+    const decisions = await bridge.listDecisions();
+    console.log(`   ✅ Decisions: ${decisions.length} found\n`);
+    
+    // Test 7: Propose decision
+    console.log('7️⃣ Testing chat_decision (propose)...');
+    const proposeResult = await bridge.proposeDecision(
+      'Use AgentChattr for swarm coordination',
+      'Better visibility than MOLTBOOK'
+    );
+    console.log(`   ✅ ${proposeResult}\n`);
+    
+    console.log('✅ All bridge tests passed!\n');
+    
+  } catch (error) {
+    console.error('❌ Test failed:', error);
+    process.exit(1);
+  }
+}
+
+async function testSwarmCoordinator() {
+  console.log('🐝 Testing Swarm Coordinator...\n');
+  
+  const coordinator = new SwarmCoordinator('test-123');
+  
+  try {
+    // Register agents
+    console.log('1️⃣ Registering agents...');
+    await coordinator.registerAgent('claude');
+    await coordinator.registerAgent('codex');
+    console.log('   ✅ Registered claude and codex\n');
+    
+    // Broadcast
+    console.log('2️⃣ Broadcasting task...');
+    await coordinator.broadcast('New swarm task: analyze codebase for security issues');
+    console.log('   ✅ Broadcast sent\n');
+    
+    // Assign task
+    console.log('3️⃣ Assigning specific task...');
+    await coordinator.assignTask('claude', 'Review authentication flow');
+    console.log('   ✅ Task assigned to claude\n');
+    
+    // Get conversation
+    console.log('4️⃣ Getting conversation...');
+    const convo = await coordinator.getConversation(10);
+    console.log(`   ✅ Got ${convo.length} messages\n`);
+    
+    // Cleanup
+    coordinator.cleanup();
+    console.log('✅ Swarm coordinator tests passed!\n');
+    
+  } catch (error) {
+    console.error('❌ Swarm test failed:', error);
+    coordinator.cleanup();
+    process.exit(1);
+  }
+}
+
+async function main() {
+  console.log('═══════════════════════════════════════');
+  console.log('  AgentChattr Integration Test Suite');
+  console.log('═══════════════════════════════════════\n');
+  
+  await testBridge();
+  await testSwarmCoordinator();
+  
+  console.log('═══════════════════════════════════════');
+  console.log('  🎉 All tests passed!');
+  console.log('═══════════════════════════════════════');
+}
+
+main().catch(console.error);

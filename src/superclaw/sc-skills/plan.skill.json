@@ -1,0 +1,42 @@
+{
+  "id": "plan",
+  "name": "Strategic Planning",
+  "version": "1.0.0",
+  "description": "Create plans, roadmaps, and strategies",
+  "triggers": {
+    "keywords": ["plan", "strategy", "roadmap", "schedule", "organize", "prioritize"],
+    "patterns": ["create.*plan.*for", "how.*should.*approach", "what.*order.*should", "prioritize.*tasks"]
+  },
+  "agents": {
+    "required": [
+      { "role": "architect", "focus": "High-level structure and dependencies" }
+    ],
+    "optional": [
+      { "role": "analyst", "focus": "Risk assessment and tradeoffs" },
+      { "role": "writer", "focus": "Clear documentation of the plan" }
+    ]
+  },
+  "input": {
+    "required": [
+      { "name": "goal", "type": "string", "description": "What outcome to plan for" }
+    ],
+    "optional": [
+      { "name": "constraints", "type": "string", "description": "Time, budget, or resource constraints" },
+      { "name": "timeline", "type": "string", "description": "Target completion timeline" }
+    ]
+  },
+  "output": {
+    "format": "markdown",
+    "sections": [
+      { "name": "objective", "required": true },
+      { "name": "phases", "required": true },
+      { "name": "milestones", "required": true },
+      { "name": "risks", "required": false }
+    ]
+  },
+  "hints": {
+    "maxAgents": 3,
+    "timeout": 90000,
+    "parallel": true
+  }
+}
