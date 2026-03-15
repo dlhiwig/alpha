@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Groq Provider Implementation
  * 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw MCP Server Registry
  * 

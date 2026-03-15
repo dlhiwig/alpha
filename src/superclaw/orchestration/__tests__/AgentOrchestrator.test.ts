@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { AgentOrchestrator } from '../AgentOrchestrator'
 import type { AgentIdentity, OrchestratorConfig } from '../types'

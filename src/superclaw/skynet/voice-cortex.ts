@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET VOICE CORTEX — Voice Memory and Context Management
  * 

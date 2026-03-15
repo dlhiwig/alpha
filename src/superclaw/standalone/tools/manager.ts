@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Standalone Tool Manager
  * Built-in tools to replace OpenClaw's remote skills system

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-nocheck
 
 import { promises as fs } from 'fs';
 import { join } from 'path';

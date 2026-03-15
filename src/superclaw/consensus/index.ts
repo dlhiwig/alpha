@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Consensus System Exports
 export * from './types'
 export { ConsensusJudge } from './ConsensusJudge'

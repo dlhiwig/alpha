@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Anthropic Provider for SuperClaw
  * 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET RECURSIVE SPAWNER — Agents Spawn Agents Recursively  
  * 

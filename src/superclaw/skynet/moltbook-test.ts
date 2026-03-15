@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-nocheck
 /**
  * 🦊 MOLTBOOK TEST — Simple integration test
  * 

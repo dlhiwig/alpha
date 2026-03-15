@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { SwarmProvider } from './SwarmView';

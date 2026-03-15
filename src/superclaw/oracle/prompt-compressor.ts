@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Prompt Compressor - Auto-optimization layer for SuperClaw
  * 

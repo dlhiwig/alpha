@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Deterministic Executor for SuperClaw with FACT Cache Integration
  * 

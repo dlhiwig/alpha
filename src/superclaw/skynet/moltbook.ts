@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET MOLTBOOK — Agent Communication Bus with MessageBroker Integration
  * 

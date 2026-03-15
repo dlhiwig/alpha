@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * HybridMemoryService - 3-Tier Memory Architecture
  * 

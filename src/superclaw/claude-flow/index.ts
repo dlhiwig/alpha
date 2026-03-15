@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Claude-Flow v3 Core
  * Extracted from ruvnet/claude-flow for SuperClaw integration

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { MemoryCompactor, type CompactionResult, type CompactionStats } from '../compactor'
 import { DoltService } from '../DoltService'

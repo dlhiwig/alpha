@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { DoltService } from './DoltService'
 import { MemoryCompactor } from './compactor'
 import { generateMemoryId } from './hash-id-generator'

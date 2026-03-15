@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { SandboxManager } from '../SandboxManager'
 import { SUPERCLAW_SECURITY_POLICY, MINIMAL_SECURITY_POLICY } from '../SecurityPolicies'

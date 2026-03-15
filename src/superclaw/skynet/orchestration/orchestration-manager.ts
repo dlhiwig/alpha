@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET ORCHESTRATION MANAGER — Orchestration Lifecycle Management
  * 

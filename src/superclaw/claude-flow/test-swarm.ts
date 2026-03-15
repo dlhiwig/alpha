@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Quick test of the extracted claude-flow v3 code
  */

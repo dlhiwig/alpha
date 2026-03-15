@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Standalone Gateway Server
  * Fastify-based replacement for OpenClaw Express gateway

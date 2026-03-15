@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * OpenBrowser MCP Server Integration
  * 

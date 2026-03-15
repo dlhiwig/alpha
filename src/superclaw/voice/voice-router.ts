@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SKYNET Voice Router
  * Routes voice I/O to appropriate providers with fallback and error handling

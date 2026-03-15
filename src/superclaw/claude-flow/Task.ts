@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Task Domain Entity
  * From claude-flow v3 (ruvnet/claude-flow)

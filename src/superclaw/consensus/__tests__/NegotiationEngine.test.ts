@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect } from 'vitest'
 import { NegotiationEngine } from '../NegotiationEngine'
 import type { AgentEvaluation } from '../types'

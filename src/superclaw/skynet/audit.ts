@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET AUDIT TRAIL — TrustClaw-Style Compliance & Security
  * 

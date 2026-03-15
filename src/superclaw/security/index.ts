@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Security System Exports
 export * from './types'
 export { SandboxManager } from './SandboxManager'

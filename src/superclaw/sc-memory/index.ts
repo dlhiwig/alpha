@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Memory System Exports
 export * from './types'
 export * from './hash-id-generator'

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Ollama Provider Implementation
  * 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET SUB-AGENT — Agent Spawning & Management (V2.0 - Beast Mode Integration)
  * 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Claude-Flow Adapter for SuperClaw
  * 

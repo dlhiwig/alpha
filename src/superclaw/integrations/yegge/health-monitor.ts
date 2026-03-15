@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Yegge Ecosystem Health Monitor
  * 

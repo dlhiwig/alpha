@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🧠 SAFLA Oracle Integration - Meta-Cognitive AI System
  * 

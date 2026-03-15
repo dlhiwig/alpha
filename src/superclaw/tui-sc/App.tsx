@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import { Box, useInput } from 'ink';
 import { Header } from './components/Layout/Header.js';

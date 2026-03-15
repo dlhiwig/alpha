@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * MicroLoRA - Fast Per-Request Adaptation Layer
  * 

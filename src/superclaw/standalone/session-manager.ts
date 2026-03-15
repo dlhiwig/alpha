@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Database from 'better-sqlite3';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs';

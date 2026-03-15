@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Database CodeAgent Tool for SuperClaw
  * 

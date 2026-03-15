@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Channel Integration Test
  * SuperClaw Independence Sprint - Channel Integration

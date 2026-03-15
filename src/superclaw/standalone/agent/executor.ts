@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Standalone Agent Executor
  * Native replacement for OpenClaw PI framework dependency

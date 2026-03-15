@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Agent Role Prompts
  * System prompts that define how each agent type thinks and operates

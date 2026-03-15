@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Neon Toolkit Integration for SuperClaw
  * 

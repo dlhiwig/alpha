@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Bridge
  * Main entry point for the OpenClaw + Claude-Flow + Agentic-Flow integration

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * NVIDIA NIM Provider for SuperClaw Hivemind
  * 

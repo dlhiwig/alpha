@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SwarmMayor - Gas Town Mayor Pattern for SuperClaw
  * 

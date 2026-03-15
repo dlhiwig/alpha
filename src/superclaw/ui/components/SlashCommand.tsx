@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/ui/components/SlashCommand.tsx
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';

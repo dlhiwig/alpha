@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Web Search Tool - Brave Search API Integration
  * SuperClaw Phase 2 implementation

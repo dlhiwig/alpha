@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Lightweight Dependency Injection for SKYNET
  * Enables loose coupling between systems

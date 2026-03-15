@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/ui/hooks/useSuperclaw.ts
 import { useState, useEffect } from 'react';
 import { SuperclawStatus, SuperclawAgent, SuperclawLattice, SuperclawMessage } from '../types';

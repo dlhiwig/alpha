@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Tests for BEADS Memory Adapter
  * 

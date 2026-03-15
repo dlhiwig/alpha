@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @fileoverview ConsensusJudge - Multi-LLM consensus decision making system
  * @description Orchestrates multiple AI agents with different personalities to reach

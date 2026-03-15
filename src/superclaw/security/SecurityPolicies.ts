@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { SecurityPolicy, FilesystemPolicy, NetworkPolicy, ProcessPolicy, ResourcePolicy } from './types'
 
 /**

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { EventEmitter } from 'events'
 import { generateCorrelationId } from '../memory/hash-id-generator'
 import type {

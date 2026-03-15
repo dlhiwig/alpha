@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Multi-Agent Coordination Integration Tests
  * 

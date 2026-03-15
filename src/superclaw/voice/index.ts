@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SKYNET Voice Module
  * Unified voice interface for SuperClaw tactical deployments

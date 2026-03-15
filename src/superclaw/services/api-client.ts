@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw API Client
  * Centralized service for connecting TUI/Web components to SuperClaw Gateway

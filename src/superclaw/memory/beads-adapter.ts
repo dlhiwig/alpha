@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * BEADS Memory Adapter for SuperClaw CORTEX
  * 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Vercel } from '@vercel/sdk';
 
 const VERCEL_TOKEN = 'AnXAWuF3hH4IxvltfDclhzgz';

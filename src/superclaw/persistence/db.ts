@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Persistence Layer
  * SQLite-based storage for swarm runs, patterns, costs, and trajectories

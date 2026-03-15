@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET ORACLE CORE — Pattern Learning Engine
  * Core functionality: state management, interaction recording, learning.

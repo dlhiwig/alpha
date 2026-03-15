@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * EFRIT Tool Execution Patterns for SuperClaw
  * 

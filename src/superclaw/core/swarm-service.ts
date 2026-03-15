@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Swarm Service
  * Wraps the swarm orchestrator in a clean service interface

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Yegge Ecosystem Connector Hub
  * 

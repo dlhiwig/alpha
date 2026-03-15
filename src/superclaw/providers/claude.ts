@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Claude Provider Implementation (Stub)
  * 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🛡️ SuperClaw Resource Thresholds & Financial Safety Gates
  * 

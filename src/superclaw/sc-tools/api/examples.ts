@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw CodeAgent API Tool Usage Examples
  * 

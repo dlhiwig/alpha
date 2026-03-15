@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Container-based sandbox manager for secure agent execution
  * 

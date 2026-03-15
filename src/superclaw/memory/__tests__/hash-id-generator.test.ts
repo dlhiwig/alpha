@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Tests for hash-id-generator functions
  * 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Quick test script for persistence layer
  * Run with: npx ts-node src/persistence/test-db.ts

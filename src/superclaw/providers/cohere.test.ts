@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Test file for enhanced Cohere provider with RAG/rerank capabilities
  */

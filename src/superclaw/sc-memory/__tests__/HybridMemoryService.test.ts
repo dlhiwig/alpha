@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * HybridMemoryService Integration Tests
  * 

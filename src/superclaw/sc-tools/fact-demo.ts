@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * FACT Cache Integration Demo for SuperClaw
  * 

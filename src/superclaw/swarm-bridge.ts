@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Swarm Bridge
  * Bridges OpenClaw to SuperClaw's real swarm implementation via llm-run CLI

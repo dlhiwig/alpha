@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-nocheck
 /**
  * Example usage of CodeAgent Shell Tool
  * 

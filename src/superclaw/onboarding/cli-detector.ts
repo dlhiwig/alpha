@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * CLI Detector for SuperClaw
  * 

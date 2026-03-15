@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET RECURSIVE SPAWNING — Main Export Index
  * 

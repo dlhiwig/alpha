@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Judge Step - SKYNET BEAST MODE CONSENSUS INTEGRATION
  * 

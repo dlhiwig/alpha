@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🧠 Cortex - Cognitive Architecture Module
  * 

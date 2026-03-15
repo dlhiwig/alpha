@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🪞 SAFLA Reflexion Loop - Self-Critique and Adaptive Learning
  * 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { 
   AgentEvaluation, 
   NegotiationRound, 

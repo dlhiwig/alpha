@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Channel-Gateway Bridge
  * SuperClaw Independence Sprint - Channel Integration

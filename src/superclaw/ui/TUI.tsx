@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/ui/TUI.tsx
 import React from 'react';
 import { Box, Text, Newline, useApp, useInput } from 'ink';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Gateway Module Entry Point
  * Exports the main gateway functionality

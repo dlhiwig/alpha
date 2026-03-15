@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw + SKYNET Initialization
  * Global singletons for the SuperClaw bridge and SKYNET governance

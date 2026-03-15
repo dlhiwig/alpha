@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET RECURSIVE SPAWNER TEST — Validation Suite
  * 

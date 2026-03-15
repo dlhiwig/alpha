@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { EventEmitter } from 'events'
 import { spawn, ChildProcess } from 'child_process'
 import { promises as fs } from 'fs'

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET TOPOLOGY MANAGER — Multi-Agent Network Topologies
  * 

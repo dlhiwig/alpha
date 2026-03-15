@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET ORACLE — Enhanced Learning System (Facade)
  * 

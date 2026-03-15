@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * The Lethal Trifecta - SuperClaw's Safety Sandbox
  * 

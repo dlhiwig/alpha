@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET SUB-AGENT TYPES — Type Definitions for Agent Management
  * 

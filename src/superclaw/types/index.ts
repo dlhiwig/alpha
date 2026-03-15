@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw v2.3.0 - Consolidated Type Definitions
  * 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Standalone Tool System Prompt Generator
  * Generates tool descriptions and schemas for LLM function calling

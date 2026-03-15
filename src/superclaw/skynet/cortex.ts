@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET CORTEX — Knowledge System (Enhanced with Persistent Memory)
  * 

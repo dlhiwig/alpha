@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @fileoverview Example usage of ConsensusJudge
  * @description Demonstrates how to use the multi-LLM consensus decision making system

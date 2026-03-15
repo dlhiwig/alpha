@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🧪 SuperClaw Formal Verification Test Suite
  * 

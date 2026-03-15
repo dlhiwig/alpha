@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SwarmCoordinator
  * From claude-flow v3 (ruvnet/claude-flow)

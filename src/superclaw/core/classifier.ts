@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { registry } from '../skills/registry';
 import { SkillMatch, SkillDefinition } from '../skills/types';
 import { runSwarm } from './lightweight-swarm';

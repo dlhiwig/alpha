@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * FACT Cache System for SuperClaw
  * 

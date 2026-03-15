@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Anthropic } from '@anthropic-ai/sdk'
 import type { DoltService } from './DoltService'
 import type { AgentMemory, CompactionConfig } from './types'

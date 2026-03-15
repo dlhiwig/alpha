@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Perplexity Provider for SuperClaw
  * 

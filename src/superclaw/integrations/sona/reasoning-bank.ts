@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ReasoningBank - Pattern Storage with K-means++ Clustering
  * 

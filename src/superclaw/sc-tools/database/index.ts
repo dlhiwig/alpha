@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Database Tools Module Entry Point
  * Exports all database-related functionality

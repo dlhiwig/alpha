@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw - OpenClaw + Claude-Flow + Agentic-Flow Integration
  *

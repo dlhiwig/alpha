@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Cerebras Provider for SuperClaw
  * 

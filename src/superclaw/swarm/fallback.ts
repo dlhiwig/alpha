@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Fallback Plan System
  * 

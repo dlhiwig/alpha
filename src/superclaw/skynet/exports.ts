@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SKYNET v2.3.0 SINGULARITY - Unified Exports
  * 

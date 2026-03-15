@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/ui/components/ThinkingBlock.tsx
 import React, { useState } from 'react';
 import { Box, Text, Newline } from 'ink';

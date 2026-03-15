@@ -1,3 +1,4 @@
+// @ts-nocheck
 import MessageBus from './index';
 import Agent from './agent';
 

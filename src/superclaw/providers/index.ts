@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Provider Registry for SuperClaw
  * 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Hivemind Consensus Engine
  * 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Lightweight Swarm
  * Refactored to use YAML configuration

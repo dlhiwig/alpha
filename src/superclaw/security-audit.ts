@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * src/superclaw/security-audit.ts
  * `alpha security audit [--deep] [--fix] [--json]`

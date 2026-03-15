@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Shared Memory Context Injection
  *

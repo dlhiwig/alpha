@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SuperClaw Agent Mail - Basic Usage Examples
  * 

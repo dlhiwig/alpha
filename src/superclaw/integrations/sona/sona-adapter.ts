@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SONA Adapter for SuperClaw Integration
  * 

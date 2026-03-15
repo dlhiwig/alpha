@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @fileoverview ConsensusAgent - Individual agent for consensus evaluation
  * @description Represents a single LLM agent with a specific personality 

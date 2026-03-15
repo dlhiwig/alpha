@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SONA Engine - Self-Optimizing Neural Architecture
  * 

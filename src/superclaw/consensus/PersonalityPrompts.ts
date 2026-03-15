@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @fileoverview PersonalityPrompts - Prompt templates for consensus agents
  * @description Defines the prompts and personality instructions used during

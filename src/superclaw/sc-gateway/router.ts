@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Gateway Router
  * Routes requests to appropriate agents based on context

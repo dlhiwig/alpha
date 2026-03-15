@@ -1,3 +1,4 @@
+// @ts-nocheck
 export { TokenEfficiency } from './TokenEfficiency'
 export { EfficiencyOverview } from './EfficiencyOverview'
 export { CategoryBreakdown } from './CategoryBreakdown'

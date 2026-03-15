@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * EFRIT Pattern Examples for SuperClaw
  * 

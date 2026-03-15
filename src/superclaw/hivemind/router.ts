@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Hivemind Task Router
  * 

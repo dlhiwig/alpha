@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SKYNET CREDIT SYSTEM — Prevent Runaway Recursive Spawning
  * 

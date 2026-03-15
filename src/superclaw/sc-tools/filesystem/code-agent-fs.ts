@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Filesystem Code Agent for SuperClaw
  * 

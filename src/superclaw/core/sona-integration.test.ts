@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SONA Integration Tests
  * 

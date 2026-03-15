@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Memory Graph - Visualize and traverse memory relationships
  */

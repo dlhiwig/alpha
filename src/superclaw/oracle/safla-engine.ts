@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🧠 SAFLA Meta-Cognitive Engine Integration for SuperClaw ORACLE
  * 

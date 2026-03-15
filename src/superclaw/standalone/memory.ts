@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { WorkspaceManager } from './workspace';

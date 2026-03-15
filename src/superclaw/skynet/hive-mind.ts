@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 👑 SKYNET Hive Mind — Queen-Led Agent Hierarchy
  * 

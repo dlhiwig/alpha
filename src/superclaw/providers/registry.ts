@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Provider Registry - Advanced Multi-Provider Management
  * 

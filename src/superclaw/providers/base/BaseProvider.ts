@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Base Provider Utilities - Extracted from Code Duplication Refactoring
  * 

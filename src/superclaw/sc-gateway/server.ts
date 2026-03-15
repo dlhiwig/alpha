@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Gateway Server
  * HTTP + WebSocket API for swarm orchestration

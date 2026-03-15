@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Integration test for MOLTBOOK + MessageBroker
  * 

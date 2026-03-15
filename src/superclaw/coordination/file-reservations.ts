@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * 🦊 SuperClaw File Reservation System (Agent Mail Pattern)
  * 

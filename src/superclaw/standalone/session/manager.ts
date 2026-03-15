@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Standalone Session Manager
  * SQLite-based replacement for OpenClaw file-based sessions

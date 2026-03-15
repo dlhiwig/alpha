@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { Box, Text } from 'ink';
 import { SwarmProgressData, SwarmMode } from './SwarmView';

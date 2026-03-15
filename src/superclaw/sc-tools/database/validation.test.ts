@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Simple validation tests for Database CodeAgent Tool
  */

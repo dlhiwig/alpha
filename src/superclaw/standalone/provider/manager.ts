@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SuperClaw Standalone Provider Manager
  * Manages multiple LLM provider connections

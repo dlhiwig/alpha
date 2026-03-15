@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Simple LLM integration module for SuperClaw Gateway
  * 

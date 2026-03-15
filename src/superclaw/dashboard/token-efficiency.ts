@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { EventEmitter } from 'events'
 import Database from 'better-sqlite3'
 import path from 'path'

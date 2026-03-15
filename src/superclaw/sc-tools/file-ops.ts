@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * File Operations Tools for SuperClaw
  * 

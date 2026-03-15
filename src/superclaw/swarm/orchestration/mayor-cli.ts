@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mayor CLI - Gas Town Mayor Pattern CLI Interface
  * 

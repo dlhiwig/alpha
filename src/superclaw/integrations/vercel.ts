@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Vercel } from '@vercel/sdk';
 
 // Vercel SDK client

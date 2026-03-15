@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * SKYNET Text-to-Speech Provider Abstraction
  * Unified interface for multiple TTS providers

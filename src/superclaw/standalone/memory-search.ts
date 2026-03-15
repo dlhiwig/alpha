@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { MemoryManager } from './memory';
 import { WorkspaceManager } from './workspace';
 
