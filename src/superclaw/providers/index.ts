@@ -5,16 +5,16 @@
  * Unified interface for all LLM providers with advanced registry capabilities
  */
 
-import { ILLMProvider } from './contracts';
-import { ProviderRegistry } from './types';
-import { DeepSeekProvider, createDeepSeekProvider } from './deepseek';
-import { AnthropicProvider, createAnthropicProvider } from './anthropic';
-import { OpenAIProvider, createOpenAIProvider } from './openai';
-import { OllamaProvider, createOllamaProvider } from './ollama';
-import { GeminiProvider, createGeminiProvider } from './gemini';
-import { CohereProvider, createCohereProvider } from './cohere';
-import { MistralProvider, createMistralProvider } from './mistral';
-import { GroqProvider, createGroqProvider } from './groq';
+import { ILLMProvider } from './contracts.js';
+import { ProviderRegistry } from './types.js';
+import { DeepSeekProvider, createDeepSeekProvider } from './deepseek.js';
+import { AnthropicProvider, createAnthropicProvider } from './anthropic.js';
+import { OpenAIProvider, createOpenAIProvider } from './openai.js';
+import { OllamaProvider, createOllamaProvider } from './ollama.js';
+import { GeminiProvider, createGeminiProvider } from './gemini.js';
+import { CohereProvider, createCohereProvider } from './cohere.js';
+import { MistralProvider, createMistralProvider } from './mistral.js';
+import { GroqProvider, createGroqProvider } from './groq.js';
 
 // Import the advanced registry
 import { 
@@ -25,9 +25,9 @@ import {
   FallbackChain,
   RoutingStrategy,
   RegistryConfig
-} from './registry';
-import { PerplexityProvider, createPerplexityProvider } from './perplexity';
-import { NVIDIANIMProvider, createNVIDIANIMProvider } from './nvidia-nim';
+} from './registry.js';
+import { PerplexityProvider, createPerplexityProvider } from './perplexity.js';
+import { NVIDIANIMProvider, createNVIDIANIMProvider } from './nvidia-nim.js';
 
 import { CerebrasProvider, createCerebrasProvider } from './cerebras';
 /**
@@ -229,16 +229,16 @@ export async function getAvailableProviders(): Promise<ILLMProvider[]> {
 }
 
 // Re-export types and providers
-export { ILLMProvider, GenerateRequest, GenerateResponse, Message } from './contracts';
-export { LLMRequest, LLMResponse, LLMMessage } from './types';
-export { DeepSeekProvider, createDeepSeekProvider } from './deepseek';
-export { AnthropicProvider, createAnthropicProvider } from './anthropic';
-export { OpenAIProvider, createOpenAIProvider } from './openai';
-export { OllamaProvider, createOllamaProvider } from './ollama';
-export { GeminiProvider, createGeminiProvider } from './gemini';
-export { CohereProvider, createCohereProvider } from './cohere';
-export { MistralProvider, createMistralProvider } from './mistral';
-export { GroqProvider, createGroqProvider } from './groq';
+export { ILLMProvider, GenerateRequest, GenerateResponse, Message } from './contracts.js';
+export { LLMRequest, LLMResponse, LLMMessage } from './types.js';
+export { DeepSeekProvider, createDeepSeekProvider } from './deepseek.js';
+export { AnthropicProvider, createAnthropicProvider } from './anthropic.js';
+export { OpenAIProvider, createOpenAIProvider } from './openai.js';
+export { OllamaProvider, createOllamaProvider } from './ollama.js';
+export { GeminiProvider, createGeminiProvider } from './gemini.js';
+export { CohereProvider, createCohereProvider } from './cohere.js';
+export { MistralProvider, createMistralProvider } from './mistral.js';
+export { GroqProvider, createGroqProvider } from './groq.js';
 
 // Re-export advanced registry functionality
 export { 
@@ -248,7 +248,7 @@ export {
   FallbackChain,
   RoutingStrategy,
   RegistryConfig
-} from './registry';
+} from './registry.js';
 
 /**
  * Get the advanced SuperClaw provider registry
@@ -257,7 +257,7 @@ export {
 export function getAdvancedProviderRegistry(config?: Partial<RegistryConfig>): SuperClawProviderRegistry {
   return getAdvancedRegistry(config);
 }
-export { NVIDIANIMProvider, createNVIDIANIMProvider } from './nvidia-nim';
-export { PerplexityProvider, createPerplexityProvider } from './perplexity';
+export { NVIDIANIMProvider, createNVIDIANIMProvider } from './nvidia-nim.js';
+export { PerplexityProvider, createPerplexityProvider } from './perplexity.js';
 
 export { CerebrasProvider, createCerebrasProvider } from './cerebras';

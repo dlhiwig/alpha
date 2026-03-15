@@ -814,4 +814,3 @@ export async function getOracleLearning(): Promise<OracleLearning> {
   return oracleLearningInstance;
 }
 
-export { OracleLearning };

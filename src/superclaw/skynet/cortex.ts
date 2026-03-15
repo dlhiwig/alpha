@@ -520,7 +520,7 @@ export async function memorize(
     
   } catch (error: unknown) {
     console.error('[🦊 CORTEX] Failed to memorize:', error);
-    throw new Error(`Failed to store memory: ${error instanceof Error ? (error).message : String(error)}`, { cause: error });
+    console.warn(`Failed to store memory: ${error instanceof Error ? (error).message : String(error)}`, { cause: error });
   }
 }
 

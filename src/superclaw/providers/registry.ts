@@ -25,17 +25,17 @@ import {
   ProviderType,
   CostUsage,
   BudgetStatus
-} from './contracts';
+} from './contracts.js';
 
 // Import all providers
-import { createAnthropicProvider } from './anthropic';
-import { createOpenAIProvider } from './openai';
-import { createGeminiProvider } from './gemini';
-import { createDeepSeekProvider } from './deepseek';
-import { createOllamaProvider } from './ollama';
-import { createCohereProvider } from './cohere';
-import { createMistralProvider } from './mistral';
-import { createGroqProvider } from './groq';
+import { createAnthropicProvider } from './anthropic.js';
+import { createOpenAIProvider } from './openai.js';
+import { createGeminiProvider } from './gemini.js';
+import { createDeepSeekProvider } from './deepseek.js';
+import { createOllamaProvider } from './ollama.js';
+import { createCohereProvider } from './cohere.js';
+import { createMistralProvider } from './mistral.js';
+import { createGroqProvider } from './groq.js';
 
 export interface ProviderRegistration {
   provider: ILLMProvider;
