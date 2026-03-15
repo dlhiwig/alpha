@@ -140,7 +140,7 @@ export class FilesystemCodeAgent implements ITool {
       
       return {
         success: false,
-        error: `Filesystem code execution failed: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        error: `Filesystem code execution failed: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         metadata: {
           timestamp: new Date().toISOString(),
           executionTime: Date.now() - startTime,
@@ -171,11 +171,11 @@ export class FilesystemCodeAgent implements ITool {
         )
       }
     } catch (error: unknown) {
-      if (error instanceof ToolExecutionError) throw error
+      if (error instanceof ToolExecutionError) {throw error}
       
       throw new ToolExecutionError(
         ToolErrorType.INVALID_PARAMETERS,
-        `Invalid file path: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        `Invalid file path: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         this.name
       )
     }
@@ -498,7 +498,7 @@ except Exception as e:
         clearTimeout(timer)
         resolve({
           success: false,
-          error: `Process error: ${(error as Error).message}`
+          error: `Process error: ${(error).message}`
         })
       })
     })

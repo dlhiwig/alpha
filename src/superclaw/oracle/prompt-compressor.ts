@@ -227,7 +227,7 @@ export class PromptCompressor {
     
     // Skip for configuration/JSON-heavy prompts
     const jsonPatterns = [
-      /{\s*["\w]+\s*:\s*["\w\[\]{}]/g,
+      /{\s*["\w]+\s*:\s*["\w[\]{}]/g,
       /\[\s*{\s*["\w]+/g
     ];
     

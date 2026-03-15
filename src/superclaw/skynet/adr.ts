@@ -105,7 +105,7 @@ export class ADRService extends EventEmitter {
    * Initialize ADR system - load existing ADRs
    */
   async initialize(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {return;}
 
     // Ensure directory exists
     fs.mkdirSync(this.config.adrPath, { recursive: true });
@@ -159,7 +159,7 @@ export class ADRService extends EventEmitter {
    */
   accept(id: string): ADR | null {
     const adr = this.adrs.get(id);
-    if (!adr || adr.status !== 'proposed') return null;
+    if (!adr || adr.status !== 'proposed') {return null;}
 
     adr.status = 'accepted';
     adr.updatedAt = Date.now();
@@ -174,7 +174,7 @@ export class ADRService extends EventEmitter {
    */
   deprecate(id: string, reason?: string): ADR | null {
     const adr = this.adrs.get(id);
-    if (!adr) return null;
+    if (!adr) {return null;}
 
     adr.status = 'deprecated';
     adr.updatedAt = Date.now();
@@ -192,7 +192,7 @@ export class ADRService extends EventEmitter {
    */
   supersede(oldId: string, newAdr: Parameters<typeof this.create>[0]): ADR | null {
     const oldAdr = this.adrs.get(oldId);
-    if (!oldAdr) return null;
+    if (!oldAdr) {return null;}
 
     // Create new ADR
     const created = this.create({
@@ -266,7 +266,7 @@ export class ADRService extends EventEmitter {
     }
 
     // Sort by number descending (newest first)
-    return results.sort((a, b) => b.number - a.number);
+    return results.toSorted((a, b) => b.number - a.number);
   }
 
   /**
@@ -298,7 +298,7 @@ export class ADRService extends EventEmitter {
     }
 
     return scored
-      .sort((a, b) => b.score - a.score)
+      .toSorted((a, b) => b.score - a.score)
       .slice(0, 10)
       .map(s => s.adr);
   }
@@ -312,7 +312,7 @@ export class ADRService extends EventEmitter {
     const conflicts: ADR[] = [];
 
     for (const adr of this.adrs.values()) {
-      if (adr.status !== 'accepted') continue;
+      if (adr.status !== 'accepted') {continue;}
 
       const adrWords = `${adr.decision} ${adr.consequences}`.toLowerCase();
 
@@ -362,12 +362,12 @@ export class ADRService extends EventEmitter {
     }
     const topTags = Array.from(tagCounts.entries())
       .map(([tag, count]) => ({ tag, count }))
-      .sort((a, b) => b.count - a.count)
+      .toSorted((a, b) => b.count - a.count)
       .slice(0, 10);
 
     // Recently updated
     const recentlyUpdated = adrs
-      .sort((a, b) => b.updatedAt - a.updatedAt)
+      .toSorted((a, b) => b.updatedAt - a.updatedAt)
       .slice(0, 5);
 
     return {
@@ -408,7 +408,7 @@ export class ADRService extends EventEmitter {
   private getNextNumber(): number {
     let max = 0;
     for (const adr of this.adrs.values()) {
-      if (adr.number > max) max = adr.number;
+      if (adr.number > max) {max = adr.number;}
     }
     return max + 1;
   }
@@ -438,7 +438,7 @@ export class ADRService extends EventEmitter {
       const files = fs.readdirSync(this.config.adrPath);
 
       for (const file of files) {
-        if (!file.endsWith('.json')) continue;
+        if (!file.endsWith('.json')) {continue;}
 
         const filePath = path.join(this.config.adrPath, file);
         const content = fs.readFileSync(filePath, 'utf-8');

@@ -86,7 +86,7 @@ export class AgentDirectory {
    * Initialize the directory service
    */
   async initialize(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {return;}
 
     try {
       await fs.mkdir(this.directoryPath, { recursive: true });
@@ -96,7 +96,7 @@ export class AgentDirectory {
       // Schedule periodic cleanup of offline agents
       setInterval(() => this.cleanupOfflineAgents(), 5 * 60 * 1000); // 5 minutes
     } catch (error: unknown) {
-      throw new Error(`Failed to initialize agent directory: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`);
+      throw new Error(`Failed to initialize agent directory: ${error instanceof Error ? (error).message : 'Unknown error'}`, { cause: error });
     }
   }
 
@@ -114,7 +114,7 @@ export class AgentDirectory {
    * Register a new agent in the directory
    */
   async registerAgent(profile: Omit<AgentProfile, 'id' | 'created' | 'lastSeen'>): Promise<string> {
-    if (!this.initialized) await this.initialize();
+    if (!this.initialized) {await this.initialize();}
 
     const id = this.generateAgentId(profile.name);
     const fullProfile: AgentProfile = {
@@ -135,7 +135,7 @@ export class AgentDirectory {
    * Update agent heartbeat and status
    */
   async updateAgentStatus(agentId: string, status: AgentProfile['status'], location?: string): Promise<void> {
-    if (!this.initialized) await this.initialize();
+    if (!this.initialized) {await this.initialize();}
 
     const agent = this.agents.get(agentId);
     if (!agent) {
@@ -144,7 +144,7 @@ export class AgentDirectory {
 
     agent.status = status;
     agent.lastSeen = new Date();
-    if (location) agent.location = location;
+    if (location) {agent.location = location;}
 
     this.agents.set(agentId, agent);
     await this.saveAgent(agent);
@@ -154,7 +154,7 @@ export class AgentDirectory {
    * Discover agents by capabilities and criteria
    */
   async discoverAgents(query: DiscoveryQuery): Promise<AgentProfile[]> {
-    if (!this.initialized) await this.initialize();
+    if (!this.initialized) {await this.initialize();}
 
     let results = Array.from(this.agents.values());
 
@@ -224,8 +224,8 @@ export class AgentDirectory {
     let score = 0;
 
     // Status bonus
-    if (agent.status === 'active') score += 100;
-    else if (agent.status === 'busy') score += 50;
+    if (agent.status === 'active') {score += 100;}
+    else if (agent.status === 'busy') {score += 50;}
 
     // Recent activity bonus
     const hoursSinceLastSeen = (Date.now() - agent.lastSeen.getTime()) / (1000 * 60 * 60);
@@ -247,10 +247,10 @@ export class AgentDirectory {
    * Check if agent A can contact agent B according to contact policies
    */
   async canContact(fromAgentId: string, toAgentId: string, reason?: string): Promise<boolean> {
-    if (!this.initialized) await this.initialize();
+    if (!this.initialized) {await this.initialize();}
 
     const toAgent = this.agents.get(toAgentId);
-    if (!toAgent) return false;
+    if (!toAgent) {return false;}
 
     const policy = toAgent.contactPolicy;
 
@@ -274,7 +274,7 @@ export class AgentDirectory {
    * Get agent profile by ID
    */
   async getAgent(agentId: string): Promise<AgentProfile | null> {
-    if (!this.initialized) await this.initialize();
+    if (!this.initialized) {await this.initialize();}
     return this.agents.get(agentId) || null;
   }
 
@@ -282,7 +282,7 @@ export class AgentDirectory {
    * List all agents with optional filtering
    */
   async listAgents(filter?: Partial<DiscoveryQuery>): Promise<AgentProfile[]> {
-    if (!this.initialized) await this.initialize();
+    if (!this.initialized) {await this.initialize();}
     
     if (!filter) {
       return Array.from(this.agents.values());
@@ -295,7 +295,7 @@ export class AgentDirectory {
    * Get directory statistics
    */
   async getStats(): Promise<DirectoryStats> {
-    if (!this.initialized) await this.initialize();
+    if (!this.initialized) {await this.initialize();}
 
     const agents = Array.from(this.agents.values());
     const capabilities: Record<string, number> = {};
@@ -332,7 +332,7 @@ export class AgentDirectory {
    * Remove agent from directory
    */
   async unregisterAgent(agentId: string): Promise<void> {
-    if (!this.initialized) await this.initialize();
+    if (!this.initialized) {await this.initialize();}
 
     const agent = this.agents.get(agentId);
     if (agent) {
@@ -379,7 +379,7 @@ export class AgentDirectory {
           
           this.agents.set(agent.id, agent);
         } catch (error: unknown) {
-          console.warn(`⚠️  Failed to load agent file ${file}: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`);
+          console.warn(`⚠️  Failed to load agent file ${file}: ${error instanceof Error ? (error).message : 'Unknown error'}`);
         }
       }
 

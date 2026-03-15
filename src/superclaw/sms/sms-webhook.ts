@@ -215,7 +215,7 @@ export class SMSWebhookHandler {
  */
 export function setupSMSWebhookRoutes(app: any, options?: Partial<WebhookHandlerOptions>) {
   const { handler, middleware } = SMSWebhookHandler.createMiddleware(options);
-  const config = handler['config'] as WebhookConfig;
+  const config = handler['config'];
 
   // Setup POST route for incoming messages
   if (config.methods.includes('POST')) {

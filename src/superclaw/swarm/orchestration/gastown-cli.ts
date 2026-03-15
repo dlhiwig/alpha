@@ -166,7 +166,7 @@ async function showStatus(workspacePath: string): Promise<void> {
     }
     
   } catch (error: unknown) {
-    if (error instanceof Error && (error as Error).message.includes('ENOENT')) {
+    if (error instanceof Error && (error).message.includes('ENOENT')) {
       console.log('❌ No Gas Town workspace found.');
       console.log('💡 Initialize with: superclaw gastown:setup');
     } else {
@@ -194,7 +194,7 @@ async function listConvoys(workspacePath: string): Promise<void> {
     
     for (const convoy of convoys) {
       const status = await mayor.getConvoyStatus(convoy.id);
-      if (!status) continue;
+      if (!status) {continue;}
       
       const statusIcon = convoy.status === 'active' ? '🟡' : 
                         convoy.status === 'completed' ? '✅' : 
@@ -436,7 +436,7 @@ export async function gastownCLI(args: string[]): Promise<void> {
   } catch (error: unknown) {
     console.error('❌ Gas Town orchestration failed:', error);
     
-    if (error instanceof Error && (error as Error).message.includes('ENOENT')) {
+    if (error instanceof Error && (error).message.includes('ENOENT')) {
       console.log('\n💡 Try initializing workspace first:');
       console.log('   superclaw gastown:setup');
     }

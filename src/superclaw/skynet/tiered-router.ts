@@ -261,9 +261,9 @@ export class TieredRouter extends EventEmitter {
     score += Math.min(signals.lineCount / 10, 20);
 
     // Complexity indicators
-    if (signals.hasAsync) score += 10;
-    if (signals.hasClasses) score += 15;
-    if (signals.hasGenerics) score += 10;
+    if (signals.hasAsync) {score += 10;}
+    if (signals.hasClasses) {score += 15;}
+    if (signals.hasGenerics) {score += 10;}
 
     // Dependencies
     score += signals.dependencyCount * 3;
@@ -287,7 +287,7 @@ export class TieredRouter extends EventEmitter {
       /\bcase\b/g,
       /\bcatch\b/g,
       /\?\s*:/g,  // Ternary
-      /\&\&/g,
+      /&&/g,
       /\|\|/g,
     ];
 

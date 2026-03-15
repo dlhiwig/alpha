@@ -170,7 +170,7 @@ export class AgentMailIntegration extends EventEmitter {
       this.communicationState.health = 'unhealthy';
       this.communicationState.issues.push(`Initialization failed: ${(error as Error).message}`);
       
-      throw new Error(`Failed to initialize Agent Mail integration: ${(error as Error).message}`);
+      throw new Error(`Failed to initialize Agent Mail integration: ${(error as Error).message}`, { cause: error });
     }
   }
 
@@ -499,7 +499,7 @@ export class AgentMailIntegration extends EventEmitter {
    * Set up event listeners for the mailbox
    */
   private setupEventListeners(): void {
-    if (!this.mailbox) return;
+    if (!this.mailbox) {return;}
 
     this.mailbox.on('agent_registered', (identity) => {
       this.auditLogger.info('Agent registered', { identity });
@@ -611,7 +611,7 @@ export class AgentMailIntegration extends EventEmitter {
    * Forward MOLTBOOK broadcast to Agent Mail
    */
   private async forwardBroadcastToAgentMail(message: InterAgentMessage): Promise<void> {
-    if (!this.mailbox) return;
+    if (!this.mailbox) {return;}
 
     await this.sendMessage(
       ['broadcast'],

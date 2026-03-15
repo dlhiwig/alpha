@@ -229,7 +229,7 @@ export class WorkspaceManager {
         throw new Error(`Checkpoint ${name} is not a directory`)
       }
     } catch (error: unknown) {
-      throw new Error(`Checkpoint ${name} not found: ${error}`)
+      throw new Error(`Checkpoint ${name} not found: ${error}`, { cause: error })
     }
     
     // Clear current runtime state
@@ -243,7 +243,7 @@ export class WorkspaceManager {
     // Restore files from checkpoint (excluding metadata)
     const files = await fs.readdir(checkpointDir)
     for (const file of files) {
-      if (file === 'metadata.json') continue
+      if (file === 'metadata.json') {continue}
       
       const srcPath = path.join(checkpointDir, file)
       const destPath = path.join(runtimeDir, file)
@@ -264,7 +264,7 @@ export class WorkspaceManager {
       const checkpoints = entries
         .filter(entry => entry.isDirectory())
         .map(entry => entry.name)
-        .sort()
+        .toSorted()
       
       return checkpoints
     } catch (error: unknown) {
@@ -309,7 +309,7 @@ export class WorkspaceManager {
       })
       
     } catch (error: unknown) {
-      throw new Error(`Failed to create git worktree for ${identity.name}: ${error}`)
+      throw new Error(`Failed to create git worktree for ${identity.name}: ${error}`, { cause: error })
     }
   }
   

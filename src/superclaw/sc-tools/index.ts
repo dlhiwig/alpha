@@ -53,7 +53,7 @@ export function setupEfritSuperClaw(options: {
   
   // Configure EFRIT engine with options
   if (options.circuitBreakerThreshold) {
-    (efrit as any).circuitBreakerThreshold = options.circuitBreakerThreshold;
+    (efrit).circuitBreakerThreshold = options.circuitBreakerThreshold;
   }
   
   return {

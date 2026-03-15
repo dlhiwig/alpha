@@ -54,7 +54,7 @@ export async function createGatewayServer(opts: GatewayOptions = {}): Promise<Ga
   if (apiKey) {
     app.addHook('preHandler', async (request, reply) => {
       // Skip auth for health endpoint
-      if (request.url === '/health') return;
+      if (request.url === '/health') {return;}
       
       const authHeader = request.headers.authorization;
       const providedKey = authHeader?.startsWith('Bearer ') 

@@ -28,19 +28,19 @@ const getStatusColor = (status: ProviderInfo['status']): string => {
 };
 
 const maskApiKey = (apiKey?: string): string => {
-  if (!apiKey) return 'Not configured';
-  if (apiKey.length <= 8) return apiKey;
+  if (!apiKey) {return 'Not configured';}
+  if (apiKey.length <= 8) {return apiKey;}
   return `${apiKey.slice(0, 8)}...${apiKey.slice(-6)}`;
 };
 
 const formatUsage = (used?: number, limit?: number): string => {
-  if (used === undefined) return '-';
-  if (limit === undefined || limit === 0) return `$${used.toFixed(2)}`;
+  if (used === undefined) {return '-';}
+  if (limit === undefined || limit === 0) {return `$${used.toFixed(2)}`;}
   return `$${used.toFixed(2)} / $${limit.toFixed(2)}`;
 };
 
 const formatRateLimit = (rateLimit?: { max: number; used: number }): string => {
-  if (!rateLimit) return 'Not configured';
+  if (!rateLimit) {return 'Not configured';}
   return `${rateLimit.used} / ${rateLimit.max} req/min`;
 };
 

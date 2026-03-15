@@ -133,7 +133,7 @@ export class OAuthToolMiddleware {
       if (authConfig.required) {
         throw new Error(
           `Authentication required for tool '${toolName}': ${error}. ` +
-          `Run 'superclaw auth add ${authConfig.provider}' to authenticate.`
+          `Run 'superclaw auth add ${authConfig.provider}' to authenticate.`, { cause: error }
         );
       }
       
@@ -215,7 +215,7 @@ export class OAuthToolMiddleware {
     const warningThreshold = 24 * 60 * 60 * 1000; // 24 hours
     
     for (const [toolName, authConfig] of Object.entries(TOOL_AUTH_CONFIG)) {
-      if (!authConfig.required) continue;
+      if (!authConfig.required) {continue;}
       
       try {
         const token = await oauthGateway.getToken(authConfig.provider);

@@ -353,9 +353,9 @@ export class SessionManager extends EventEmitter {
    * Infer chat type from peer and channel
    */
   private inferChatType(peer: { kind: string }, channel: string): 'direct' | 'group' | 'channel' {
-    if (peer.kind === 'direct') return 'direct';
-    if (peer.kind === 'group') return 'group';
-    if (peer.kind === 'channel') return 'channel';
+    if (peer.kind === 'direct') {return 'direct';}
+    if (peer.kind === 'group') {return 'group';}
+    if (peer.kind === 'channel') {return 'channel';}
     return 'direct';
   }
 

@@ -388,7 +388,7 @@ class MoltbookBus extends EventEmitter {
   // ═══════════════════════════════════════════════════════════════
 
   async start(options?: { wsPort?: number }): Promise<void> {
-    if (this.isRunning) return;
+    if (this.isRunning) {return;}
     
     this.isRunning = true;
     this.startTime = Date.now();
@@ -409,7 +409,7 @@ class MoltbookBus extends EventEmitter {
   }
 
   async stop(): Promise<void> {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
     
     // Stop Claude-Flow coordination first
     await this.stopClaudeFlowCoordination();
@@ -518,7 +518,7 @@ class MoltbookBus extends EventEmitter {
 
   unregisterAgent(agentId: string): boolean {
     const agent = this.agents.get(agentId);
-    if (!agent) return false;
+    if (!agent) {return false;}
 
     agent.status = 'dead';
     
@@ -556,7 +556,7 @@ class MoltbookBus extends EventEmitter {
 
   updateAgentStatus(agentId: string, status: Agent['status']): boolean {
     const agent = this.agents.get(agentId);
-    if (!agent) return false;
+    if (!agent) {return false;}
 
     agent.status = status;
     agent.lastActivity = Date.now();
@@ -712,14 +712,14 @@ class MoltbookBus extends EventEmitter {
   }
 
   private routeDirectMessage(message: Message): void {
-    if (!message.to || Array.isArray(message.to)) return;
+    if (!message.to || Array.isArray(message.to)) {return;}
 
-    const target = this.agents.get(message.to as string);
+    const target = this.agents.get(message.to);
     if (target) {
       // Use MessageBroker for reliable delivery
       this.messageBroker.sendMessage(
         message.from,
-        message.to as string,
+        message.to,
         MessageType.TASK_READY,
         {
           moltbookType: message.type,
@@ -801,7 +801,7 @@ class MoltbookBus extends EventEmitter {
 
   private routeResponseMessage(message: Message): void {
     const correlationId = message.correlationId || message.queryId;
-    if (!correlationId) return;
+    if (!correlationId) {return;}
 
     const queryData = this.queries.get(correlationId);
     if (queryData) {
@@ -849,7 +849,7 @@ class MoltbookBus extends EventEmitter {
       const allMessages = [...this.messages, ...brokerHistory];
       const seen = new Set<string>();
       return allMessages.filter(msg => {
-        if (seen.has(msg.id)) return false;
+        if (seen.has(msg.id)) {return false;}
         seen.add(msg.id);
         return true;
       });
@@ -868,7 +868,7 @@ class MoltbookBus extends EventEmitter {
     const allMessages = [...localMessages, ...brokerMessages];
     const seen = new Set<string>();
     return allMessages.filter(msg => {
-      if (seen.has(msg.id)) return false;
+      if (seen.has(msg.id)) {return false;}
       seen.add(msg.id);
       return true;
     });
@@ -936,7 +936,7 @@ class MoltbookBus extends EventEmitter {
 
   async buildAgentContext(agentId: string, query?: string): Promise<string> {
     const agent = this.agents.get(agentId);
-    if (!agent) return '';
+    if (!agent) {return '';}
 
     try {
       // Build context from CORTEX based on agent's activity
@@ -956,7 +956,7 @@ class MoltbookBus extends EventEmitter {
 
   async getAgentMemories(agentId: string, query: string): Promise<any[]> {
     const agent = this.agents.get(agentId);
-    if (!agent) return [];
+    if (!agent) {return [];}
 
     try {
       const searchQuery = `${query} agent:${agent.name} moltbook`;

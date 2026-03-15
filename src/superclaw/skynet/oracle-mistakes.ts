@@ -119,7 +119,7 @@ export function getPromptCorrections(state: OracleState): Array<{
 }> {
   return Array.from(state.mistakePatterns.values())
     .filter(mistake => mistake.frequency >= 2) // Only include patterns seen multiple times
-    .sort((a, b) => {
+    .toSorted((a, b) => {
       // Sort by severity (high first) then frequency
       const severityOrder = { high: 3, medium: 2, low: 1 };
       if (severityOrder[a.severity] !== severityOrder[b.severity]) {
@@ -144,7 +144,7 @@ export function getMistakePreventionInjections(prompt: string, state: OracleStat
   
   // Get relevant mistake patterns based on tags and contexts
   for (const [hash, mistake] of Array.from(state.mistakePatterns.entries())) {
-    if (mistake.frequency < CONFIG.MISTAKE_PREVENTION_THRESHOLD) continue;
+    if (mistake.frequency < CONFIG.MISTAKE_PREVENTION_THRESHOLD) {continue;}
     
     // Check if this mistake is relevant to the current prompt
     let isRelevant = false;
@@ -257,19 +257,19 @@ export function analyzeMistakeTrends(state: OracleState): {
     for (const tag of mistake.tags) {
       const existing = categoryCount.get(tag) || { count: 0, severity: 'low' };
       existing.count += mistake.frequency;
-      if (mistake.severity === 'high') existing.severity = 'high';
-      else if (mistake.severity === 'medium' && existing.severity !== 'high') existing.severity = 'medium';
+      if (mistake.severity === 'high') {existing.severity = 'high';}
+      else if (mistake.severity === 'medium' && existing.severity !== 'high') {existing.severity = 'medium';}
       categoryCount.set(tag, existing);
     }
   }
   
   const topMistakeCategories = Array.from(categoryCount.entries())
     .map(([category, data]) => ({ category, count: data.count, severity: data.severity }))
-    .sort((a, b) => b.count - a.count)
+    .toSorted((a, b) => b.count - a.count)
     .slice(0, 10);
   
   const mostFrequentMistakes = mistakes
-    .sort((a, b) => b.frequency - a.frequency)
+    .toSorted((a, b) => b.frequency - a.frequency)
     .slice(0, 10)
     .map(m => ({ pattern: m.pattern, frequency: m.frequency, lastSeen: m.lastSeen }));
   
@@ -279,7 +279,7 @@ export function analyzeMistakeTrends(state: OracleState): {
       pattern: m.pattern,
       effectiveness: m.successfulCorrections / m.frequency,
     }))
-    .sort((a, b) => b.effectiveness - a.effectiveness)
+    .toSorted((a, b) => b.effectiveness - a.effectiveness)
     .slice(0, 10);
   
   return {

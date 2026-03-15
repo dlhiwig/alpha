@@ -63,8 +63,8 @@ export class EmbeddingService {
   }
   
   private detectProvider(): 'openai' | 'ollama' | 'hash' {
-    if (process.env.OPENAI_API_KEY) return 'openai';
-    if (process.env.OLLAMA_URL) return 'ollama';
+    if (process.env.OPENAI_API_KEY) {return 'openai';}
+    if (process.env.OLLAMA_URL) {return 'ollama';}
     return 'hash';
   }
   
@@ -165,7 +165,7 @@ export class EmbeddingService {
     }));
     
     return scores
-      .sort((a, b) => b.score - a.score)
+      .toSorted((a, b) => b.score - a.score)
       .slice(0, topK);
   }
   

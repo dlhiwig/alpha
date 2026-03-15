@@ -169,7 +169,7 @@ export class AgentChattrConvoyAdapter extends EventEmitter {
   // --- Event Posting ---
   
   private async postProgress(progress: ConvoyProgress): Promise<void> {
-    if (!this.config.channelConfig.postEvents) return;
+    if (!this.config.channelConfig.postEvents) {return;}
     
     const bar = this.progressBar(progress.percentage);
     await this.bridge.send(

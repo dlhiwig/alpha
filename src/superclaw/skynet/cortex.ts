@@ -122,7 +122,7 @@ async function initializeMemoryService(): Promise<void> {
     console.log('[🦊 CORTEX] Persistent memory system initialized');
   } catch (error: unknown) {
     console.error('[🦊 CORTEX] Failed to initialize memory service:', error);
-    throw new Error(`Memory service initialization failed: ${error instanceof Error ? (error as Error).message : String(error)}`);
+    throw new Error(`Memory service initialization failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error });
   }
 }
 
@@ -206,9 +206,9 @@ async function migrateFromLegacyFiles(): Promise<void> {
     }
     
     // Restore counters from legacy state
-    if (legacyState.totalMemorized) state.totalMemorized = legacyState.totalMemorized;
-    if (legacyState.totalQueries) state.totalQueries = legacyState.totalQueries;
-    if (legacyState.totalRetrievals) state.totalRetrievals = legacyState.totalRetrievals;
+    if (legacyState.totalMemorized) {state.totalMemorized = legacyState.totalMemorized;}
+    if (legacyState.totalQueries) {state.totalQueries = legacyState.totalQueries;}
+    if (legacyState.totalRetrievals) {state.totalRetrievals = legacyState.totalRetrievals;}
     
     console.log(`[🦊 CORTEX] Successfully migrated ${migratedCount} memories`);
     
@@ -227,7 +227,7 @@ async function migrateFromLegacyFiles(): Promise<void> {
     
   } catch (error: unknown) {
     console.error('[🦊 CORTEX] Migration failed:', error);
-    throw new Error(`Legacy memory migration failed: ${error instanceof Error ? (error as Error).message : String(error)}`);
+    throw new Error(`Legacy memory migration failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error });
   }
 }
 
@@ -280,7 +280,7 @@ function createEmbedding(text: string): number[] {
 }
 
 function cosineSimilarity(a: number[], b: number[]): number {
-  if (a.length !== b.length) return 0;
+  if (a.length !== b.length) {return 0;}
   
   let dotProduct = 0;
   let magnitudeA = 0;
@@ -295,7 +295,7 @@ function cosineSimilarity(a: number[], b: number[]): number {
   magnitudeA = Math.sqrt(magnitudeA);
   magnitudeB = Math.sqrt(magnitudeB);
   
-  if (magnitudeA === 0 || magnitudeB === 0) return 0;
+  if (magnitudeA === 0 || magnitudeB === 0) {return 0;}
   
   return dotProduct / (magnitudeA * magnitudeB);
 }
@@ -312,11 +312,11 @@ function extractTags(content: string): string[] {
     tags.push(...hashtags.map(t => t.slice(1).toLowerCase()));
   }
   
-  if (/\b(meeting|call|discussion)\b/i.test(content)) tags.push('meeting');
-  if (/\b(task|todo|action)\b/i.test(content)) tags.push('task');
-  if (/\b(decision|decided|agreed)\b/i.test(content)) tags.push('decision');
-  if (/\b(bug|error|issue|problem)\b/i.test(content)) tags.push('issue');
-  if (/\b(code|function|api|database)\b/i.test(content)) tags.push('technical');
+  if (/\b(meeting|call|discussion)\b/i.test(content)) {tags.push('meeting');}
+  if (/\b(task|todo|action)\b/i.test(content)) {tags.push('task');}
+  if (/\b(decision|decided|agreed)\b/i.test(content)) {tags.push('decision');}
+  if (/\b(bug|error|issue|problem)\b/i.test(content)) {tags.push('issue');}
+  if (/\b(code|function|api|database)\b/i.test(content)) {tags.push('technical');}
   
   return [...new Set(tags)];
 }
@@ -327,19 +327,19 @@ function summarize(content: string, maxLength: number = 100): string {
     return firstSentence[0].trim();
   }
   
-  if (content.length <= maxLength) return content;
+  if (content.length <= maxLength) {return content;}
   return content.slice(0, maxLength - 3).trim() + '...';
 }
 
 function calculateImportance(content: string, type: string): number {
   let importance = 0.5;
   
-  if (type === 'decision') importance += 0.2;
-  if (type === 'task') importance += 0.1;
-  if (type === 'preference') importance += 0.15;
+  if (type === 'decision') {importance += 0.2;}
+  if (type === 'task') {importance += 0.1;}
+  if (type === 'preference') {importance += 0.15;}
   
-  if (/\b(important|critical|urgent|must)\b/i.test(content)) importance += 0.2;
-  if (/\b(remember|don't forget|note)\b/i.test(content)) importance += 0.1;
+  if (/\b(important|critical|urgent|must)\b/i.test(content)) {importance += 0.2;}
+  if (/\b(remember|don't forget|note)\b/i.test(content)) {importance += 0.1;}
   
   importance += Math.min(0.1, content.length / 5000);
   
@@ -428,7 +428,7 @@ export async function startCortex(): Promise<void> {
 }
 
 export async function stopCortex(): Promise<void> {
-  if (!isRunning) return;
+  if (!isRunning) {return;}
   
   try {
     // Save current state
@@ -519,7 +519,7 @@ export async function memorize(
     
   } catch (error: unknown) {
     console.error('[🦊 CORTEX] Failed to memorize:', error);
-    throw new Error(`Failed to store memory: ${error instanceof Error ? (error as Error).message : String(error)}`);
+    throw new Error(`Failed to store memory: ${error instanceof Error ? (error).message : String(error)}`, { cause: error });
   }
 }
 
@@ -604,7 +604,7 @@ export async function recall(query: string, limit: number = CONFIG.MAX_CONTEXT_I
     
   } catch (error: unknown) {
     console.error('[🦊 CORTEX] Failed to recall memories:', error);
-    throw new Error(`Failed to recall memories: ${error instanceof Error ? (error as Error).message : String(error)}`);
+    throw new Error(`Failed to recall memories: ${error instanceof Error ? (error).message : String(error)}`, { cause: error });
   }
 }
 
@@ -644,7 +644,7 @@ export async function recallByTag(tag: string, limit: number = CONFIG.MAX_CONTEX
     
   } catch (error: unknown) {
     console.error('[🦊 CORTEX] Failed to recall by tag:', error);
-    throw new Error(`Failed to recall by tag: ${error instanceof Error ? (error as Error).message : String(error)}`);
+    throw new Error(`Failed to recall by tag: ${error instanceof Error ? (error).message : String(error)}`, { cause: error });
   }
 }
 
@@ -677,7 +677,7 @@ export async function recallByType(type: 'conversation' | 'fact' | 'decision' | 
     
   } catch (error: unknown) {
     console.error('[🦊 CORTEX] Failed to recall by type:', error);
-    throw new Error(`Failed to recall by type: ${error instanceof Error ? (error as Error).message : String(error)}`);
+    throw new Error(`Failed to recall by type: ${error instanceof Error ? (error).message : String(error)}`, { cause: error });
   }
 }
 
@@ -701,7 +701,7 @@ export async function getRecentMemories(limit: number = CONFIG.MAX_CONTEXT_ITEMS
     
   } catch (error: unknown) {
     console.error('[🦊 CORTEX] Failed to get recent memories:', error);
-    throw new Error(`Failed to get recent memories: ${error instanceof Error ? (error as Error).message : String(error)}`);
+    throw new Error(`Failed to get recent memories: ${error instanceof Error ? (error).message : String(error)}`, { cause: error });
   }
 }
 

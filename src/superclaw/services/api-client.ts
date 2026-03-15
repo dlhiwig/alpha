@@ -369,14 +369,14 @@ export class SuperClawApiClient extends EventEmitter {
     uptime: string;
   } {
     const formatUptime = (seconds?: number): string => {
-      if (!seconds) return '0m';
+      if (!seconds) {return '0m';}
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
       return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
     };
 
     const formatMemory = (mb?: number): string => {
-      if (!mb) return 'Unknown';
+      if (!mb) {return 'Unknown';}
       return mb > 1024 ? `${(mb / 1024).toFixed(1)} GB` : `${mb} MB`;
     };
 
@@ -418,7 +418,7 @@ export class SuperClawApiClient extends EventEmitter {
         time: timeAgo,
         status,
         message: `Swarm ${run.status}: "${run.objective.slice(0, 50)}${run.objective.length > 50 ? '...' : ''}"`,
-        type: type as 'success' | 'info' | 'warning',
+        type: type,
       };
     });
   }
@@ -430,9 +430,9 @@ export class SuperClawApiClient extends EventEmitter {
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
 
-    if (days > 0) return `${days}d ago`;
-    if (hours > 0) return `${hours}h ago`;
-    if (minutes > 0) return `${minutes}m ago`;
+    if (days > 0) {return `${days}d ago`;}
+    if (hours > 0) {return `${hours}h ago`;}
+    if (minutes > 0) {return `${minutes}m ago`;}
     return 'Just now';
   }
 

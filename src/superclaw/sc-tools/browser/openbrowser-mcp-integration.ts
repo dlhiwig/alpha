@@ -86,7 +86,7 @@ export class OpenBrowserMCP extends EventEmitter {
    * Initialize the OpenBrowser MCP server
    */
   async initialize(): Promise<void> {
-    if (this.isInitialized) return
+    if (this.isInitialized) {return}
 
     return new Promise((resolve, reject) => {
       try {
@@ -216,7 +216,7 @@ export class OpenBrowserMCP extends EventEmitter {
     } catch (error: unknown) {
       return {
         success: false,
-        error: error instanceof Error ? (error as Error).message : String(error),
+        error: error instanceof Error ? (error).message : String(error),
         executionTime: Date.now() - startTime
       }
     }
@@ -311,7 +311,7 @@ print(json.dumps(data, indent=2))
 
   private handleResponse(response: MCPResponse): void {
     const request = this.pendingRequests.get(response.id)
-    if (!request) return
+    if (!request) {return}
 
     this.pendingRequests.delete(response.id)
 

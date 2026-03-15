@@ -84,7 +84,7 @@ export async function getOracleDashboard() {
     optimizations: { cost: costSuggestions, performance: perfSuggestions },
     recentInteractions: state.recentInteractions.slice(-10),
     topPatterns: Array.from(state.patterns.entries())
-      .sort(([,a], [,b]) => b.totalUses - a.totalUses)
+      .toSorted(([,a], [,b]) => b.totalUses - a.totalUses)
       .slice(0, 10)
       .map(([hash, pattern]) => ({
         hash,

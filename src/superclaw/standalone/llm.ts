@@ -130,10 +130,10 @@ export class LLMClient {
       
       // @ts-expect-error - Post-Merge Reconciliation
       if (error.name === 'TimeoutError') {
-        throw new Error(`LLM request timed out after ${this.timeoutMs}ms`);
+        throw new Error(`LLM request timed out after ${this.timeoutMs}ms`, { cause: error });
       }
       
-      throw new Error(`LLM generation failed: ${(error as Error).message}`);
+      throw new Error(`LLM generation failed: ${(error as Error).message}`, { cause: error });
     }
   }
 
@@ -274,7 +274,7 @@ export class LLMClient {
       const data: any = await response.json();
       return data.models?.map((model: any) => model.name) || [];
     } catch (error: unknown) {
-      throw new Error(`Failed to get models: ${(error as Error).message}`);
+      throw new Error(`Failed to get models: ${(error as Error).message}`, { cause: error });
     }
   }
 

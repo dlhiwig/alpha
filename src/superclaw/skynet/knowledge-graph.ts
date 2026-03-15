@@ -79,7 +79,7 @@ export class KnowledgeGraph extends EventEmitter {
    * Initialize graph - load persisted data
    */
   async initialize(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {return;}
     await this.loadGraph();
     this.initialized = true;
     this.emit('initialized', { nodeCount: this.nodes.size });
@@ -141,7 +141,7 @@ export class KnowledgeGraph extends EventEmitter {
     }
 
     return results
-      .sort((a, b) => b.score - a.score)
+      .toSorted((a, b) => b.score - a.score)
       .slice(0, limit)
       .map(r => r.node);
   }
@@ -151,7 +151,7 @@ export class KnowledgeGraph extends EventEmitter {
    */
   getInfluential(limit = 10): MemoryNode[] {
     return Array.from(this.nodes.values())
-      .sort((a, b) => b.pageRank - a.pageRank)
+      .toSorted((a, b) => b.pageRank - a.pageRank)
       .slice(0, limit);
   }
 
@@ -169,7 +169,7 @@ export class KnowledgeGraph extends EventEmitter {
   computePageRank(): void {
     const nodes = Array.from(this.nodes.values());
     const n = nodes.length;
-    if (n === 0) return;
+    if (n === 0) {return;}
 
     const d = this.config.dampingFactor;
     const tolerance = 0.0001;
@@ -220,7 +220,7 @@ export class KnowledgeGraph extends EventEmitter {
    */
   detectCommunities(): number {
     const nodes = Array.from(this.nodes.values());
-    if (nodes.length === 0) return 0;
+    if (nodes.length === 0) {return 0;}
 
     // Initialize each node to its own community
     nodes.forEach((node, i) => {
@@ -233,7 +233,7 @@ export class KnowledgeGraph extends EventEmitter {
       let changed = false;
 
       // Shuffle nodes for randomness
-      const shuffled = [...nodes].sort(() => Math.random() - 0.5);
+      const shuffled = [...nodes].toSorted(() => Math.random() - 0.5);
 
       for (const node of shuffled) {
         // Count community votes from neighbors
@@ -269,7 +269,7 @@ export class KnowledgeGraph extends EventEmitter {
         }
       }
 
-      if (!changed) break;
+      if (!changed) {break;}
     }
 
     // Count unique communities
@@ -324,7 +324,7 @@ export class KnowledgeGraph extends EventEmitter {
 
   private connectSimilarNodes(newNode: MemoryNode): void {
     for (const node of this.nodes.values()) {
-      if (node.id === newNode.id) continue;
+      if (node.id === newNode.id) {continue;}
 
       const similarity = this.calculateSimilarity(newNode.content, node.content);
 
@@ -344,7 +344,7 @@ export class KnowledgeGraph extends EventEmitter {
     const wordsA = new Set(a.toLowerCase().split(/\W+/).filter(w => w.length > 2));
     const wordsB = new Set(b.toLowerCase().split(/\W+/).filter(w => w.length > 2));
 
-    if (wordsA.size === 0 || wordsB.size === 0) return 0;
+    if (wordsA.size === 0 || wordsB.size === 0) {return 0;}
 
     const intersection = new Set([...wordsA].filter(w => wordsB.has(w)));
     const union = new Set([...wordsA, ...wordsB]);
@@ -354,7 +354,7 @@ export class KnowledgeGraph extends EventEmitter {
 
   private pruneLowestRanked(): void {
     const nodes = Array.from(this.nodes.values())
-      .sort((a, b) => a.pageRank - b.pageRank);
+      .toSorted((a, b) => a.pageRank - b.pageRank);
 
     const toRemove = nodes.slice(0, Math.floor(nodes.length * 0.1));  // Remove bottom 10%
 

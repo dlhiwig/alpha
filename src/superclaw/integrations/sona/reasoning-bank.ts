@@ -238,7 +238,7 @@ export class ReasoningBank extends EventEmitter {
           this.updatePatternDecay(pattern);
           
           // Skip patterns that have decayed too much
-          if (pattern.decayWeight < 0.1) continue;
+          if (pattern.decayWeight < 0.1) {continue;}
           
           // Calculate similarity
           const similarity = this.calculateCosineSimilarity(queryVector, pattern.embedding);
@@ -349,7 +349,7 @@ export class ReasoningBank extends EventEmitter {
       normB += b[i] * b[i];
     }
 
-    if (normA === 0 || normB === 0) return 0;
+    if (normA === 0 || normB === 0) {return 0;}
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 
@@ -372,7 +372,7 @@ export class ReasoningBank extends EventEmitter {
     const cluster = this.clusters[clusterId];
     const patterns = cluster.patterns;
     
-    if (patterns.length === 0) return;
+    if (patterns.length === 0) {return;}
 
     // Calculate new centroid as weighted average
     const newCentroid = new Float32Array(this.config.embeddingDim);
@@ -464,7 +464,7 @@ export class ReasoningBank extends EventEmitter {
    * Initialize centroids using K-means++ algorithm for better cluster placement
    */
   private async initializeCentroidsKMeansPlusPlus(patterns: StoredPattern[]): Promise<void> {
-    if (patterns.length === 0) return;
+    if (patterns.length === 0) {return;}
 
     // Choose first centroid randomly
     const firstPattern = patterns[Math.floor(Math.random() * patterns.length)];

@@ -270,7 +270,7 @@ export class SuperClawProviderRegistry extends EventEmitter {
 
     for (const step of fallbackChain.providers) {
       const provider = this.getProvider(step.provider);
-      if (!provider) continue;
+      if (!provider) {continue;}
 
       const registration = this.providers.get(step.provider);
       if (!registration || !registration.isEnabled || registration.health.status !== ProviderStatus.HEALTHY) {
@@ -354,7 +354,7 @@ export class SuperClawProviderRegistry extends EventEmitter {
    * Cost tracking and budget management
    */
   async recordUsage(usage: CostUsage): Promise<void> {
-    if (!this.config.costTracking.enabled) return;
+    if (!this.config.costTracking.enabled) {return;}
 
     this.costHistory.push(usage);
     
@@ -367,7 +367,7 @@ export class SuperClawProviderRegistry extends EventEmitter {
   }
 
   async canAffordRequest(estimatedCost: number): Promise<boolean> {
-    if (!this.config.costTracking.enabled) return true;
+    if (!this.config.costTracking.enabled) {return true;}
 
     const budget = await this.getBudgetStatus();
     return budget.remainingDaily >= estimatedCost && budget.remainingMonthly >= estimatedCost;
@@ -478,7 +478,7 @@ export class SuperClawProviderRegistry extends EventEmitter {
       route: (request, context, providers) => {
         const sorted = providers
           .filter(p => p.models.some(m => m.costPerInputToken))
-          .sort((a, b) => {
+          .toSorted((a, b) => {
             const aCost = Math.min(...a.models.map(m => m.costPerInputToken || Infinity));
             const bCost = Math.min(...b.models.map(m => m.costPerInputToken || Infinity));
             return aCost - bCost;
@@ -514,7 +514,7 @@ export class SuperClawProviderRegistry extends EventEmitter {
       description: 'Routes to the fastest available provider',
       route: (request, context, providers) => {
         const sorted = providers
-          .sort((a, b) => a.health.avgResponseTime - b.health.avgResponseTime);
+          .toSorted((a, b) => a.health.avgResponseTime - b.health.avgResponseTime);
 
         const selected = sorted[0];
         const bestModel = selected.models[0]; // Use default model

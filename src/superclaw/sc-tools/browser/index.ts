@@ -151,7 +151,7 @@ async function browserExecuteHandler(params: BrowserExecuteParams): Promise<Brow
 
   } catch (error: unknown) {
     const executionTime = Date.now() - startTime;
-    const errorMessage = error instanceof Error ? (error as Error).message : String(error);
+    const errorMessage = error instanceof Error ? (error).message : String(error);
     
     // Track failed execution tokens
     const inputTokens = Math.ceil(python_code.length / 4);
@@ -207,7 +207,7 @@ async function browserStateHandler(): Promise<{
   } catch (error: unknown) {
     return {
       success: false,
-      error: error instanceof Error ? (error as Error).message : String(error),
+      error: error instanceof Error ? (error).message : String(error),
     };
   }
 }
@@ -234,7 +234,7 @@ async function browserNavigateHandler(params: { url: string }): Promise<{
   } catch (error: unknown) {
     return {
       success: false,
-      error: error instanceof Error ? (error as Error).message : String(error),
+      error: error instanceof Error ? (error).message : String(error),
     };
   }
 }
@@ -259,7 +259,7 @@ async function browserCleanupHandler(): Promise<{
   } catch (error: unknown) {
     return {
       success: true, // Always succeed cleanup
-      message: `Cleanup completed with warning: ${error instanceof Error ? (error as Error).message : String(error)}`,
+      message: `Cleanup completed with warning: ${error instanceof Error ? (error).message : String(error)}`,
     };
   }
 }

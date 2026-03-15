@@ -9,8 +9,8 @@ interface RealtimeMetricsProps {
 
 export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({ realtime }) => {
   const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+    if (num >= 1000000) {return `${(num / 1000000).toFixed(1)}M`}
+    if (num >= 1000) {return `${(num / 1000).toFixed(1)}K`}
     return num.toFixed(0)
   }
 
@@ -19,29 +19,29 @@ export const RealtimeMetrics: React.FC<RealtimeMetricsProps> = ({ realtime }) =>
   }
 
   const getActivityColor = (agents: number): string => {
-    if (agents === 0) return 'red'
-    if (agents < 10) return 'yellow'
-    if (agents < 25) return 'green'
+    if (agents === 0) {return 'red'}
+    if (agents < 10) {return 'yellow'}
+    if (agents < 25) {return 'green'}
     return 'cyan'
   }
 
   const getActivityStatus = (agents: number): string => {
-    if (agents === 0) return 'Idle'
-    if (agents < 10) return 'Light'
-    if (agents < 25) return 'Active'
+    if (agents === 0) {return 'Idle'}
+    if (agents < 10) {return 'Light'}
+    if (agents < 25) {return 'Active'}
     return 'Heavy Load'
   }
 
   const getThroughputColor = (tokensPerMin: number): string => {
-    if (tokensPerMin < 100) return 'red'
-    if (tokensPerMin < 500) return 'yellow'
-    if (tokensPerMin < 2000) return 'green'
+    if (tokensPerMin < 100) {return 'red'}
+    if (tokensPerMin < 500) {return 'yellow'}
+    if (tokensPerMin < 2000) {return 'green'}
     return 'cyan'
   }
 
   const getEfficiencyColor = (efficiency: number): string => {
-    if (efficiency < 0.5) return 'green'
-    if (efficiency < 0.8) return 'yellow'
+    if (efficiency < 0.5) {return 'green'}
+    if (efficiency < 0.8) {return 'yellow'}
     return 'red'
   }
 

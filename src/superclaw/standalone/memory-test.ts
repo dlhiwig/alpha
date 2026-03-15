@@ -300,9 +300,9 @@ Working on Phase 2 of SuperClaw - the memory layer. This is crucial for agent pe
 
 // CLI Interface
 async function main() {
-  const args = process.argv.slice(2);
+  const args = new Set(process.argv.slice(2));
   
-  if (args.includes('--help') || args.includes('-h')) {
+  if (args.has('--help') || args.has('-h')) {
     console.log(`
 SuperClaw Memory System Test
 

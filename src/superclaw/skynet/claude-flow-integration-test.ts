@@ -40,7 +40,7 @@ class TestRunner {
       } catch (error: unknown) {
         this.failed++;
         console.error(`❌ Failed: ${name}`);
-        console.error(`   Error: ${error instanceof Error ? (error as Error).message : error}\n`);
+        console.error(`   Error: ${error instanceof Error ? (error).message : error}\n`);
       }
     }
     

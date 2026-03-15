@@ -85,7 +85,7 @@ export class AuditSentinelIntegration {
   private handleHighSeverityEvent(log: AuditLog): void {
     const alertKey = `audit_high_severity_${log.id}`;
     
-    if (this.alertHistory.has(alertKey)) return;
+    if (this.alertHistory.has(alertKey)) {return;}
     this.alertHistory.add(alertKey);
 
     createAlert(

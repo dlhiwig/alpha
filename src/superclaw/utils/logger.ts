@@ -37,7 +37,7 @@ function createLogger(context: LogContext = {}, level: LogLevel = DEFAULT_LEVEL)
   const minLevel = LOG_LEVELS[level];
 
   const log = (logLevel: LogLevel, objOrMsg: object | string, msg?: string): void => {
-    if (LOG_LEVELS[logLevel] < minLevel) return;
+    if (LOG_LEVELS[logLevel] < minLevel) {return;}
 
     const timestamp = new Date().toISOString();
     const prefix = context.component ? `[${context.component}]` : '';

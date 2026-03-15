@@ -22,7 +22,7 @@ export class NegotiationEngine {
    * Convergence = standard deviation < threshold * mean
    */
   hasConverged(evaluations: AgentEvaluation[]): boolean {
-    if (evaluations.length < 2) return true
+    if (evaluations.length < 2) {return true}
     
     const scores = evaluations.map(e => e.score)
     const mean = this.calculateMean(scores)
@@ -107,7 +107,7 @@ export class NegotiationEngine {
     
     // Sort by frequency
     return Array.from(concernCounts.entries())
-      .sort((a, b) => b[1] - a[1])
+      .toSorted((a, b) => b[1] - a[1])
       .map(([concern]) => concern)
   }
   
@@ -124,7 +124,7 @@ export class NegotiationEngine {
     }
     
     return Array.from(recCounts.entries())
-      .sort((a, b) => b[1] - a[1])
+      .toSorted((a, b) => b[1] - a[1])
       .map(([rec]) => rec)
   }
   
@@ -160,18 +160,18 @@ export class NegotiationEngine {
   
   // Math helpers
   private calculateMean(values: number[]): number {
-    if (values.length === 0) return 0
+    if (values.length === 0) {return 0}
     return values.reduce((sum, v) => sum + v, 0) / values.length
   }
   
   private calculateVariance(values: number[]): number {
-    if (values.length < 2) return 0
+    if (values.length < 2) {return 0}
     const mean = this.calculateMean(values)
     return values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length
   }
   
   private calculateStdDev(values: number[], mean?: number): number {
-    if (values.length < 2) return 0
+    if (values.length < 2) {return 0}
     const m = mean ?? this.calculateMean(values)
     return Math.sqrt(this.calculateVariance(values))
   }

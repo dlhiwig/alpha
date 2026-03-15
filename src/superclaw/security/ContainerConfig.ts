@@ -108,13 +108,13 @@ export class ContainerConfigBuilder {
   }
   
   addMount(mount: Mount): this {
-    if (!this.config.mounts) this.config.mounts = []
+    if (!this.config.mounts) {this.config.mounts = []}
     this.config.mounts.push(mount)
     return this
   }
   
   addEnv(key: string, value: string): this {
-    if (!this.config.env) this.config.env = {}
+    if (!this.config.env) {this.config.env = {}}
     this.config.env[key] = value
     return this
   }

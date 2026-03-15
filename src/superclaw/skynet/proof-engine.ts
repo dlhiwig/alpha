@@ -336,7 +336,7 @@ export class ProofEngine extends EventEmitter {
       return {
         goals: [],
         completed: false,
-        error: error instanceof Error ? (error as Error).message : 'Unknown proof error',
+        error: error instanceof Error ? (error).message : 'Unknown proof error',
         steps: []
       };
     }
@@ -383,7 +383,7 @@ export class ProofEngine extends EventEmitter {
     } catch (error: unknown) {
       return {
         valid: false,
-        error: error instanceof Error ? (error as Error).message : 'Type checking failed'
+        error: error instanceof Error ? (error).message : 'Type checking failed'
       };
     }
   }
@@ -419,7 +419,7 @@ export class ProofEngine extends EventEmitter {
 
   private computeCacheKey(theorem: string, context: Map<string, LeanType>): string {
     const contextStr = Array.from(context.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
+      .toSorted(([a], [b]) => a.localeCompare(b))
       .map(([k, v]) => `${k}:${v.name}`)
       .join('|');
     
@@ -440,7 +440,7 @@ export class ProofEngine extends EventEmitter {
       // Find applicable heuristics
       const applicableHeuristics = config.heuristics
         .filter(h => h.applicable(currentGoal))
-        .sort((a, b) => b.priority - a.priority);
+        .toSorted((a, b) => b.priority - a.priority);
 
       let tacticApplied = false;
 
@@ -470,7 +470,7 @@ export class ProofEngine extends EventEmitter {
           }
         }
         
-        if (tacticApplied) break;
+        if (tacticApplied) {break;}
       }
 
       if (!tacticApplied) {

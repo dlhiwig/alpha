@@ -37,10 +37,10 @@ function extractClaims(result: AgentResult): ClaimExtraction {
   }
   
   // Extract bullet points as claims
-  const bullets = output.match(/^[\-\*•]\s+.+$/gm);
+  const bullets = output.match(/^[-*•]\s+.+$/gm);
   if (bullets) {
     for (const bullet of bullets) {
-      const text = bullet.replace(/^[\-\*•]\s+/, '').trim();
+      const text = bullet.replace(/^[-*•]\s+/, '').trim();
       
       // Categorize based on content
       if (/risk|danger|warning|issue|problem|concern|vulnerability/i.test(text)) {
@@ -54,10 +54,10 @@ function extractClaims(result: AgentResult): ClaimExtraction {
   }
   
   // Extract numbered items
-  const numbered = output.match(/^\d+[\.\)]\s+.+$/gm);
+  const numbered = output.match(/^\d+[.)]\s+.+$/gm);
   if (numbered) {
     for (const item of numbered) {
-      const text = item.replace(/^\d+[\.\)]\s+/, '').trim();
+      const text = item.replace(/^\d+[.)]\s+/, '').trim();
       if (/risk|danger|warning|issue|problem/i.test(text)) {
         risks.push(text);
       } else if (/should|must|need to|recommend|implement/i.test(text)) {
@@ -134,25 +134,25 @@ function scoreOutputs(results: AgentResult[]): Map<ProviderName, number> {
     let score = 0;
     
     // Base score for successful execution
-    if (result.exitCode === 0) score += 10;
+    if (result.exitCode === 0) {score += 10;}
     
     // Penalize timeouts and errors
-    if (result.timedOut) score -= 20;
-    if (result.error) score -= 10;
+    if (result.timedOut) {score -= 20;}
+    if (result.error) {score -= 10;}
     
     // Score based on output quality
     const output = result.output;
     
     // Has code blocks
-    if (/```/.test(output)) score += 5;
+    if (/```/.test(output)) {score += 5;}
     
     // Has structured output (bullets, numbers)
-    if (/^[\-\*•\d\.]\s+/m.test(output)) score += 3;
+    if (/^[-*•\d.]\s+/m.test(output)) {score += 3;}
     
     // Output length (prefer substantive but not verbose)
     const length = output.length;
-    if (length > 100 && length < 5000) score += 5;
-    if (length > 5000) score -= 2;
+    if (length > 100 && length < 5000) {score += 5;}
+    if (length > 5000) {score -= 2;}
     
     // Role-specific scoring
     if (result.role === 'critic' && /risk|issue|concern|warning/i.test(output)) {
@@ -197,7 +197,7 @@ export async function synthesize(roundResult: SwarmRoundResult): Promise<Synthes
   const scores = scoreOutputs(successful);
   
   // Find best implementation (highest scored implementer or general)
-  const sortedByScore = [...successful].sort(
+  const sortedByScore = [...successful].toSorted(
     (a, b) => (scores.get(b.provider) || 0) - (scores.get(a.provider) || 0)
   );
   

@@ -155,7 +155,7 @@ export class VoiceRouter {
         }
       }
       
-      throw new Error(`All TTS providers failed: ${error}`);
+      throw new Error(`All TTS providers failed: ${error}`, { cause: error });
     }
   }
 
@@ -209,7 +209,7 @@ export class VoiceRouter {
         }
       }
       
-      throw new Error(`All STT providers failed: ${error}`);
+      throw new Error(`All STT providers failed: ${error}`, { cause: error });
     }
   }
 

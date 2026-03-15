@@ -138,9 +138,9 @@ class DataSanitizer {
   ];
 
   static sanitize(obj: any, depth = 0): any {
-    if (depth > 10) return '[MAX_DEPTH]'; // Prevent infinite recursion
+    if (depth > 10) {return '[MAX_DEPTH]';} // Prevent infinite recursion
     
-    if (obj === null || obj === undefined) return obj;
+    if (obj === null || obj === undefined) {return obj;}
     
     if (typeof obj === 'string') {
       return this.sanitizeString(obj);
@@ -219,7 +219,7 @@ export class AuditTrail extends EventEmitter {
   // ═══════════════════════════════════════════════════════════════
 
   private async initialize(): Promise<void> {
-    if (!this.config.enabled) return;
+    if (!this.config.enabled) {return;}
 
     try {
       // Ensure data directory exists
@@ -253,7 +253,7 @@ export class AuditTrail extends EventEmitter {
   }
 
   private createTables(): void {
-    if (!this.db) return;
+    if (!this.db) {return;}
 
     const createTableSQL = `
       CREATE TABLE IF NOT EXISTS audit_logs (
@@ -332,7 +332,7 @@ export class AuditTrail extends EventEmitter {
   // ═══════════════════════════════════════════════════════════════
 
   public log(action: AuditAction): void {
-    if (!this.config.enabled || !this.db) return;
+    if (!this.config.enabled || !this.db) {return;}
 
     // Validate and sanitize input data
     const sanitizedAction = {
@@ -387,7 +387,7 @@ export class AuditTrail extends EventEmitter {
   }
 
   private flushBatch(): void {
-    if (!this.db || this.batchBuffer.length === 0) return;
+    if (!this.db || this.batchBuffer.length === 0) {return;}
 
     const insertSQL = `
       INSERT INTO audit_logs (
@@ -443,7 +443,7 @@ export class AuditTrail extends EventEmitter {
   // ═══════════════════════════════════════════════════════════════
 
   public query(filters: AuditFilters = {}): AuditLog[] {
-    if (!this.db) return [];
+    if (!this.db) {return [];}
 
     let sql = 'SELECT * FROM audit_logs WHERE 1=1';
     const params: any[] = [];
@@ -601,7 +601,7 @@ export class AuditTrail extends EventEmitter {
   }
 
   private exportToCsv(logs: AuditLog[]): string {
-    if (logs.length === 0) return '';
+    if (logs.length === 0) {return '';}
 
     const headers = [
       'id', 'timestamp', 'sessionId', 'agentId', 'action', 'tool',
@@ -671,8 +671,8 @@ export class AuditTrail extends EventEmitter {
     }
 
     const filters: AuditFilters = {};
-    if (dateFrom) filters.dateFrom = dateFrom;
-    if (dateTo) filters.dateTo = dateTo;
+    if (dateFrom) {filters.dateFrom = dateFrom;}
+    if (dateTo) {filters.dateTo = dateTo;}
 
     let whereClause = '1=1';
     const params: any[] = [];
@@ -855,7 +855,7 @@ export class AuditTrail extends EventEmitter {
 
   // Swarm task management
   public createTask(description: string, opts?: { priority?: number; parentTaskId?: string; assignedAgent?: string }): string {
-    if (!this.db) throw new Error('Database not initialized')
+    if (!this.db) {throw new Error('Database not initialized')}
     
     const id = crypto.randomUUID()
     const now = Date.now()
@@ -878,7 +878,7 @@ export class AuditTrail extends EventEmitter {
   }
 
   public updateTask(taskId: string, updates: { status?: string; result?: string; error?: string; assignedAgent?: string }): void {
-    if (!this.db) throw new Error('Database not initialized')
+    if (!this.db) {throw new Error('Database not initialized')}
     
     const setClauses = []
     const values = []
@@ -925,13 +925,13 @@ export class AuditTrail extends EventEmitter {
   }
 
   public getTask(taskId: string): any {
-    if (!this.db) throw new Error('Database not initialized')
+    if (!this.db) {throw new Error('Database not initialized')}
     
     return this.db.prepare('SELECT * FROM swarm_tasks WHERE id = ?').get(taskId)
   }
 
   public listTasks(filters?: { status?: string; assignedAgent?: string; limit?: number }): any[] {
-    if (!this.db) throw new Error('Database not initialized')
+    if (!this.db) {throw new Error('Database not initialized')}
     
     let sql = 'SELECT * FROM swarm_tasks WHERE 1=1'
     const params: any[] = []
@@ -958,7 +958,7 @@ export class AuditTrail extends EventEmitter {
 
   // Shared key-value store
   public setKV(key: string, value: string, agentId?: string): void {
-    if (!this.db) throw new Error('Database not initialized')
+    if (!this.db) {throw new Error('Database not initialized')}
     
     this.db.prepare(`
       INSERT OR REPLACE INTO swarm_kv (key, value, agent_id, updated_at)
@@ -967,20 +967,20 @@ export class AuditTrail extends EventEmitter {
   }
 
   public getKV(key: string): string | null {
-    if (!this.db) throw new Error('Database not initialized')
+    if (!this.db) {throw new Error('Database not initialized')}
     
     const result = this.db.prepare('SELECT value FROM swarm_kv WHERE key = ?').get(key) as any
     return result ? result.value : null
   }
 
   public deleteKV(key: string): void {
-    if (!this.db) throw new Error('Database not initialized')
+    if (!this.db) {throw new Error('Database not initialized')}
     
     this.db.prepare('DELETE FROM swarm_kv WHERE key = ?').run(key)
   }
 
   public listKV(prefix?: string): Array<{key: string; value: string; agent_id: string}> {
-    if (!this.db) throw new Error('Database not initialized')
+    if (!this.db) {throw new Error('Database not initialized')}
     
     let sql = 'SELECT key, value, agent_id FROM swarm_kv'
     const params: any[] = []
@@ -997,7 +997,7 @@ export class AuditTrail extends EventEmitter {
 
   // Worker results
   public logWorkerResult(taskId: string, workerId: string, result: string, meta?: { tokensUsed?: number; costUsd?: number; durationMs?: number }): string {
-    if (!this.db) throw new Error('Database not initialized')
+    if (!this.db) {throw new Error('Database not initialized')}
     
     const id = crypto.randomUUID()
     const now = Date.now()
@@ -1020,7 +1020,7 @@ export class AuditTrail extends EventEmitter {
   }
 
   public getWorkerResults(taskId: string): any[] {
-    if (!this.db) throw new Error('Database not initialized')
+    if (!this.db) {throw new Error('Database not initialized')}
     
     return this.db.prepare(`
       SELECT * FROM swarm_worker_results 
@@ -1034,7 +1034,7 @@ export class AuditTrail extends EventEmitter {
   // ═══════════════════════════════════════════════════════════════
 
   private async cleanupOldLogs(): Promise<void> {
-    if (!this.db || this.config.retentionDays <= 0) return;
+    if (!this.db || this.config.retentionDays <= 0) {return;}
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - this.config.retentionDays);

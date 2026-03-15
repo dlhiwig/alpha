@@ -82,7 +82,7 @@ export class GastownWrapper {
 
   async initializeWorkspace(gitInit: boolean = true): Promise<void> {
     const args = ['install', this.workspacePath];
-    if (gitInit) args.push('--git');
+    if (gitInit) {args.push('--git');}
     
     await this.execute(args);
   }
@@ -108,8 +108,8 @@ export class GastownWrapper {
     const args = ['convoy', 'create', name];
     args.push(...issues);
     
-    if (options.notify) args.push('--notify');
-    if (options.human) args.push('--human');
+    if (options.notify) {args.push('--notify');}
+    if (options.human) {args.push('--human');}
 
     const result = await this.execute(args);
     
@@ -125,7 +125,7 @@ export class GastownWrapper {
 
   async getConvoyStatus(convoyId?: string): Promise<ConvoyStatus[]> {
     const args = ['convoy', 'list'];
-    if (convoyId) args.push(convoyId);
+    if (convoyId) {args.push(convoyId);}
 
     const result = await this.execute(args);
     
@@ -147,7 +147,7 @@ export class GastownWrapper {
 
   async closeConvoy(convoyId: string, force: boolean = false): Promise<void> {
     const args = ['convoy', 'close', convoyId];
-    if (force) args.push('--force');
+    if (force) {args.push('--force');}
     
     await this.execute(args);
   }
@@ -162,8 +162,8 @@ export class GastownWrapper {
   } = {}): Promise<string> {
     const args = ['sling', beadId, rig];
     
-    if (options.agent) args.push('--agent', options.agent);
-    if (options.force) args.push('--force');
+    if (options.agent) {args.push('--agent', options.agent);}
+    if (options.force) {args.push('--force');}
 
     const result = await this.execute(args);
     
@@ -192,7 +192,7 @@ export class GastownWrapper {
     
     if (convoyId) {
       const convoy = convoys.find(c => c.id === convoyId);
-      if (!convoy) throw new Error(`Convoy ${convoyId} not found`);
+      if (!convoy) {throw new Error(`Convoy ${convoyId} not found`);}
       
       return this.estimateConvoyCosts(convoy, polecats);
     } else {
@@ -271,7 +271,7 @@ export class GastownWrapper {
       }, options.timeout) : null;
 
       proc.on('close', (code) => {
-        if (timeoutHandle) clearTimeout(timeoutHandle);
+        if (timeoutHandle) {clearTimeout(timeoutHandle);}
         
         const duration = Date.now() - startTime;
         const result: ExecutionResult = {
@@ -289,7 +289,7 @@ export class GastownWrapper {
       });
 
       proc.on('error', (error) => {
-        if (timeoutHandle) clearTimeout(timeoutHandle);
+        if (timeoutHandle) {clearTimeout(timeoutHandle);}
         reject(error);
       });
     });
@@ -346,7 +346,7 @@ export class GastownWrapper {
       } else if (line.includes('Beads:')) {
         // Extract bead IDs
         const beadMatch = line.match(/gt-[a-z0-9]+/g);
-        if (beadMatch) convoy.beads.push(...beadMatch);
+        if (beadMatch) {convoy.beads.push(...beadMatch);}
       }
     }
 

@@ -244,7 +244,7 @@ export class YeggeEventBridge extends EventEmitter {
     // Get matching subscriptions
     const matchingSubscriptions = Array.from(this.subscriptions.values())
       .filter(sub => this.matchesFilter(event, sub.filter))
-      .sort((a, b) => b.priority - a.priority); // High priority first
+      .toSorted((a, b) => b.priority - a.priority); // High priority first
     
     // Execute handlers
     for (const subscription of matchingSubscriptions) {

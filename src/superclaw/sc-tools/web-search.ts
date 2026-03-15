@@ -119,7 +119,7 @@ export class WebSearchTool {
       console.error('Web search error:', error);
       return {
         success: false,
-        error: error instanceof Error ? (error as Error).message : 'Unknown search error'
+        error: error instanceof Error ? (error).message : 'Unknown search error'
       };
     }
   }

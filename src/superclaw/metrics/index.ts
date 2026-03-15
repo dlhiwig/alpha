@@ -80,7 +80,7 @@ export class MetricsRegistry extends EventEmitter {
         this.emit('metric', { name, type: 'histogram', value: obs })
       },
       getPercentile: (p: number) => {
-        const values = [...this.histograms.get(name)!].sort((a, b) => a - b)
+        const values = [...this.histograms.get(name)!].toSorted((a, b) => a - b)
         const index = Math.ceil(values.length * p / 100) - 1
         return values[Math.max(0, index)] || 0
       }

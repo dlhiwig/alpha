@@ -402,9 +402,9 @@ describe('SuperClawQualityGates', () => {
       // @ts-expect-error - Post-Merge Reconciliation
       mockExec.mockImplementation((command, options, callback) => {
         let output = 'Success';
-        if (command.includes('build')) output = 'Build successful';
-        else if (command.includes('test')) output = 'All tests passed';
-        else if (command.includes('lint')) output = 'No lint errors';
+        if (command.includes('build')) {output = 'Build successful';}
+        else if (command.includes('test')) {output = 'All tests passed';}
+        else if (command.includes('lint')) {output = 'No lint errors';}
         
         // @ts-expect-error - Post-Merge Reconciliation
         callback!(null, { stdout: output, stderr: '' } as any);

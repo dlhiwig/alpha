@@ -234,7 +234,7 @@ export class EconomicGovernor {
   }): BudgetCheckResult {
     const check = this.check();
     
-    if (!check.allowed) return check;
+    if (!check.allowed) {return check;}
 
     // Check if proposed action would exceed
     if (proposed.tokens && proposed.tokens > check.remaining.tokens) {

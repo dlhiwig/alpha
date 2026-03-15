@@ -168,7 +168,7 @@ export class SuperClawQualityGates implements QualityGateRunner {
       return {
         gate,
         passed: false,
-        output: error instanceof Error ? (error as Error).message : String(error),
+        output: error instanceof Error ? (error).message : String(error),
         error: error instanceof Error ? error : new Error(String(error)),
         durationMs: Date.now() - startTime
       };
@@ -538,7 +538,7 @@ Respond with JSON:
       
       return strategy;
     } catch (error: unknown) {
-      console.warn(`AI recovery strategy failed: ${error instanceof Error ? (error as Error).message : error}, falling back`);
+      console.warn(`AI recovery strategy failed: ${error instanceof Error ? (error).message : error}, falling back`);
       return this.generateFallbackStrategy(results, context);
     }
   }

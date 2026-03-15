@@ -125,7 +125,7 @@ export class Task implements ITask {
   }
 
   static sortByPriority(tasks: Task[]): Task[] {
-    return [...tasks].sort((a, b) => b.getPriorityValue() - a.getPriorityValue());
+    return [...tasks].toSorted((a, b) => b.getPriorityValue() - a.getPriorityValue());
   }
 
   static resolveExecutionOrder(tasks: Task[]): Task[] {

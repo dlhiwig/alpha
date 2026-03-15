@@ -111,7 +111,7 @@ ${message.attachments.length > 0 ? `📎 Attachments: ${message.attachments.leng
  * Create message thread summary
  */
 export function createThreadSummary(messages: AgentMailMessage[]): string {
-  if (messages.length === 0) return 'Empty thread';
+  if (messages.length === 0) {return 'Empty thread';}
   
   const threadId = messages[0].threadId || 'Unknown';
   const participants = [...new Set(messages.map(m => m.senderName))];
@@ -189,10 +189,10 @@ export function checkReservationConflicts(
   for (const newRes of newReservations) {
     for (const existingRes of existingReservations) {
       // Skip if same agent
-      if (newRes.agentId === existingRes.agentId) continue;
+      if (newRes.agentId === existingRes.agentId) {continue;}
       
       // Skip if reservation expired
-      if (existingRes.expiresAt < new Date()) continue;
+      if (existingRes.expiresAt < new Date()) {continue;}
       
       // Check for pattern overlap
       if (patternsOverlap(newRes.pathPattern, existingRes.pathPattern)) {
@@ -216,7 +216,7 @@ function patternsOverlap(pattern1: string, pattern2: string): boolean {
   const p2 = normalize(pattern2);
   
   // Exact match
-  if (p1 === p2) return true;
+  if (p1 === p2) {return true;}
   
   // Check if one pattern matches the other using glob-style matching
   if (matchesGlobPattern(p1, p2) || matchesGlobPattern(p2, p1)) {
@@ -281,9 +281,9 @@ export function getMessagePriorityScore(priority: MessagePriority): number {
  * Sort messages by priority and timestamp
  */
 export function sortMessagesByPriority(messages: AgentMailMessage[]): AgentMailMessage[] {
-  return [...messages].sort((a, b) => {
+  return [...messages].toSorted((a, b) => {
     const priorityDiff = getMessagePriorityScore(b.priority) - getMessagePriorityScore(a.priority);
-    if (priorityDiff !== 0) return priorityDiff;
+    if (priorityDiff !== 0) {return priorityDiff;}
     
     // If same priority, sort by timestamp (newest first)
     return b.timestamp.getTime() - a.timestamp.getTime();
@@ -306,15 +306,15 @@ export function filterMessages(
   }
 ): AgentMailMessage[] {
   return messages.filter(message => {
-    if (filters.senderId && message.senderId !== filters.senderId) return false;
-    if (filters.messageType && message.type !== filters.messageType) return false;
-    if (filters.priority && message.priority !== filters.priority) return false;
-    if (filters.threadId && message.threadId !== filters.threadId) return false;
+    if (filters.senderId && message.senderId !== filters.senderId) {return false;}
+    if (filters.messageType && message.type !== filters.messageType) {return false;}
+    if (filters.priority && message.priority !== filters.priority) {return false;}
+    if (filters.threadId && message.threadId !== filters.threadId) {return false;}
     if (filters.hasAttachments !== undefined && 
-        (message.attachments.length > 0) !== filters.hasAttachments) return false;
+        (message.attachments.length > 0) !== filters.hasAttachments) {return false;}
     if (filters.ackRequired !== undefined && 
-        message.ackRequired !== filters.ackRequired) return false;
-    if (filters.since && message.timestamp < filters.since) return false;
+        message.ackRequired !== filters.ackRequired) {return false;}
+    if (filters.since && message.timestamp < filters.since) {return false;}
     
     return true;
   });
@@ -517,9 +517,9 @@ export function formatUptime(uptimeMs: number): string {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
   
-  if (days > 0) return `${days}d ${hours % 24}h`;
-  if (hours > 0) return `${hours}h ${minutes % 60}m`;
-  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+  if (days > 0) {return `${days}d ${hours % 24}h`;}
+  if (hours > 0) {return `${hours}h ${minutes % 60}m`;}
+  if (minutes > 0) {return `${minutes}m ${seconds % 60}s`;}
   return `${seconds}s`;
 }
 

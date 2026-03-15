@@ -351,7 +351,7 @@ export class CohereProvider implements ILLMProvider {
       }
       
       throw new ProviderError(
-        `Failed to initialize Cohere: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        `Failed to initialize Cohere: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         this.name,
         'connection',
         true
@@ -478,7 +478,7 @@ export class CohereProvider implements ILLMProvider {
         throw error;
       }
       
-      const message = error instanceof Error ? (error as Error).message : 'Unknown error';
+      const message = error instanceof Error ? (error).message : 'Unknown error';
       const isTimeout = message.includes('timeout') || message.includes('AbortError');
       
       throw new ProviderError(
@@ -545,7 +545,7 @@ export class CohereProvider implements ILLMProvider {
         while (true) {
           const { done, value } = await reader.read();
           
-          if (done) break;
+          if (done) {break;}
           
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
@@ -590,7 +590,7 @@ export class CohereProvider implements ILLMProvider {
         throw error;
       }
       
-      const message = error instanceof Error ? (error as Error).message : 'Unknown error';
+      const message = error instanceof Error ? (error).message : 'Unknown error';
       throw new ProviderError(
         `Cohere streaming failed: ${message}`,
         this.name,
@@ -605,12 +605,12 @@ export class CohereProvider implements ILLMProvider {
     const model = request.model || this.defaultModel;
     const modelExists = this.availableModels.some(m => m.name === model);
     
-    if (!modelExists) return false;
+    if (!modelExists) {return false;}
     
     // Check required capabilities
     if (context?.requiredCapabilities) {
       const modelInfo = this.availableModels.find(m => m.name === model);
-      if (!modelInfo) return false;
+      if (!modelInfo) {return false;}
       
       return context.requiredCapabilities.every(cap => 
         modelInfo.capabilities.includes(cap)
@@ -697,7 +697,7 @@ export class CohereProvider implements ILLMProvider {
         throw error;
       }
       
-      const message = error instanceof Error ? (error as Error).message : 'Unknown error';
+      const message = error instanceof Error ? (error).message : 'Unknown error';
       throw new ProviderError(
         `Cohere embedding failed: ${message}`,
         this.name,
@@ -782,7 +782,7 @@ export class CohereProvider implements ILLMProvider {
         throw error;
       }
       
-      const message = error instanceof Error ? (error as Error).message : 'Unknown error';
+      const message = error instanceof Error ? (error).message : 'Unknown error';
       throw new ProviderError(
         `Cohere rerank failed: ${message}`,
         this.name,
@@ -911,7 +911,7 @@ export class CohereProvider implements ILLMProvider {
         throw error;
       }
       
-      const message = error instanceof Error ? (error as Error).message : 'Unknown error';
+      const message = error instanceof Error ? (error).message : 'Unknown error';
       throw new ProviderError(
         `Cohere RAG generation failed: ${message}`,
         this.name,

@@ -266,7 +266,7 @@ async function benchmarkToolExecution(federation: any, toolName: string, paramet
     const duration = Date.now() - start;
     
     times.push(duration);
-    if (result?.success) successes++;
+    if (result?.success) {successes++;}
   }
   
   const avgTime = times.reduce((a, b) => a + b, 0) / times.length;

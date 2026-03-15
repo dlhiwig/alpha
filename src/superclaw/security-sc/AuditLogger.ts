@@ -103,7 +103,7 @@ export class AuditLogger extends EventEmitter {
   }
   
   async flush(): Promise<void> {
-    if (this.buffer.length === 0) return
+    if (this.buffer.length === 0) {return}
     
     const events = [...this.buffer]
     this.buffer = []
@@ -127,11 +127,11 @@ export class AuditLogger extends EventEmitter {
         .map(line => JSON.parse(line) as SecurityAuditEvent)
       
       return events.filter(e => {
-        if (filter.sandboxId && e.sandboxId !== filter.sandboxId) return false
-        if (filter.eventType && e.eventType !== filter.eventType) return false
-        if (filter.severity && e.severity !== filter.severity) return false
-        if (filter.since && new Date(e.timestamp) < filter.since) return false
-        if (filter.until && new Date(e.timestamp) > filter.until) return false
+        if (filter.sandboxId && e.sandboxId !== filter.sandboxId) {return false}
+        if (filter.eventType && e.eventType !== filter.eventType) {return false}
+        if (filter.severity && e.severity !== filter.severity) {return false}
+        if (filter.since && new Date(e.timestamp) < filter.since) {return false}
+        if (filter.until && new Date(e.timestamp) > filter.until) {return false}
         return true
       })
     } catch (error: unknown) {
@@ -156,7 +156,7 @@ export class AuditLogger extends EventEmitter {
     for (const event of events) {
       byType[event.eventType] = (byType[event.eventType] || 0) + 1
       bySeverity[event.severity] = (bySeverity[event.severity] || 0) + 1
-      if (new Date(event.timestamp) > yesterday) last24h++
+      if (new Date(event.timestamp) > yesterday) {last24h++}
     }
     
     return {

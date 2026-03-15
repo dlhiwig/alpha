@@ -69,8 +69,8 @@ export class MemoryGraphBuilder {
     while (queue.length > 0) {
       const { id, path } = queue.shift()!
       
-      if (id === toId) return path
-      if (visited.has(id)) continue
+      if (id === toId) {return path}
+      if (visited.has(id)) {continue}
       
       visited.add(id)
       
@@ -90,13 +90,13 @@ export class MemoryGraphBuilder {
     
     while (queue.length > 0) {
       const id = queue.shift()!
-      if (component.has(id)) continue
+      if (component.has(id)) {continue}
       
       component.add(id)
       
       for (const edge of this.edges) {
-        if (edge.source === id) queue.push(edge.target)
-        if (edge.target === id) queue.push(edge.source)
+        if (edge.source === id) {queue.push(edge.target)}
+        if (edge.target === id) {queue.push(edge.source)}
       }
     }
     
@@ -114,7 +114,7 @@ export class MemoryGraphBuilder {
     
     return Array.from(this.nodes.values())
       .map(node => ({ node, degree: degrees.get(node.id) || 0 }))
-      .sort((a, b) => b.degree - a.degree)
+      .toSorted((a, b) => b.degree - a.degree)
       .slice(0, limit)
       .map(({ node }) => node)
   }

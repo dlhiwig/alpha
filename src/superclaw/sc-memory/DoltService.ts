@@ -72,7 +72,7 @@ export class DoltService {
       
       this.initialized = true
     } catch (error: unknown) {
-      throw new Error(`Failed to initialize DoltService: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to initialize DoltService: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -89,7 +89,7 @@ export class DoltService {
       
       return result as T[]
     } catch (error: unknown) {
-      throw new Error(`Query failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Query failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -106,7 +106,7 @@ export class DoltService {
       
       return { affectedRows: result.affectedRows || 0 }
     } catch (error: unknown) {
-      throw new Error(`Execute failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Execute failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -132,7 +132,7 @@ export class DoltService {
       if (errorMsg.includes('no changes added to commit') || errorMsg.includes('nothing to commit')) {
         return
       }
-      throw new Error(`Commit failed: ${errorMsg}`)
+      throw new Error(`Commit failed: ${errorMsg}`, { cause: error })
     }
   }
   
@@ -142,7 +142,7 @@ export class DoltService {
     try {
       await this.exec(`dolt checkout -b "${this.escapeShellArg(name)}"`)
     } catch (error: unknown) {
-      throw new Error(`Branch creation failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Branch creation failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -152,7 +152,7 @@ export class DoltService {
     try {
       await this.exec(`dolt merge "${this.escapeShellArg(branch)}"`)
     } catch (error: unknown) {
-      throw new Error(`Merge failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Merge failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -165,7 +165,7 @@ export class DoltService {
       
       return this.parseLogOutput(output)
     } catch (error: unknown) {
-      throw new Error(`Get history failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Get history failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -176,7 +176,7 @@ export class DoltService {
       const output = await this.exec(`dolt diff --data "${this.escapeShellArg(fromCommit)}" "${this.escapeShellArg(toCommit)}"`)
       return this.parseDiffOutput(output)
     } catch (error: unknown) {
-      throw new Error(`Diff failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Diff failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -187,7 +187,7 @@ export class DoltService {
       const output = await this.exec('dolt branch --show-current')
       return output.trim()
     } catch (error: unknown) {
-      throw new Error(`Get current branch failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Get current branch failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -201,7 +201,7 @@ export class DoltService {
         .map(line => line.replace(/^\*\s*/, '').trim())
         .filter(line => line.length > 0)
     } catch (error: unknown) {
-      throw new Error(`List branches failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`List branches failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -213,7 +213,7 @@ export class DoltService {
       const commitRef = commit ? this.escapeShellArg(commit) : 'HEAD'
       await this.exec(`dolt reset ${hardFlag} ${commitRef}`)
     } catch (error: unknown) {
-      throw new Error(`Reset failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Reset failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -252,7 +252,7 @@ export class DoltService {
       
       return stdout
     } catch (error: any) {
-      throw new Error(`Command failed: ${command} - ${(error as Error).message || error}`)
+      throw new Error(`Command failed: ${command} - ${(error as Error).message || error}`, { cause: error })
     }
   }
   
@@ -326,7 +326,7 @@ export class DoltService {
       const lines = output.trim().split('\n')
       return lines.map(line => JSON.parse(line))
     } catch (error: unknown) {
-      throw new Error(`Failed to parse JSON output: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to parse JSON output: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -347,7 +347,7 @@ export class DoltService {
     const lines = output.trim().split('\n')
     
     for (const line of lines) {
-      if (!line.trim()) continue
+      if (!line.trim()) {continue}
       
       // Parse format: hash message (author, date)
       const match = line.match(/^([a-f0-9]+)\s+(.+?)\s+\(([^,]+),\s*(.+)\)$/)
@@ -406,7 +406,7 @@ export class DoltService {
     try {
       await execAsync('dolt version', { timeout: 5000 })
     } catch (error: unknown) {
-      throw new Error('Dolt is not installed or not in PATH. Please install Dolt first.')
+      throw new Error('Dolt is not installed or not in PATH. Please install Dolt first.', { cause: error })
     }
   }
   

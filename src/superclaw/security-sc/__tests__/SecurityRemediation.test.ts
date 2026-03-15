@@ -191,7 +191,7 @@ describe('Security Remediation - Beast Mode Phase 2', () => {
         expect(lockData.lockfileVersion).toBeDefined();
         expect(lockData.packages).toBeDefined();
       } catch (error: unknown) {
-        throw new Error('package-lock.json is required for security dependency locking');
+        throw new Error('package-lock.json is required for security dependency locking', { cause: error });
       }
     });
   });
@@ -235,7 +235,7 @@ describe('Security Remediation - Beast Mode Phase 2', () => {
       const testError = new Error('Test error');
       
       // Verify error doesn't contain sensitive paths
-      expect(testError.message).not.toMatch(/\/home\/[^\/]+\//);
+      expect(testError.message).not.toMatch(/\/home\/[^/]+\//);
       expect(testError.message).not.toMatch(/C:\\Users\\[^\\]+\\/);
     });
   });

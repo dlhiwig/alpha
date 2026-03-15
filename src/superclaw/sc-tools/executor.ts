@@ -152,7 +152,7 @@ export class ToolExecutor {
    * Validate tool parameters against tool definition
    */
   private validateParameters(tool: ITool, parameters: Record<string, any>): void {
-    if (!this.config.strictValidation) return;
+    if (!this.config.strictValidation) {return;}
 
     for (const paramDef of tool.parameters) {
       const value = parameters[paramDef.name];
@@ -167,7 +167,7 @@ export class ToolExecutor {
       }
 
       // Skip validation if parameter is not provided and not required
-      if (value === undefined || value === null) continue;
+      if (value === undefined || value === null) {continue;}
 
       // Type validation
       const actualType = Array.isArray(value) ? 'array' : typeof value;
@@ -307,7 +307,7 @@ export class ToolExecutor {
       } else {
         toolResult = {
           success: false,
-          error: `Unexpected error: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+          error: `Unexpected error: ${error instanceof Error ? (error).message : 'Unknown error'}`,
           metadata: {
             timestamp: completed,
             executionTime: duration,

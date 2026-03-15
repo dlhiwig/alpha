@@ -264,13 +264,13 @@ export class EfritExecutionEngine extends EventEmitter {
       
       // Update execution step with error
       executionStep.duration = Date.now() - startTime;
-      executionStep.error = error instanceof Error ? (error as Error).message : String(error);
+      executionStep.error = error instanceof Error ? (error).message : String(error);
       
       const result: EfritExecutionResult = {
         sessionId,
         success: false,
         message: `Execution failed: ${error}`,
-        error: error instanceof Error ? (error as Error).message : String(error),
+        error: error instanceof Error ? (error).message : String(error),
         toolsExecuted: [],
         todosGenerated: [],
         nextActions: ['Review error and retry with guidance'],
@@ -331,7 +331,7 @@ export class EfritExecutionEngine extends EventEmitter {
       return result;
 
     } catch (error: unknown) {
-      step.error = error instanceof Error ? (error as Error).message : String(error);
+      step.error = error instanceof Error ? (error).message : String(error);
       step.duration = Date.now() - startTime;
       
       session.executionTrace.push(step);
@@ -519,7 +519,7 @@ export class EfritExecutionEngine extends EventEmitter {
    */
   getSessionStatus(sessionId: string): EfritSessionStatus | null {
     const session = this.sessions.get(sessionId);
-    if (!session) return null;
+    if (!session) {return null;}
 
     return {
       id: sessionId,
@@ -639,7 +639,7 @@ export class EfritExecutionEngine extends EventEmitter {
 
   private restoreActiveSessions(): void {
     const sessionsDir = join(this.dataDirectory, 'sessions');
-    if (!existsSync(sessionsDir)) return;
+    if (!existsSync(sessionsDir)) {return;}
 
     // Implementation would restore active sessions from disk
     // This enables resuming after process restart (EFRIT pattern)

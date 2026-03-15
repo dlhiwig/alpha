@@ -236,8 +236,8 @@ export async function swarm(
   
   // Select contract
   let contract = DEFAULT_CONTRACT;
-  if (options.contract === 'strict') contract = STRICT_CONTRACT;
-  if (options.contract === 'fast') contract = FAST_CONTRACT;
+  if (options.contract === 'strict') {contract = STRICT_CONTRACT;}
+  if (options.contract === 'fast') {contract = FAST_CONTRACT;}
   
   return runSwarm({
     mode: options.mode || 'fanout',
@@ -292,8 +292,8 @@ export async function swarmCLI(args: string[]): Promise<void> {
   
   // Select contract
   let contract = DEFAULT_CONTRACT;
-  if (contractType === 'strict') contract = STRICT_CONTRACT;
-  if (contractType === 'fast') contract = FAST_CONTRACT;
+  if (contractType === 'strict') {contract = STRICT_CONTRACT;}
+  if (contractType === 'fast') {contract = FAST_CONTRACT;}
   
   console.log(`[swarm] Task: ${task}`);
   console.log(`[swarm] Mode: ${mode}`);

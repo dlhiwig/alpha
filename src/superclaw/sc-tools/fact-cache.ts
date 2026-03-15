@@ -255,7 +255,7 @@ export class FACTCache {
       } : undefined
     };
 
-    const serialized = JSON.stringify(normalizedCall, Object.keys(normalizedCall).sort());
+    const serialized = JSON.stringify(normalizedCall, Object.keys(normalizedCall).toSorted());
     return crypto.createHash('sha256').update(serialized).digest('hex');
   }
 
@@ -269,7 +269,7 @@ export class FACTCache {
       if (value !== undefined && value !== null) {
         // Sort arrays and objects for consistency
         if (Array.isArray(value)) {
-          normalized[key] = [...value].sort();
+          normalized[key] = [...value].toSorted();
         } else if (typeof value === 'object') {
           normalized[key] = this.normalizeParameters(value);
         } else {

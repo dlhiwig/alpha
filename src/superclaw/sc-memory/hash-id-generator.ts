@@ -22,7 +22,7 @@ export function generateMemoryId(content: {
   }
 
   // Create stable hash input by sorting keys
-  const hashInput = JSON.stringify(normalizedContent, Object.keys(normalizedContent).sort())
+  const hashInput = JSON.stringify(normalizedContent, Object.keys(normalizedContent).toSorted())
   
   // Generate SHA-256 hash and take first 16 characters for readability
   const hash = createHash('sha256').update(hashInput, 'utf8').digest('hex').substring(0, 16)

@@ -60,7 +60,7 @@ export class HivemindCoordinator extends EventEmitter {
    * Initialize the hivemind by detecting available CLI tools
    */
   async initialize(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {return;}
 
     console.log('🧠 Initializing Hivemind...');
 

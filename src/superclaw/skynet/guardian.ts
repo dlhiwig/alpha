@@ -64,7 +64,7 @@ export function startGuardian(mainEntry: string, args: string[] = []): void {
   state.isRunning = true;
   
   function spawnMain(): void {
-    if (isShuttingDown) return;
+    if (isShuttingDown) {return;}
     
     console.log(`[🦊 GUARDIAN] Spawning main process: ${mainEntry}`);
     
@@ -102,7 +102,7 @@ export function startGuardian(mainEntry: string, args: string[] = []): void {
   
   // Handle graceful shutdown
   const shutdown = async (signal: string) => {
-    if (isShuttingDown) return;
+    if (isShuttingDown) {return;}
     isShuttingDown = true;
     
     console.log(`\n[🦊 GUARDIAN] Received ${signal} — initiating graceful shutdown`);

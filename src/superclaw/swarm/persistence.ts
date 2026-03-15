@@ -41,7 +41,7 @@ function generateRuntimeSignature(
   const payload = JSON.stringify({
     task,
     contract,
-    providers: providers.sort(),
+    providers: providers.toSorted(),
     timestamp,
   });
   return createHash('sha256').update(payload).digest('hex').slice(0, 16);
@@ -273,8 +273,8 @@ export async function listRuns(limit: number = 10): Promise<string[]> {
   try {
     const dirs = await readdir(RUNS_DIR);
     return dirs
-      .sort()
-      .reverse()
+      .toSorted()
+      .toReversed()
       .slice(0, limit);
   } catch {
     return [];

@@ -282,7 +282,7 @@ export class FormalVerifier {
     } catch (error: unknown) {
       return {
         valid: false,
-        error: error instanceof Error ? (error as Error).message : 'Unknown verification error',
+        error: error instanceof Error ? (error).message : 'Unknown verification error',
         risk_score: 100,
         execution_allowed: false
       };
@@ -377,7 +377,7 @@ export class FormalVerifier {
     for (let i = 1; i < this.hashChain.length; i++) {
       // In a real implementation, we'd verify each hash
       // For now, just check chain isn't empty
-      if (!this.hashChain[i]) return false;
+      if (!this.hashChain[i]) {return false;}
     }
     return true;
   }
@@ -397,9 +397,9 @@ export class FormalVerifier {
     score += Math.min(context.resource_impact.memory / 100, 20);
     score += Math.min(context.resource_impact.cpu, 25);
     
-    if (context.resource_impact.external_api) score += 20;
-    if (context.resource_impact.filesystem) score += 15;
-    if (context.resource_impact.network) score += 10;
+    if (context.resource_impact.external_api) {score += 20;}
+    if (context.resource_impact.filesystem) {score += 15;}
+    if (context.resource_impact.network) {score += 10;}
     
     return Math.min(score, 100);
   }
@@ -431,7 +431,7 @@ export class FormalVerifier {
   public getProofHistory(agentId: string): FormalProof[] {
     return Array.from(this.proofCache.values())
       .filter(proof => proof.agentId === agentId)
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      .toSorted((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }
 
   public getHashChainLength(): number {

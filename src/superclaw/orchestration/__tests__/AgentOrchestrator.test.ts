@@ -383,7 +383,7 @@ describe('AgentOrchestrator', () => {
       const newSessionId = await orchestrator.recoverFailedAgent(testIdentity)
       
       // State should be preserved
-      const recoveredSession = await orchestrator.getSession(newSessionId!)
+      const recoveredSession = await orchestrator.getSession(newSessionId)
       expect(recoveredSession?.state?.customData).toBe('test-data')
     })
 

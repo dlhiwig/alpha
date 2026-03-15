@@ -167,7 +167,7 @@ export class ConsensusJudge {
    * @returns True if standard deviation is within convergence threshold
    */
   private hasConverged(evaluations: AgentEvaluation[]): boolean {
-    if (evaluations.length < 2) return true
+    if (evaluations.length < 2) {return true}
     
     const scores = evaluations.map(e => e.score)
     const mean = scores.reduce((a, b) => a + b) / scores.length
@@ -232,7 +232,7 @@ export class ConsensusJudge {
    * @returns Confidence score from 0-100
    */
   private measureConfidence(evaluations: AgentEvaluation[]): number {
-    if (evaluations.length === 0) return 0
+    if (evaluations.length === 0) {return 0}
     
     // Factor 1: Individual agent confidence average
     const avgAgentConfidence = evaluations.reduce((sum, e) => sum + e.confidence, 0) / evaluations.length
@@ -264,10 +264,10 @@ export class ConsensusJudge {
    * @returns Synthesized reasoning summary
    */
   private aggregateReasoning(evaluations: AgentEvaluation[]): string {
-    if (evaluations.length === 0) return 'No evaluations provided'
+    if (evaluations.length === 0) {return 'No evaluations provided'}
     
     const reasoningTexts = evaluations.map(e => e.reasoning).filter(r => r.length > 0)
-    if (reasoningTexts.length === 0) return 'No reasoning provided by agents'
+    if (reasoningTexts.length === 0) {return 'No reasoning provided by agents'}
     
     // Extract key themes and decision points
     const themes = this.extractCommonThemes(reasoningTexts)
@@ -436,7 +436,7 @@ Provide your evaluation as a ${personality} specialist. Score 0-100 where:
     }, {} as Record<string, number>)
     
     return Object.entries(counts)
-      .sort(([, a], [, b]) => b - a)
+      .toSorted(([, a], [, b]) => b - a)
       .map(([item]) => item)
   }
   

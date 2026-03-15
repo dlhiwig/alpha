@@ -223,7 +223,7 @@ function spawnGateway(args: string[]): void {
   });
   
   mainProcess.on('error', (error) => {
-    console.error('[🦊 GUARDIAN] ❌ Process error:', (error as Error).message);
+    console.error('[🦊 GUARDIAN] ❌ Process error:', (error).message);
   });
 }
 

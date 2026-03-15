@@ -183,7 +183,7 @@ export class SwarmQualityAssessor {
   private shouldRunQualityGates(swarmResult: SwarmResult): boolean {
     // Run gates if synthesis contains code-like content
     const synthesis = swarmResult.synthesis;
-    if (!synthesis) return false;
+    if (!synthesis) {return false;}
     
     // Simple heuristics to detect code content
     const hasCode = synthesis.patch ||
@@ -227,8 +227,8 @@ export class SwarmQualityAssessor {
    * Calculate quality score for an agent's output
    */
   private calculateAgentOutputQuality(result: AgentResult): number {
-    if (result.exitCode !== 0) return 0;
-    if (!result.output) return 0.1;
+    if (result.exitCode !== 0) {return 0;}
+    if (!result.output) {return 0.1;}
     
     // Basic heuristics for output quality
     let score = 0.5; // Base score for successful execution
@@ -238,9 +238,9 @@ export class SwarmQualityAssessor {
     score += lengthScore;
     
     // Structure indicators
-    if (result.output.includes('```')) score += 0.1;          // Code blocks
-    if (result.output.includes('# ') || result.output.includes('## ')) score += 0.05; // Headers
-    if (result.output.includes('- ') || result.output.includes('* ')) score += 0.05;  // Lists
+    if (result.output.includes('```')) {score += 0.1;}          // Code blocks
+    if (result.output.includes('# ') || result.output.includes('## ')) {score += 0.05;} // Headers
+    if (result.output.includes('- ') || result.output.includes('* ')) {score += 0.05;}  // Lists
     
     // Avoid common low-quality patterns
     if (result.output.toLowerCase().includes('sorry') || 
@@ -262,7 +262,7 @@ export class SwarmQualityAssessor {
    */
   private calculateAgentConsistency(result: AgentResult, allResults: AgentResult[]): number {
     const otherResults = allResults.filter(r => r.provider !== result.provider && r.exitCode === 0);
-    if (otherResults.length === 0) return 0.5; // No comparison possible
+    if (otherResults.length === 0) {return 0.5;} // No comparison possible
     
     // Simple keyword overlap consistency check
     const keywords = this.extractKeywords(result.output);
@@ -299,7 +299,7 @@ export class SwarmQualityAssessor {
   }
   
   private calculateAgentConfidence(result: AgentResult): number {
-    if (result.exitCode !== 0) return 0;
+    if (result.exitCode !== 0) {return 0;}
     
     // Base confidence from successful execution
     let confidence = 0.6;
@@ -308,13 +308,13 @@ export class SwarmQualityAssessor {
     const output = result.output.toLowerCase();
     
     // Confidence indicators
-    if (output.includes('definitely') || output.includes('certainly')) confidence += 0.1;
-    if (output.includes('likely') || output.includes('probably')) confidence += 0.05;
+    if (output.includes('definitely') || output.includes('certainly')) {confidence += 0.1;}
+    if (output.includes('likely') || output.includes('probably')) {confidence += 0.05;}
     
     // Uncertainty indicators
-    if (output.includes('might') || output.includes('maybe')) confidence -= 0.1;
-    if (output.includes('unsure') || output.includes('unclear')) confidence -= 0.15;
-    if (output.includes('not sure') || output.includes("don't know")) confidence -= 0.2;
+    if (output.includes('might') || output.includes('maybe')) {confidence -= 0.1;}
+    if (output.includes('unsure') || output.includes('unclear')) {confidence -= 0.15;}
+    if (output.includes('not sure') || output.includes("don't know")) {confidence -= 0.2;}
     
     // Retry/timeout impacts confidence
     if (result.retryCount && result.retryCount > 0) {
@@ -393,14 +393,14 @@ export class SwarmQualityAssessor {
   }
   
   private calculateSynthesisQuality(synthesis: SynthesisResult): number {
-    if (!synthesis) return 0;
+    if (!synthesis) {return 0;}
     
     let quality = synthesis.confidence || 0.5;
     
     // Adjust based on synthesis characteristics
-    if (synthesis.patch && synthesis.patch.length > 0) quality += 0.1;
-    if (synthesis.tests && synthesis.tests.length > 0) quality += 0.1;
-    if (synthesis.fallbackPlan) quality += 0.05;
+    if (synthesis.patch && synthesis.patch.length > 0) {quality += 0.1;}
+    if (synthesis.tests && synthesis.tests.length > 0) {quality += 0.1;}
+    if (synthesis.fallbackPlan) {quality += 0.05;}
     
     // Penalize unresolved conflicts
     if (synthesis.conflicts && synthesis.conflicts.length > 0) {

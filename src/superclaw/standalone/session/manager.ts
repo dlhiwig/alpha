@@ -91,7 +91,7 @@ export class SessionManager {
       WHERE id = ? AND (expires_at IS NULL OR expires_at > datetime('now'))
     `).get(id) as any;
     
-    if (!row) return null;
+    if (!row) {return null;}
     
     return {
       id: row.id,

@@ -573,7 +573,7 @@ ${archive.content}
   private async getRecentMessages(conversationId: string, limit: number): Promise<MessageArchive[]> {
     return Array.from(this.messageIndex.values())
       .filter(m => m.conversationId === conversationId)
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .toSorted((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(0, limit);
   }
 
@@ -583,7 +583,7 @@ ${archive.content}
   private async getContactMessageHistory(phoneNumber: string, limit: number): Promise<MessageArchive[]> {
     return Array.from(this.messageIndex.values())
       .filter(m => m.phoneNumber === phoneNumber)
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .toSorted((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(0, limit);
   }
 
@@ -592,11 +592,11 @@ ${archive.content}
    */
   private async getRelatedConversations(conversationId: string): Promise<ConversationSummary[]> {
     const currentConv = this.conversationIndex.get(conversationId);
-    if (!currentConv) return [];
+    if (!currentConv) {return [];}
 
     return Array.from(this.conversationIndex.values())
       .filter(c => c.phoneNumber === currentConv.phoneNumber && c.conversationId !== conversationId)
-      .sort((a, b) => b.startTime.getTime() - a.startTime.getTime())
+      .toSorted((a, b) => b.startTime.getTime() - a.startTime.getTime())
       .slice(0, 5);
   }
 
@@ -625,7 +625,7 @@ ${archive.content}
 
     return Array.from(activity.entries())
       .map(([phoneNumber, messageCount]) => ({ phoneNumber, messageCount }))
-      .sort((a, b) => b.messageCount - a.messageCount);
+      .toSorted((a, b) => b.messageCount - a.messageCount);
   }
 
   private calculateSentimentDistribution(messages: MessageArchive[]): Record<string, number> {
@@ -667,7 +667,7 @@ ${archive.content}
     });
 
     return Array.from(wordCounts.entries())
-      .sort((a, b) => b[1] - a[1])
+      .toSorted((a, b) => b[1] - a[1])
       .slice(0, 20)
       .map(([word]) => word);
   }

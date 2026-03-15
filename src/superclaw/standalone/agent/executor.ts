@@ -160,8 +160,8 @@ export class AgentExecutor {
     // Simple complexity-based routing
     const complexity = this.assessComplexity(prompt);
     
-    if (complexity < 30) return 'ollama';   // Fast, local
-    if (complexity < 70) return 'gemini';   // Good balance
+    if (complexity < 30) {return 'ollama';}   // Fast, local
+    if (complexity < 70) {return 'gemini';}   // Good balance
     return 'claude';                        // Most capable
   }
   
@@ -180,7 +180,7 @@ export class AgentExecutor {
     ];
     
     for (const indicator of indicators) {
-      if (indicator.test(prompt)) score += 15;
+      if (indicator.test(prompt)) {score += 15;}
     }
     
     return Math.min(score, 100);
@@ -261,7 +261,7 @@ export class AgentExecutor {
           id: call.id,
           success: false,
           result: null,
-          error: error instanceof Error ? (error as Error).message : 'Unknown error'
+          error: error instanceof Error ? (error).message : 'Unknown error'
         });
       }
     }

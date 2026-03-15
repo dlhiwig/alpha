@@ -224,10 +224,10 @@ export class MessageBroker extends EventEmitter {
     }
     
     return inbox.filter(msg => {
-      if (filter.type && msg.type !== filter.type) return false
-      if (filter.from && msg.from !== filter.from) return false
-      if (filter.since && msg.timestamp < filter.since) return false
-      if (filter.correlationId && msg.correlationId !== filter.correlationId) return false
+      if (filter.type && msg.type !== filter.type) {return false}
+      if (filter.from && msg.from !== filter.from) {return false}
+      if (filter.since && msg.timestamp < filter.since) {return false}
+      if (filter.correlationId && msg.correlationId !== filter.correlationId) {return false}
       return true
     })
   }
@@ -279,9 +279,9 @@ export class MessageBroker extends EventEmitter {
     }
     
     return this.messageLog.filter(msg => {
-      if (filter.from && msg.from !== filter.from) return false
-      if (filter.to && msg.to !== filter.to) return false
-      if (filter.type && msg.type !== filter.type) return false
+      if (filter.from && msg.from !== filter.from) {return false}
+      if (filter.to && msg.to !== filter.to) {return false}
+      if (filter.type && msg.type !== filter.type) {return false}
       return true
     })
   }

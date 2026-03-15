@@ -123,7 +123,7 @@ export class Queen extends EventEmitter {
 
   assignTask(task: HiveTask, workerId: string): void {
     const worker = this.workers.get(workerId);
-    if (!worker) throw new Error(`Worker ${workerId} not found`);
+    if (!worker) {throw new Error(`Worker ${workerId} not found`);}
 
     task.assignedTo = workerId;
     task.assignedBy = this.id;
@@ -140,7 +140,7 @@ export class Queen extends EventEmitter {
 
   getBestWorkerForTask(task: HiveTask): HiveAgent | null {
     const idle = this.getIdleWorkers();
-    if (idle.length === 0) return null;
+    if (idle.length === 0) {return null;}
 
     // Match task type to worker type
     const typeMap: Record<string, WorkerType[]> = {
@@ -158,11 +158,11 @@ export class Queen extends EventEmitter {
     // Find best match
     for (const preferredType of preferredTypes) {
       const match = idle.find(w => w.subType === preferredType);
-      if (match) return match;
+      if (match) {return match;}
     }
 
     // Return highest performing idle worker
-    return idle.sort((a, b) => b.performance - a.performance)[0] || null;
+    return idle.toSorted((a, b) => b.performance - a.performance)[0] || null;
   }
 }
 
@@ -223,7 +223,7 @@ export class HiveMind extends EventEmitter {
    */
   spawnWorker(type: WorkerType, queenType: QueenType = 'tactical'): HiveAgent {
     const queen = this.queens.get(queenType);
-    if (!queen) throw new Error(`Queen ${queenType} not found`);
+    if (!queen) {throw new Error(`Queen ${queenType} not found`);}
 
     if (queen.workers.size >= this.config.maxWorkersPerQueen) {
       throw new Error(`Queen ${queenType} has max workers`);
@@ -369,8 +369,8 @@ export class HiveMind extends EventEmitter {
    * Shutdown the hive
    */
   async shutdown(): Promise<void> {
-    if (this.healthCheckTimer) clearInterval(this.healthCheckTimer);
-    if (this.consensus) this.consensus.stop();
+    if (this.healthCheckTimer) {clearInterval(this.healthCheckTimer);}
+    if (this.consensus) {this.consensus.stop();}
 
     for (const queen of this.queens.values()) {
       queen.deactivate();

@@ -201,7 +201,7 @@ export class SAFLAEngine extends EventEmitter {
   }
   
   async stop(): Promise<void> {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
     
     console.log('[🧠 SAFLA] Shutting down meta-cognitive engine...');
     
@@ -499,7 +499,7 @@ export class SAFLAEngine extends EventEmitter {
       for (const interaction of similarInteractions) {
         const perf = strategyPerformance.get(interaction.strategy) || { successes: 0, total: 0 };
         perf.total++;
-        if (interaction.success) perf.successes++;
+        if (interaction.success) {perf.successes++;}
         strategyPerformance.set(interaction.strategy, perf);
       }
       
@@ -518,7 +518,7 @@ export class SAFLAEngine extends EventEmitter {
       }
     }
     
-    return recommendations.sort((a, b) => b.expectedImprovement - a.expectedImprovement);
+    return recommendations.toSorted((a, b) => b.expectedImprovement - a.expectedImprovement);
   }
   
   private async findSimilarInteractions(input: any): Promise<SAFLAInteraction[]> {
@@ -604,7 +604,7 @@ export class SAFLAEngine extends EventEmitter {
   }
   
   async getRecommendations(): Promise<StrategyRecommendation[]> {
-    if (this.recentInteractions.length === 0) return [];
+    if (this.recentInteractions.length === 0) {return [];}
     
     const lastInteraction = this.recentInteractions[this.recentInteractions.length - 1];
     return this.generateStrategyRecommendations(lastInteraction.input, lastInteraction.deltaMetrics);
@@ -614,7 +614,7 @@ export class SAFLAEngine extends EventEmitter {
    * Integration with SuperClaw Oracle
    */
   async integrateWithOracle(oracleInstance: any): Promise<void> {
-    if (!this.config.oracleIntegration) return;
+    if (!this.config.oracleIntegration) {return;}
     
     console.log('[🧠 SAFLA] Integrating with SuperClaw Oracle...');
     

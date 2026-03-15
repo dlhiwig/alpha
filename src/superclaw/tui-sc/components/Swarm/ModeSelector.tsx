@@ -61,7 +61,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
   const [focusedSection, setFocusedSection] = React.useState<'mode' | 'contract'>('mode');
   
   useInput((input, key) => {
-    if (!focused) return;
+    if (!focused) {return;}
 
     if (key.leftArrow || key.rightArrow) {
       setFocusedSection(prev => prev === 'mode' ? 'contract' : 'mode');
@@ -69,14 +69,14 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
     }
 
     if (focusedSection === 'mode') {
-      if (input === '1') onModeChange('fanout');
-      else if (input === '2') onModeChange('consensus');
-      else if (input === '3') onModeChange('pipeline');
-      else if (input === '4') onModeChange('debate');
+      if (input === '1') {onModeChange('fanout');}
+      else if (input === '2') {onModeChange('consensus');}
+      else if (input === '3') {onModeChange('pipeline');}
+      else if (input === '4') {onModeChange('debate');}
     } else {
-      if (input === '1') onContractChange('loose');
-      else if (input === '2') onContractChange('standard');
-      else if (input === '3') onContractChange('strict');
+      if (input === '1') {onContractChange('loose');}
+      else if (input === '2') {onContractChange('standard');}
+      else if (input === '3') {onContractChange('strict');}
     }
   }, { isActive: focused });
 

@@ -95,7 +95,7 @@ export function getRecommendation(prompt: string, state: OracleState): {
       // Sort by confidence, then cost efficiency
       modelRecommendations.sort((a, b) => {
         const confidenceDiff = b.confidence - a.confidence;
-        if (Math.abs(confidenceDiff) > 0.1) return confidenceDiff; // Significant confidence difference
+        if (Math.abs(confidenceDiff) > 0.1) {return confidenceDiff;} // Significant confidence difference
         return a.avgCost - b.avgCost; // Prefer cheaper if confidence is similar
       });
       
@@ -126,8 +126,8 @@ function getAlternativeRecommendations(prompt: string, state: OracleState, exclu
   const alternatives = [];
   
   for (const [key, perf] of Array.from(state.modelPerformance.entries())) {
-    if (perf.model === excludeModel) continue;
-    if (perf.successRate < CONFIG.CONFIDENCE_THRESHOLD) continue;
+    if (perf.model === excludeModel) {continue;}
+    if (perf.successRate < CONFIG.CONFIDENCE_THRESHOLD) {continue;}
     
     // Check if suitable for task
     const taskMatch = tags.some(t => perf.bestFor.includes(t));
@@ -144,7 +144,7 @@ function getAlternativeRecommendations(prompt: string, state: OracleState, exclu
   }
   
   return alternatives
-    .sort((a, b) => b.confidence - a.confidence)
+    .toSorted((a, b) => b.confidence - a.confidence)
     .slice(0, 3);
 }
 
@@ -162,20 +162,20 @@ export function getCostOptimizationSuggestions(state: OracleState): Array<{
   
   // Analyze patterns for cost optimization opportunities
   for (const [hash, pattern] of Array.from(state.patterns.entries())) {
-    if (pattern.totalUses < CONFIG.MIN_SAMPLES) continue;
+    if (pattern.totalUses < CONFIG.MIN_SAMPLES) {continue;}
     
     const successRate = pattern.successCount / pattern.totalUses;
-    if (successRate < CONFIG.COST_OPTIMIZATION_THRESHOLD) continue;
+    if (successRate < CONFIG.COST_OPTIMIZATION_THRESHOLD) {continue;}
     
     // Find cheaper alternatives
     const currentKey = `${pattern.bestProvider}:${pattern.bestModel}`;
     const currentPerf = state.modelPerformance.get(currentKey);
-    if (!currentPerf) continue;
+    if (!currentPerf) {continue;}
     
     for (const [key, perf] of Array.from(state.modelPerformance.entries())) {
-      if (key === currentKey) continue;
-      if (perf.avgCost >= currentPerf.avgCost) continue; // Not cheaper
-      if (perf.successRate < successRate * 0.9) continue; // Too much quality loss
+      if (key === currentKey) {continue;}
+      if (perf.avgCost >= currentPerf.avgCost) {continue;} // Not cheaper
+      if (perf.successRate < successRate * 0.9) {continue;} // Too much quality loss
       
       const potentialSavings = currentPerf.avgCost - perf.avgCost;
       const confidenceRatio = perf.successRate / currentPerf.successRate;
@@ -191,7 +191,7 @@ export function getCostOptimizationSuggestions(state: OracleState): Array<{
   }
   
   return suggestions
-    .sort((a, b) => (b.potentialSavings * b.confidenceRatio) - (a.potentialSavings * a.confidenceRatio))
+    .toSorted((a, b) => (b.potentialSavings * b.confidenceRatio) - (a.potentialSavings * a.confidenceRatio))
     .slice(0, 10);
 }
 
@@ -208,19 +208,19 @@ export function getPerformanceOptimizationSuggestions(state: OracleState): Array
   const suggestions = [];
   
   for (const [hash, pattern] of Array.from(state.patterns.entries())) {
-    if (pattern.totalUses < CONFIG.MIN_SAMPLES) continue;
-    if (pattern.avgLatency < 3000) continue; // Only suggest for slow patterns (>3s)
+    if (pattern.totalUses < CONFIG.MIN_SAMPLES) {continue;}
+    if (pattern.avgLatency < 3000) {continue;} // Only suggest for slow patterns (>3s)
     
     const successRate = pattern.successCount / pattern.totalUses;
     const currentKey = `${pattern.bestProvider}:${pattern.bestModel}`;
     const currentPerf = state.modelPerformance.get(currentKey);
-    if (!currentPerf) continue;
+    if (!currentPerf) {continue;}
     
     // Find faster alternatives
     for (const [key, perf] of Array.from(state.modelPerformance.entries())) {
-      if (key === currentKey) continue;
-      if (perf.avgLatency >= pattern.avgLatency) continue; // Not faster
-      if (perf.successRate < successRate * 0.8) continue; // Too much quality loss
+      if (key === currentKey) {continue;}
+      if (perf.avgLatency >= pattern.avgLatency) {continue;} // Not faster
+      if (perf.successRate < successRate * 0.8) {continue;} // Too much quality loss
       
       suggestions.push({
         slowPattern: hash,
@@ -233,7 +233,7 @@ export function getPerformanceOptimizationSuggestions(state: OracleState): Array
   }
   
   return suggestions
-    .sort((a, b) => (b.currentLatency - b.expectedLatency) - (a.currentLatency - a.expectedLatency))
+    .toSorted((a, b) => (b.currentLatency - b.expectedLatency) - (a.currentLatency - a.expectedLatency))
     .slice(0, 10);
 }
 
@@ -257,7 +257,7 @@ export function analyzeModelTrends(state: OracleState): {
   
   const topPerformers = models
     .filter(m => m.totalRequests >= CONFIG.MIN_SAMPLES)
-    .sort((a, b) => b.successRate - a.successRate)
+    .toSorted((a, b) => b.successRate - a.successRate)
     .slice(0, 10)
     .map(m => ({
       model: m.model,
@@ -273,12 +273,12 @@ export function analyzeModelTrends(state: OracleState): {
       costEfficiency: m.successRate / m.avgCost,
       successRate: m.successRate,
     }))
-    .sort((a, b) => b.costEfficiency - a.costEfficiency)
+    .toSorted((a, b) => b.costEfficiency - a.costEfficiency)
     .slice(0, 10);
   
   const fastestModels = models
     .filter(m => m.totalRequests >= CONFIG.MIN_SAMPLES)
-    .sort((a, b) => a.avgLatency - b.avgLatency)
+    .toSorted((a, b) => a.avgLatency - b.avgLatency)
     .slice(0, 10)
     .map(m => ({
       model: m.model,
@@ -293,7 +293,7 @@ export function analyzeModelTrends(state: OracleState): {
       specialty: m.bestFor.join(', '),
       successRate: m.successRate,
     }))
-    .sort((a, b) => b.successRate - a.successRate)
+    .toSorted((a, b) => b.successRate - a.successRate)
     .slice(0, 10);
   
   return {

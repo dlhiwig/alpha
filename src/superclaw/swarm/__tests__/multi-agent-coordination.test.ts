@@ -51,7 +51,7 @@ describe('Multi-Agent Coordination', () => {
   
   describe('AgentChattrBridge', () => {
     test('should connect and join channel', async () => {
-      if (!serverAvailable) return;
+      if (!serverAvailable) {return;}
       
       const bridge = new AgentChattrBridge({
         httpUrl: MCP_URL,
@@ -65,7 +65,7 @@ describe('Multi-Agent Coordination', () => {
     }, TIMEOUT_MS);
     
     test('should send and receive messages', async () => {
-      if (!serverAvailable) return;
+      if (!serverAvailable) {return;}
       
       const sender = new AgentChattrBridge({
         httpUrl: MCP_URL,
@@ -94,7 +94,7 @@ describe('Multi-Agent Coordination', () => {
     }, TIMEOUT_MS);
     
     test('should track who is online', async () => {
-      if (!serverAvailable) return;
+      if (!serverAvailable) {return;}
       
       const bridge = new AgentChattrBridge({
         httpUrl: MCP_URL,
@@ -109,7 +109,7 @@ describe('Multi-Agent Coordination', () => {
     }, TIMEOUT_MS);
     
     test('should propose and list decisions', async () => {
-      if (!serverAvailable) return;
+      if (!serverAvailable) {return;}
       
       const bridge = new AgentChattrBridge({
         httpUrl: MCP_URL,
@@ -135,7 +135,7 @@ describe('Multi-Agent Coordination', () => {
   
   describe('SwarmCoordinator', () => {
     test('should coordinate multiple agents', async () => {
-      if (!serverAvailable) return;
+      if (!serverAvailable) {return;}
       
       const coordinator = new SwarmCoordinator(`test-swarm-${Date.now()}`);
       
@@ -156,7 +156,7 @@ describe('Multi-Agent Coordination', () => {
     }, TIMEOUT_MS);
     
     test('should assign tasks to specific agents', async () => {
-      if (!serverAvailable) return;
+      if (!serverAvailable) {return;}
       
       const coordinator = new SwarmCoordinator(`task-assign-${Date.now()}`);
       
@@ -178,7 +178,7 @@ describe('Multi-Agent Coordination', () => {
   
   describe('AgentChattrConvoyAdapter', () => {
     test('should connect and post messages', async () => {
-      if (!serverAvailable) return;
+      if (!serverAvailable) {return;}
       
       const adapter = new AgentChattrConvoyAdapter({
         serverUrl: MCP_URL,
@@ -202,7 +202,7 @@ describe('Multi-Agent Coordination', () => {
   
   describe('Agent-to-Agent Communication', () => {
     test('should support @mention-based handoffs', async () => {
-      if (!serverAvailable) return;
+      if (!serverAvailable) {return;}
       
       const agent1 = new AgentChattrBridge({
         httpUrl: MCP_URL,
@@ -231,7 +231,7 @@ describe('Multi-Agent Coordination', () => {
     }, TIMEOUT_MS);
     
     test('should support broadcast to all agents', async () => {
-      if (!serverAvailable) return;
+      if (!serverAvailable) {return;}
       
       const coordinator = new AgentChattrBridge({
         httpUrl: MCP_URL,
@@ -269,7 +269,7 @@ describe('Multi-Agent Coordination', () => {
   
   describe('Decision Consensus', () => {
     test('should track proposed decisions', async () => {
-      if (!serverAvailable) return;
+      if (!serverAvailable) {return;}
       
       const agents = await Promise.all([
         createAndConnectAgent('decision-agent-1'),

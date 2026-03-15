@@ -194,7 +194,7 @@ Generate the evolution plan as JSON.`;
       }),
     });
 
-    const data = await response.json() as any;
+    const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '{}';
     
     // Parse the JSON response
@@ -285,7 +285,7 @@ async function createPR(plan: EvolutionPlan): Promise<{ prUrl: string; prNumber:
     // 3. Apply changes
     for (const change of plan.changes) {
       if (change.action === 'create' || change.action === 'modify') {
-        if (!change.content) continue;
+        if (!change.content) {continue;}
         
         // Get current file SHA if modifying
         let fileSha: string | undefined;
@@ -406,7 +406,7 @@ async function directCommitToMain(plan: EvolutionPlan): Promise<void> {
 
   for (const change of plan.changes) {
     if (change.action === 'create' || change.action === 'modify') {
-      if (!change.content) continue;
+      if (!change.content) {continue;}
       
       // Get current file SHA if modifying
       let fileSha: string | undefined;

@@ -400,8 +400,8 @@ export function inferPhase(
     case 'fanout-critique':
       return roundIndex === 0 ? 'fanout' : 'critique';
     case 'hierarchical':
-      if (roundIndex === 0) return 'implement';
-      if (roundIndex === totalRounds - 1) return 'revise';
+      if (roundIndex === 0) {return 'implement';}
+      if (roundIndex === totalRounds - 1) {return 'revise';}
       return 'critique';
     default:
       return 'default';

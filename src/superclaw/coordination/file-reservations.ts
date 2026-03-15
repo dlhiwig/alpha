@@ -237,7 +237,7 @@ export class FileReservationManager extends EventEmitter {
 
     } catch (error: unknown) {
       this.auditLogger?.error('Initialization failed', { error: (error as Error).message });
-      throw new Error(`Failed to initialize FileReservationManager: ${(error as Error).message}`);
+      throw new Error(`Failed to initialize FileReservationManager: ${(error as Error).message}`, { cause: error });
     }
   }
 
@@ -430,7 +430,7 @@ export class FileReservationManager extends EventEmitter {
 
     for (const filePath of filePaths) {
       for (const lease of this.leases.values()) {
-        if (lease.status !== 'active') continue;
+        if (lease.status !== 'active') {continue;}
 
         // Check if file matches lease pattern
         if (minimatch(filePath, lease.pathPattern)) {
@@ -483,7 +483,7 @@ export class FileReservationManager extends EventEmitter {
         lease.status === 'active' && 
         lease.expiresAt <= cutoff
       )
-      .sort((a, b) => a.expiresAt.getTime() - b.expiresAt.getTime());
+      .toSorted((a, b) => a.expiresAt.getTime() - b.expiresAt.getTime());
   }
 
   /**
@@ -573,12 +573,12 @@ export class FileReservationManager extends EventEmitter {
     stats.conflictRate = activeLeases.length > 0 ? (allConflicts.length / activeLeases.length) * 100 : 0;
 
     stats.topAgents = Object.entries(agentCounts)
-      .sort(([,a], [,b]) => b - a)
+      .toSorted(([,a], [,b]) => b - a)
       .slice(0, 10)
       .map(([name, count]) => ({ name, count }));
 
     stats.topPatterns = Object.entries(patternCounts)
-      .sort(([,a], [,b]) => b - a)
+      .toSorted(([,a], [,b]) => b - a)
       .slice(0, 10)
       .map(([pattern, count]) => ({ pattern, count }));
 
@@ -616,7 +616,7 @@ export class FileReservationManager extends EventEmitter {
       activeLeases,
       recentConflicts: allConflicts
         .filter(c => !c.resolvedAt)
-        .sort((a, b) => b.detectedAt.getTime() - a.detectedAt.getTime())
+        .toSorted((a, b) => b.detectedAt.getTime() - a.detectedAt.getTime())
         .slice(0, 20),
       expiringLeases,
       agentActivity,
@@ -694,7 +694,7 @@ export class FileReservationManager extends EventEmitter {
     const conflicts: ReservationConflict[] = [];
 
     for (const existingLease of this.leases.values()) {
-      if (existingLease.status !== 'active') continue;
+      if (existingLease.status !== 'active') {continue;}
 
       // Check for pattern overlap
       const overlap = await this.checkPatternOverlap(newLease.pathPattern, existingLease.pathPattern);

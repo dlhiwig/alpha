@@ -138,7 +138,7 @@ export class CostController extends EventEmitter {
 
     // Check daily limit
     if (estimatedCost > dailyRemaining) {
-      if (this.config.pauseOnLimit) this.paused = true
+      if (this.config.pauseOnLimit) {this.paused = true}
       this.addWarning('daily-limit', `Daily limit of $${this.config.dailyLimit} would be exceeded`, this.tracker.totalSpent, this.config.dailyLimit)
       this.emit('limit-reached', { type: 'daily', spent: this.tracker.totalSpent, agentId })
       
@@ -272,7 +272,7 @@ export class CostController extends EventEmitter {
     projectedDaily?: number
   } {
     const topAgents = Array.from(this.tracker.byAgent.entries())
-      .sort((a, b) => b[1] - a[1])
+      .toSorted((a, b) => b[1] - a[1])
       .slice(0, 10)
       .map(([agentId, spent]) => ({ 
         agentId, 
@@ -281,7 +281,7 @@ export class CostController extends EventEmitter {
       }))
     
     const topModels = Array.from(this.tracker.byModel.entries())
-      .sort((a, b) => b[1] - a[1])
+      .toSorted((a, b) => b[1] - a[1])
       .map(([model, spent]) => ({ 
         model, 
         spent, 
@@ -290,7 +290,7 @@ export class CostController extends EventEmitter {
     
     const recentTransactions = this.tracker.transactions
       .slice(-10)
-      .reverse()
+      .toReversed()
       
     // Project daily spend based on current rate
     const now = new Date()
@@ -382,7 +382,7 @@ export class CostController extends EventEmitter {
         cost,
         percentage: (cost / this.tracker.totalSpent) * 100
       }))
-      .sort((a, b) => b.cost - a.cost)
+      .toSorted((a, b) => b.cost - a.cost)
       
     const byAgent = Array.from(this.tracker.byAgent.entries())
       .map(([agentId, cost]) => ({
@@ -390,7 +390,7 @@ export class CostController extends EventEmitter {
         cost,
         percentage: (cost / this.tracker.totalSpent) * 100
       }))
-      .sort((a, b) => b.cost - a.cost)
+      .toSorted((a, b) => b.cost - a.cost)
     
     return { hourly, byModel, byAgent }
   }

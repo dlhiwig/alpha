@@ -249,19 +249,19 @@ export class EpisodicMemory extends EventEmitter {
   async getRecentExperiences(count: number): Promise<Episode[]> {
     return this.temporalIndex
       .slice(-count)
-      .reverse(); // Most recent first
+      .toReversed(); // Most recent first
   }
   
   async getExperiencesByOutcome(outcome: 'success' | 'failure' | 'partial'): Promise<Episode[]> {
     return Array.from(this.episodes.values())
       .filter(ep => ep.outcome === outcome)
-      .sort((a, b) => b.timestamp - a.timestamp);
+      .toSorted((a, b) => b.timestamp - a.timestamp);
   }
   
   async getExperienceSequence(startSequence: number, count: number): Promise<Episode[]> {
     return Array.from(this.episodes.values())
       .filter(ep => ep.sequence! >= startSequence)
-      .sort((a, b) => a.sequence! - b.sequence!)
+      .toSorted((a, b) => a.sequence! - b.sequence!)
       .slice(0, count);
   }
   
@@ -287,7 +287,7 @@ export class EpisodicMemory extends EventEmitter {
       );
     }
     
-    return results.sort((a, b) => b.timestamp - a.timestamp);
+    return results.toSorted((a, b) => b.timestamp - a.timestamp);
   }
   
   getSize(): number {
@@ -430,11 +430,11 @@ export class SemanticMemory extends EventEmitter {
     while (queue.length > 0) {
       const { id, depth, relationship } = queue.shift()!;
       
-      if (visited.has(id) || depth > maxDepth) continue;
+      if (visited.has(id) || depth > maxDepth) {continue;}
       visited.add(id);
       
       const concept = this.concepts.get(id);
-      if (!concept) continue;
+      if (!concept) {continue;}
       
       if (depth > 0 && relationship) {
         results.push({ concept, relationship, depth });
@@ -444,7 +444,7 @@ export class SemanticMemory extends EventEmitter {
       const relIds = this.relationshipIndex.get(id) || new Set();
       for (const relId of relIds) {
         const rel = this.relationships.get(relId);
-        if (!rel) continue;
+        if (!rel) {continue;}
         
         const nextId = rel.sourceId === id ? rel.targetId : rel.sourceId;
         if (!visited.has(nextId)) {
@@ -453,7 +453,7 @@ export class SemanticMemory extends EventEmitter {
       }
     }
     
-    return results.sort((a, b) => a.depth - b.depth);
+    return results.toSorted((a, b) => a.depth - b.depth);
   }
   
   async searchConceptsByType(type: string): Promise<Concept[]> {
@@ -479,7 +479,7 @@ export class SemanticMemory extends EventEmitter {
     }
     
     return results
-      .sort((a, b) => b.similarity - a.similarity)
+      .toSorted((a, b) => b.similarity - a.similarity)
       .slice(0, limit)
       .map(r => ({ concept: r.concept, relationship: null, depth: 0 }));
   }
@@ -488,7 +488,7 @@ export class SemanticMemory extends EventEmitter {
     const relIds = this.relationshipIndex.get(conceptId) || new Set();
     const relationships = Array.from(relIds).map(id => this.relationships.get(id)!).filter(Boolean);
     
-    return relationships.sort((a, b) => b.strength - a.strength);
+    return relationships.toSorted((a, b) => b.strength - a.strength);
   }
   
   getSize(): number {
@@ -659,7 +659,7 @@ export class WorkingMemory extends EventEmitter {
   
   private updateAttentionQueue(): void {
     this.attentionQueue = Array.from(this.items.keys())
-      .sort((a, b) => {
+      .toSorted((a, b) => {
         const itemA = this.items.get(a)!;
         const itemB = this.items.get(b)!;
         return itemB.attention - itemA.attention;

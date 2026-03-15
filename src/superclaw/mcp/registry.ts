@@ -456,7 +456,7 @@ export class MCPRegistry {
         id: serverId,
         name: definition.name,
         status: 'error',
-        errorMessage: error instanceof Error ? (error as Error).message : String(error),
+        errorMessage: error instanceof Error ? (error).message : String(error),
       });
 
       this.persistState();
@@ -511,7 +511,7 @@ export class MCPRegistry {
       console.error(chalk.red(`❌ Failed to start ${server.name}: ${error}`));
       
       server.status = 'error';
-      server.errorMessage = error instanceof Error ? (error as Error).message : String(error);
+      server.errorMessage = error instanceof Error ? (error).message : String(error);
       this.servers.set(serverId, server);
       this.persistState();
       

@@ -76,7 +76,7 @@ export class EWCPlusPlus extends EventEmitter {
    * Initialize EWC++ - load persisted patterns
    */
   async initialize(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {return;}
 
     // Load persisted patterns
     await this.loadPatterns();
@@ -136,7 +136,7 @@ export class EWCPlusPlus extends EventEmitter {
     const id = this.hashPattern(pattern);
     const weight = this.patterns.get(id);
 
-    if (!weight) return false;
+    if (!weight) {return false;}
 
     // Preserve if consolidated OR high Fisher info
     return weight.consolidated || weight.fisherInfo > this.config.fisherThreshold;
@@ -149,7 +149,7 @@ export class EWCPlusPlus extends EventEmitter {
     const id = this.hashPattern(pattern);
     const weight = this.patterns.get(id);
 
-    if (!weight) return 0;
+    if (!weight) {return 0;}
 
     // EWC loss = lambda * Fisher * (new - old)^2
     // We return Fisher * lambda as the penalty coefficient
@@ -192,7 +192,7 @@ export class EWCPlusPlus extends EventEmitter {
       const toRemove = this.patterns.size - this.config.maxPatterns;
       const sortedByImportance = patterns
         .filter(p => !p.consolidated)
-        .sort((a, b) => a.fisherInfo - b.fisherInfo);
+        .toSorted((a, b) => a.fisherInfo - b.fisherInfo);
 
       for (let i = 0; i < toRemove && i < sortedByImportance.length; i++) {
         this.patterns.delete(sortedByImportance[i].id);
@@ -219,7 +219,7 @@ export class EWCPlusPlus extends EventEmitter {
    */
   getTopPatterns(limit = 10): PatternWeight[] {
     return Array.from(this.patterns.values())
-      .sort((a, b) => b.fisherInfo - a.fisherInfo)
+      .toSorted((a, b) => b.fisherInfo - a.fisherInfo)
       .slice(0, limit);
   }
 

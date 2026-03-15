@@ -172,7 +172,7 @@ export class DeltaEvaluator extends EventEmitter {
   }
   
   async stop(): Promise<void> {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
     
     console.log('[📈 Delta] Stopping delta evaluation system...');
     this.isRunning = false;
@@ -435,7 +435,7 @@ export class DeltaEvaluator extends EventEmitter {
   
   private estimateThroughput(latency_ms: number): number {
     // Estimate throughput based on latency (simple inverse relationship)
-    if (latency_ms <= 0) return this.currentThroughput;
+    if (latency_ms <= 0) {return this.currentThroughput;}
     
     const estimatedThroughput = Math.min(this.config.targetOpsPerSec, 1000 / latency_ms);
     this.currentThroughput = estimatedThroughput;
@@ -488,7 +488,7 @@ export class DeltaEvaluator extends EventEmitter {
   // ═══════════════════════════════════════════════════════════════
   
   private updateBaseline(): void {
-    if (this.measurements.length < 10) return; // Need minimum measurements
+    if (this.measurements.length < 10) {return;} // Need minimum measurements
     
     const recent = this.measurements.slice(-50); // Use last 50 measurements for baseline
     
@@ -515,7 +515,7 @@ export class DeltaEvaluator extends EventEmitter {
     const now = Date.now();
     
     // Only generate suggestions periodically
-    if (now - this.lastOptimizationTime < 30000) return; // 30 second cooldown
+    if (now - this.lastOptimizationTime < 30000) {return;} // 30 second cooldown
     
     const suggestions: OptimizationSuggestion[] = [];
     
@@ -581,7 +581,7 @@ export class DeltaEvaluator extends EventEmitter {
   // ═══════════════════════════════════════════════════════════════
   
   private calculateVariance(values: number[]): number {
-    if (values.length < 2) return 0;
+    if (values.length < 2) {return 0;}
     
     const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
     const squaredDifferences = values.map(val => Math.pow(val - mean, 2));

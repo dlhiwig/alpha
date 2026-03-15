@@ -56,7 +56,7 @@ export class WorkspaceManager {
    * Check if a file extension is allowed
    */
   private checkExtension(filePath: string): void {
-    if (!this.allowedExtensions) return; // All extensions allowed
+    if (!this.allowedExtensions) {return;} // All extensions allowed
     
     const extension = filePath.split('.').pop()?.toLowerCase();
     if (!extension || !this.allowedExtensions.has(extension)) {
@@ -134,7 +134,7 @@ export class WorkspaceManager {
       }
       // File doesn't exist, just check content size
       if (contentSize > this.maxFileSize) {
-        throw new Error(`Content too large: ${contentSize} bytes (max: ${this.maxFileSize})`);
+        throw new Error(`Content too large: ${contentSize} bytes (max: ${this.maxFileSize})`, { cause: error });
       }
     }
     
@@ -201,7 +201,7 @@ export class WorkspaceManager {
     const files: string[] = [];
     
     const traverse = async (dirPath: string, depth: number = 0): Promise<void> => {
-      if (options?.maxDepth && depth > options.maxDepth) return;
+      if (options?.maxDepth && depth > options.maxDepth) {return;}
       
       const entries = await fs.readdir(dirPath, { withFileTypes: true });
       
@@ -228,7 +228,7 @@ export class WorkspaceManager {
     };
     
     await traverse(fullPath);
-    return files.sort();
+    return files.toSorted();
   }
 
   /**

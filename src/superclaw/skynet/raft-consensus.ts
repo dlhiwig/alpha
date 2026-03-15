@@ -136,8 +136,8 @@ export class RaftConsensus extends EventEmitter {
    * Stop the consensus node
    */
   stop(): void {
-    if (this.electionTimer) clearTimeout(this.electionTimer);
-    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    if (this.electionTimer) {clearTimeout(this.electionTimer);}
+    if (this.heartbeatTimer) {clearInterval(this.heartbeatTimer);}
     this.emit('stopped', { id: this.node.id });
   }
 
@@ -378,7 +378,7 @@ export class RaftConsensus extends EventEmitter {
   // --- Private Methods ---
 
   private resetElectionTimer(): void {
-    if (this.electionTimer) clearTimeout(this.electionTimer);
+    if (this.electionTimer) {clearTimeout(this.electionTimer);}
 
     const timeout = this.config.electionTimeoutMin +
       Math.random() * (this.config.electionTimeoutMax - this.config.electionTimeoutMin);
@@ -430,7 +430,7 @@ export class RaftConsensus extends EventEmitter {
     }
 
     // Start heartbeats
-    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    if (this.heartbeatTimer) {clearInterval(this.heartbeatTimer);}
     this.heartbeatTimer = setInterval(() => this.sendHeartbeats(), this.config.heartbeatInterval);
 
     this.emit('leaderElected', { leaderId: this.node.id, term: this.node.currentTerm });

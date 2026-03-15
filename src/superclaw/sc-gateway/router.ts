@@ -177,7 +177,7 @@ export class GatewayRouter extends EventEmitter {
       const errorResponse: RouteResponse = {
         requestId: request.context.requestId,
         success: false,
-        error: error instanceof Error ? (error as Error).message : String(error),
+        error: error instanceof Error ? (error).message : String(error),
         agentId: request.context.agentId,
         processingTimeMs: processingTime
       };
@@ -365,7 +365,7 @@ export class GatewayRouter extends EventEmitter {
       name: 'load-balanced',
       selectAgent: (request, agents) => {
         return agents.reduce((best, current) => {
-          if (!best) return current;
+          if (!best) {return current;}
           
           const bestScore = best.reliability * (1 - best.currentLoad / best.maxConcurrentRequests);
           const currentScore = current.reliability * (1 - current.currentLoad / current.maxConcurrentRequests);
@@ -380,7 +380,7 @@ export class GatewayRouter extends EventEmitter {
     this.routingStrategies.set('round-robin', {
       name: 'round-robin',
       selectAgent: (request, agents) => {
-        if (agents.length === 0) return null;
+        if (agents.length === 0) {return null;}
         const selected = agents[roundRobinIndex % agents.length];
         roundRobinIndex++;
         return selected;
@@ -392,7 +392,7 @@ export class GatewayRouter extends EventEmitter {
       name: 'fastest',
       selectAgent: (request, agents) => {
         return agents.reduce((fastest, current) => {
-          if (!fastest) return current;
+          if (!fastest) {return current;}
           return current.averageResponseTime < fastest.averageResponseTime ? current : fastest;
         });
       }
@@ -404,7 +404,7 @@ export class GatewayRouter extends EventEmitter {
    */
   private updateAgentMetrics(agentId: string, responseTime: number, success: boolean): void {
     const agent = this.agents.get(agentId);
-    if (!agent) return;
+    if (!agent) {return;}
 
     const alpha = 0.1; // Exponential moving average factor
     const newAverageResponseTime = agent.averageResponseTime * (1 - alpha) + responseTime * alpha;

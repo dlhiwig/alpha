@@ -308,7 +308,7 @@ export class OpenAIProvider implements ILLMProvider {
       }
       
       throw new ProviderError(
-        `Failed to initialize OpenAI provider: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        `Failed to initialize OpenAI provider: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         this.name,
         'INIT_FAILED',
         true
@@ -471,7 +471,7 @@ export class OpenAIProvider implements ILLMProvider {
         while (true) {
           const { done, value } = await reader.read();
           
-          if (done) break;
+          if (done) {break;}
           
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
@@ -547,7 +547,7 @@ export class OpenAIProvider implements ILLMProvider {
       }
       
       throw new ProviderError(
-        `OpenAI streaming failed: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        `OpenAI streaming failed: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         this.name,
         'STREAM_FAILED',
         true
@@ -578,7 +578,7 @@ export class OpenAIProvider implements ILLMProvider {
     // Check capabilities
     if (context?.requiredCapabilities) {
       const modelInfo = this.availableModels.find(m => m.name === model);
-      if (!modelInfo) return false;
+      if (!modelInfo) {return false;}
       
       return context.requiredCapabilities.every(cap => 
         modelInfo.capabilities.includes(cap)

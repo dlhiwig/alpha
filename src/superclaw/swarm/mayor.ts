@@ -805,17 +805,17 @@ Provide a clear, unified solution that incorporates the best aspects of each res
     const assignments = Object.values(this.state.assignments)
       .filter(a => a.polecatId === polecatId);
     
-    if (assignments.length === 0) return 0;
+    if (assignments.length === 0) {return 0;}
     
     const completed = assignments.filter(a => a.completed).length;
     return completed / assignments.length;
   }
 
   private estimateCompletion(convoy: Convoy, progress: ConvoyStatus['progress']): Date | undefined {
-    if (progress.total === 0) return undefined;
+    if (progress.total === 0) {return undefined;}
     
     const completionRate = progress.completed / progress.total;
-    if (completionRate === 0) return undefined;
+    if (completionRate === 0) {return undefined;}
     
     const elapsedMs = Date.now() - convoy.created.getTime();
     const estimatedTotalMs = elapsedMs / completionRate;

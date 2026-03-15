@@ -36,7 +36,7 @@ const getTypeSymbol = (type: Task['type']): string => {
 };
 
 const formatDuration = (duration?: number): string => {
-  if (!duration) return '-';
+  if (!duration) {return '-';}
   const seconds = Math.floor(duration / 1000);
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
@@ -48,7 +48,7 @@ const formatDuration = (duration?: number): string => {
 };
 
 const formatCost = (cost?: number): string => {
-  if (cost === undefined) return '-';
+  if (cost === undefined) {return '-';}
   return `$${cost.toFixed(2)}`;
 };
 
@@ -59,14 +59,14 @@ const formatTime = (date: Date): string => {
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffMins < 1) return 'now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffMins < 1) {return 'now';}
+  if (diffMins < 60) {return `${diffMins}m ago`;}
+  if (diffHours < 24) {return `${diffHours}h ago`;}
   return `${diffDays}d ago`;
 };
 
 const truncateText = (text: string, maxLength: number): string => {
-  if (text.length <= maxLength) return text;
+  if (text.length <= maxLength) {return text;}
   return text.slice(0, maxLength - 3) + '...';
 };
 

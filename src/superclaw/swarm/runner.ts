@@ -140,7 +140,7 @@ Respond directly with your analysis/solution. Be specific and actionable.`;
     };
   } catch (error: unknown) {
     // Fallback to original provider logic if cost-aware routing fails
-    const message = error instanceof Error ? (error as Error).message : 'Cost-aware routing failed';
+    const message = error instanceof Error ? (error).message : 'Cost-aware routing failed';
     console.warn(`[swarm] Cost-aware routing failed for ${agentId}: ${message}, falling back to original logic`);
     
     // Use original provider execution as fallback

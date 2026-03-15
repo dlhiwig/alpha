@@ -410,7 +410,7 @@ export class OAuthGateway {
    * Check if token needs refresh (refresh 5 minutes before expiry)
    */
   private needsRefresh(token: Token): boolean {
-    if (!token.expiresAt) return false;
+    if (!token.expiresAt) {return false;}
     const refreshThreshold = 5 * 60 * 1000; // 5 minutes
     return token.expiresAt.getTime() - Date.now() < refreshThreshold;
   }
@@ -564,7 +564,7 @@ export class OAuthGateway {
       
       return stateData;
     } catch (error: unknown) {
-      throw new Error(`Invalid OAuth state: ${error}`);
+      throw new Error(`Invalid OAuth state: ${error}`, { cause: error });
     }
   }
 

@@ -218,7 +218,7 @@ export const VALIDATION_SCHEMAS = {
   MESSAGE_ID_PATTERN: /^[a-f0-9]{32}$/,
   RESERVATION_ID_PATTERN: /^res_[a-f0-9]{24}$/,
   THREAD_ID_PATTERN: /^thread_[a-f0-9]+$/,
-  PROJECT_PATH_PATTERN: /^[a-zA-Z0-9\/_\-\.]+$/
+  PROJECT_PATH_PATTERN: /^[a-zA-Z0-9/_\-.]+$/
 } as const;
 
 // Helper function to create a quick agent mail setup

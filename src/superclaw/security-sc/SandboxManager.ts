@@ -174,7 +174,7 @@ export class SandboxManager extends EventEmitter {
 
     try {
       // Build docker exec command
-      const execArgs = this.buildExecArgs(sandbox.containerId!, command, options)
+      const execArgs = this.buildExecArgs(sandbox.containerId, command, options)
       const timeout = options?.timeout || sandbox.config.securityPolicy.processes.processTimeoutMs
       
       // Execute command with timeout
@@ -222,7 +222,7 @@ export class SandboxManager extends EventEmitter {
       }
 
       const execResult: ExecResult = {
-        exitCode: (error as any).code || -1,
+        exitCode: (error).code || -1,
         stdout: error.stdout || '',
         stderr: error.stderr || (error as Error).message || '',
         durationMs,
@@ -489,7 +489,7 @@ export class SandboxManager extends EventEmitter {
     const dangerousPatterns = [
       /rm\s+-rf\s+\/\*/, // rm -rf /*
       /dd\s+if=.*of=\/dev/, // dd to device files
-      /\>\s*\/dev\//, // Redirect to device files
+      />\s*\/dev\//, // Redirect to device files
       /fork\(\)/, // Process forking
       /system\(/, // System calls
       /exec\(/, // Process execution

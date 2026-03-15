@@ -54,7 +54,7 @@ export class FederatedToolRegistry {
       server.health = 'offline';
       this.emit('server_disconnected', { 
         serverId: server.id, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       });
       throw error;
     }
@@ -65,7 +65,7 @@ export class FederatedToolRegistry {
    */
   unregisterServer(serverId: string): void {
     const server = this.serverConnections.get(serverId);
-    if (!server) return;
+    if (!server) {return;}
 
     // Remove all tools from this server
     for (const [toolName, tool] of this.federatedTools.entries()) {
@@ -97,7 +97,7 @@ export class FederatedToolRegistry {
    */
   async checkServerHealth(serverId: string): Promise<boolean> {
     const server = this.serverConnections.get(serverId);
-    if (!server) return false;
+    if (!server) {return false;}
 
     try {
       const response = await fetch(`${server.endpoint}/health`, {
@@ -124,7 +124,7 @@ export class FederatedToolRegistry {
       this.emit('health_check', { 
         serverId, 
         healthy: false, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       });
       
       return false;
@@ -185,7 +185,7 @@ export class FederatedToolRegistry {
         version: server.capabilities.experimental?.version as string || '1.0.0',
       };
     } catch (error: unknown) {
-      this.emit('auth_failed', { serverId, error: error instanceof Error ? (error as Error).message : String(error) });
+      this.emit('auth_failed', { serverId, error: error instanceof Error ? (error).message : String(error) });
       throw error;
     }
   }
@@ -295,7 +295,7 @@ export class FederatedToolRegistry {
       const duration = Date.now() - startTime;
       this.recordCall(call.toolName, call.serverId, false, duration);
       
-      return this.createErrorResult(call, error instanceof Error ? (error as Error).message : String(error), startTime);
+      return this.createErrorResult(call, error instanceof Error ? (error).message : String(error), startTime);
     }
   }
 
@@ -447,7 +447,7 @@ export class FederatedToolRegistry {
     
     this.metrics.topTools = Array.from(toolCounts.entries())
       .map(([name, calls]) => ({ name, calls }))
-      .sort((a, b) => b.calls - a.calls)
+      .toSorted((a, b) => b.calls - a.calls)
       .slice(0, 10);
     
     // Server utilization
@@ -500,7 +500,7 @@ export class FederatedToolRegistry {
   }
 
   private getAuthHeaders(server: FederatedServer): Record<string, string> {
-    if (!server.auth) return {};
+    if (!server.auth) {return {};}
 
     switch (server.auth.type) {
       case 'bearer':

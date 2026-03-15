@@ -223,7 +223,7 @@ export class SonaAdapter extends EventEmitter {
    */
   setModelRoute(taskId: string, tier: number, modelName: string): void {
     const context = this.activeTrajectories.get(taskId);
-    if (!context) return;
+    if (!context) {return;}
 
     context.modelTier = tier;
     context.modelName = modelName;

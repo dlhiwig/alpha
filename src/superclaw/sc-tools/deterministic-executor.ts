@@ -327,9 +327,9 @@ export class DeterministicExecutor {
   private determineCacheStrategy(toolCall: ToolCall, result: ToolResult): string {
     const { name } = toolCall;
     
-    if (name.includes('config') || name.includes('schema')) return 'static';
-    if (name.includes('user') || name.includes('preference')) return 'semi-dynamic';
-    if (name.includes('temp') || name.includes('calculate')) return 'ephemeral';
+    if (name.includes('config') || name.includes('schema')) {return 'static';}
+    if (name.includes('user') || name.includes('preference')) {return 'semi-dynamic';}
+    if (name.includes('temp') || name.includes('calculate')) {return 'ephemeral';}
     return 'dynamic';
   }
 
@@ -392,11 +392,11 @@ export class DeterministicExecutor {
     
     const overallScore = (hitRateScore * 0.4) + (responseTimeScore * 0.4) + (successScore * 0.2);
     
-    if (overallScore >= 95) return 'A+';
-    if (overallScore >= 90) return 'A';
-    if (overallScore >= 80) return 'B';
-    if (overallScore >= 70) return 'C';
-    if (overallScore >= 60) return 'D';
+    if (overallScore >= 95) {return 'A+';}
+    if (overallScore >= 90) {return 'A';}
+    if (overallScore >= 80) {return 'B';}
+    if (overallScore >= 70) {return 'C';}
+    if (overallScore >= 60) {return 'D';}
     return 'F';
   }
 
@@ -404,7 +404,7 @@ export class DeterministicExecutor {
    * Add entry to audit trail with size management
    */
   private addToAuditTrail(entry: ExecutionAuditEntry): void {
-    if (!this.config.enableAuditTrail) return;
+    if (!this.config.enableAuditTrail) {return;}
     
     this.auditTrail.push(entry);
     
@@ -433,7 +433,7 @@ export class DeterministicExecutor {
    * Get recent audit trail entries
    */
   public getAuditTrail(limit?: number): ExecutionAuditEntry[] {
-    if (!this.config.enableAuditTrail) return [];
+    if (!this.config.enableAuditTrail) {return [];}
     
     const entries = [...this.auditTrail];
     if (limit) {

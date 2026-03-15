@@ -309,7 +309,7 @@ export class SwarmCoordinator extends EventEmitter {
    * Anti-drift checkpoint - save current state
    */
   checkpoint(): void {
-    if (!this.config.antiDrift) return;
+    if (!this.config.antiDrift) {return;}
     
     const state = {
       timestamp: Date.now(),
@@ -332,7 +332,7 @@ export class SwarmCoordinator extends EventEmitter {
    * Anti-drift verification - check for goal alignment
    */
   async verifyAlignment(goal: string): Promise<boolean> {
-    if (!this.config.antiDrift) return true;
+    if (!this.config.antiDrift) {return true;}
     
     // In hierarchical topology, only coordinator votes
     if (this.config.topology === 'hierarchical') {

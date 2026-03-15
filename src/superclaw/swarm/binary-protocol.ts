@@ -237,7 +237,7 @@ export class BinaryEncoder {
    */
   static batch(events: ArrayBuffer[]): ArrayBuffer {
     let totalPayloadSize = 2; // uint16 count
-    for (const event of events) totalPayloadSize += event.byteLength;
+    for (const event of events) {totalPayloadSize += event.byteLength;}
 
     const buffer = new ArrayBuffer(HEADER_SIZE + totalPayloadSize);
     const view = new DataView(buffer);

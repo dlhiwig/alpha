@@ -165,7 +165,7 @@ export class WebFetchTool {
       console.error('Web fetch error:', error);
       return {
         success: false,
-        error: error instanceof Error ? (error as Error).message : 'Unknown fetch error'
+        error: error instanceof Error ? (error).message : 'Unknown fetch error'
       };
     }
   }

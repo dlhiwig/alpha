@@ -415,7 +415,7 @@ export class SonaAdapter extends EventEmitter {
    * Estimate task complexity based on content
    */
   private estimateTaskComplexity(task: SwarmTask): number {
-    if (task.complexity !== undefined) return task.complexity;
+    if (task.complexity !== undefined) {return task.complexity;}
     
     const text = task.objective + ' ' + task.instructions;
     const tokenCount = this.estimateTokenCount(text);

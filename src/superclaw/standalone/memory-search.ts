@@ -327,7 +327,7 @@ export class MemorySearchService {
         });
 
         // Prevent infinite loop
-        if (!regex.global) break;
+        if (!regex.global) {break;}
       }
       
       // Reset regex for next line if global
@@ -405,7 +405,7 @@ export class MemorySearchService {
     }
 
     return Object.entries(frequency)
-      .sort((a, b) => b[1] - a[1])
+      .toSorted((a, b) => b[1] - a[1])
       .slice(0, maxTerms)
       .map(([word]) => word);
   }

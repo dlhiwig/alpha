@@ -272,8 +272,8 @@ program
         result: options.result
       };
 
-      if (options.from) filters.dateFrom = parseDate(options.from);
-      if (options.to) filters.dateTo = parseDate(options.to);
+      if (options.from) {filters.dateFrom = parseDate(options.from);}
+      if (options.to) {filters.dateTo = parseDate(options.to);}
 
       console.log(chalk.blue('🔄 Exporting audit logs...'));
       
@@ -454,7 +454,7 @@ program
         orderBy: 'timestamp',
         orderDir: 'desc',
         limit: options.lines
-      }).reverse(); // Reverse to show oldest first
+      }).toReversed(); // Reverse to show oldest first
 
       console.log(chalk.blue.bold('🦊 AUDIT LOG TAIL'));
       console.log(chalk.gray(`Showing last ${options.lines} logs${options.filter ? ` (filtered: ${options.filter})` : ''}`));

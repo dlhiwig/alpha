@@ -121,7 +121,7 @@ export class ReflexionLoop extends EventEmitter {
   }
   
   async stop(): Promise<void> {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
     
     console.log('[🪞 Reflexion] Stopping self-reflection loop...');
     
@@ -286,8 +286,8 @@ export class ReflexionLoop extends EventEmitter {
       const secondHalfAvg = secondHalf.reduce((sum, score) => sum + score, 0) / secondHalf.length;
       
       const difference = secondHalfAvg - firstHalfAvg;
-      if (difference > 0.1) trend = 'improving';
-      else if (difference < -0.1) trend = 'declining';
+      if (difference > 0.1) {trend = 'improving';}
+      else if (difference < -0.1) {trend = 'declining';}
     }
     
     // Calculate confidence based on consistency and sample size
@@ -298,17 +298,17 @@ export class ReflexionLoop extends EventEmitter {
     
     // Identify performance factors
     const factors: string[] = [];
-    if (currentScore > 0.8) factors.push('High success rate');
-    if (currentScore < 0.3) factors.push('Low success rate');
-    if (variance > 0.3) factors.push('Inconsistent performance');
-    if (trend === 'improving') factors.push('Performance improving');
-    if (trend === 'declining') factors.push('Performance declining');
+    if (currentScore > 0.8) {factors.push('High success rate');}
+    if (currentScore < 0.3) {factors.push('Low success rate');}
+    if (variance > 0.3) {factors.push('Inconsistent performance');}
+    if (trend === 'improving') {factors.push('Performance improving');}
+    if (trend === 'declining') {factors.push('Performance declining');}
     
     return { currentScore, trend, confidence, factors };
   }
   
   private calculateVariance(values: number[]): number {
-    if (values.length < 2) return 0;
+    if (values.length < 2) {return 0;}
     
     const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
     const squaredDifferences = values.map(val => Math.pow(val - mean, 2));
@@ -369,7 +369,7 @@ export class ReflexionLoop extends EventEmitter {
       const stats = hourlyStats.get(hour) || { success: 0, total: 0 };
       
       stats.total++;
-      if (interaction.outcome === 'success') stats.success++;
+      if (interaction.outcome === 'success') {stats.success++;}
       
       hourlyStats.set(hour, stats);
     }
@@ -399,7 +399,7 @@ export class ReflexionLoop extends EventEmitter {
       for (const key of contextKeys) {
         const stats = contextStats.get(key) || { success: 0, total: 0 };
         stats.total++;
-        if (interaction.outcome === 'success') stats.success++;
+        if (interaction.outcome === 'success') {stats.success++;}
         contextStats.set(key, stats);
       }
     }
@@ -428,7 +428,7 @@ export class ReflexionLoop extends EventEmitter {
       const stats = strategyStats.get(strategy) || { success: 0, total: 0 };
       
       stats.total++;
-      if (interaction.outcome === 'success') stats.success++;
+      if (interaction.outcome === 'success') {stats.success++;}
       
       strategyStats.set(strategy, stats);
     }
@@ -539,7 +539,7 @@ export class ReflexionLoop extends EventEmitter {
         (historyPerformance.get(alt.strategy) || 0.5) * 
         1.2 // Optimism bias for untested strategies
       )
-    })).sort((a, b) => b.expectedEffectiveness - a.expectedEffectiveness);
+    })).toSorted((a, b) => b.expectedEffectiveness - a.expectedEffectiveness);
   }
   
   // ═══════════════════════════════════════════════════════════════

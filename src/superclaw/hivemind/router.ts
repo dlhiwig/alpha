@@ -207,7 +207,7 @@ function rankAgentsForTask(
   });
 
   // Sort by affinity order (best first)
-  return capableAgents.sort((a, b) => {
+  return capableAgents.toSorted((a, b) => {
     const aIndex = affinity.indexOf(a);
     const bIndex = affinity.indexOf(b);
     // -1 means not in affinity list, put at end
@@ -223,7 +223,7 @@ function rankAgentsForTask(
 function getFastestAgent(agents: CLIType[]): CLIType {
   const speedOrder: CLIType[] = ['ollama', 'gemini', 'codex', 'claude'];
   for (const fast of speedOrder) {
-    if (agents.includes(fast)) return fast;
+    if (agents.includes(fast)) {return fast;}
   }
   return agents[0];
 }
@@ -234,7 +234,7 @@ function getFastestAgent(agents: CLIType[]): CLIType {
 function getCheapestAgent(agents: CLIType[]): CLIType {
   const costOrder: CLIType[] = ['ollama', 'gemini', 'codex', 'claude'];
   for (const cheap of costOrder) {
-    if (agents.includes(cheap)) return cheap;
+    if (agents.includes(cheap)) {return cheap;}
   }
   return agents[0];
 }
@@ -251,13 +251,13 @@ function buildPipelineDecision(
 
   // Research phase: Gemini or Claude
   if (metadata.requiresResearch) {
-    if (rankedAgents.includes('gemini')) pipeline.push('gemini');
-    else if (rankedAgents.includes('claude')) pipeline.push('claude');
+    if (rankedAgents.includes('gemini')) {pipeline.push('gemini');}
+    else if (rankedAgents.includes('claude')) {pipeline.push('claude');}
   }
 
   // Planning phase: Claude (best at reasoning)
   if (metadata.requiresReasoning && rankedAgents.includes('claude')) {
-    if (!pipeline.includes('claude')) pipeline.push('claude');
+    if (!pipeline.includes('claude')) {pipeline.push('claude');}
   }
 
   // Implementation phase: Codex for code

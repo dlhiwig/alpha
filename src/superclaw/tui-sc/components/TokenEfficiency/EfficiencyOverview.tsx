@@ -9,8 +9,8 @@ interface EfficiencyOverviewProps {
 
 export const EfficiencyOverview: React.FC<EfficiencyOverviewProps> = ({ metrics }) => {
   const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+    if (num >= 1000000) {return `${(num / 1000000).toFixed(1)}M`}
+    if (num >= 1000) {return `${(num / 1000).toFixed(1)}K`}
     return num.toFixed(0)
   }
 
@@ -23,14 +23,14 @@ export const EfficiencyOverview: React.FC<EfficiencyOverviewProps> = ({ metrics 
   }
 
   const getEfficiencyColor = (ratio: number): string => {
-    if (ratio < 0.5) return 'green'  // CodeAgent uses < 50% of traditional tokens
-    if (ratio < 0.8) return 'yellow' // CodeAgent uses < 80% of traditional tokens
+    if (ratio < 0.5) {return 'green'}  // CodeAgent uses < 50% of traditional tokens
+    if (ratio < 0.8) {return 'yellow'} // CodeAgent uses < 80% of traditional tokens
     return 'red' // CodeAgent uses >= 80% of traditional tokens
   }
 
   const getEfficiencyLabel = (ratio: number): string => {
-    if (ratio < 0.5) return 'Excellent'
-    if (ratio < 0.8) return 'Good'
+    if (ratio < 0.5) {return 'Excellent'}
+    if (ratio < 0.8) {return 'Good'}
     return 'Needs Improvement'
   }
 

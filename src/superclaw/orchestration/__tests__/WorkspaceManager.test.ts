@@ -564,7 +564,7 @@ describe('WorkspaceManager', () => {
       // Current implementation doesn't validate inputs, it accepts invalid identities
       // This creates workspaces with empty/invalid paths
       for (const identity of invalidIdentities) {
-        const workspace = await manager.createAgentWorkspace(identity as any)
+        const workspace = await manager.createAgentWorkspace(identity)
         expect(workspace).toBeDefined() // Changed expectation to match current behavior
       }
     })

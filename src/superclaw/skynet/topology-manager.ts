@@ -139,7 +139,7 @@ export class TopologyManager extends EventEmitter {
    */
   removeNode(agentId: string): boolean {
     const node = this.nodes.get(agentId);
-    if (!node) return false;
+    if (!node) {return false;}
 
     // Handle different removal strategies based on topology
     switch (this.topology) {
@@ -228,9 +228,9 @@ export class TopologyManager extends EventEmitter {
   private establishRingConnections(newNode: TopologyNode): void {
     const existingNodes = Array.from(this.nodes.values())
       .filter(n => n.agentId !== newNode.agentId)
-      .sort((a, b) => a.position - b.position);
+      .toSorted((a, b) => a.position - b.position);
 
-    if (existingNodes.length === 0) return;
+    if (existingNodes.length === 0) {return;}
 
     if (existingNodes.length === 1) {
       // Simple bidirectional connection for 2 nodes
@@ -255,8 +255,8 @@ export class TopologyManager extends EventEmitter {
     }
 
     // Handle wraparound
-    if (!leftNode) leftNode = existingNodes[existingNodes.length - 1];
-    if (!rightNode) rightNode = existingNodes[0];
+    if (!leftNode) {leftNode = existingNodes[existingNodes.length - 1];}
+    if (!rightNode) {rightNode = existingNodes[0];}
 
     // Establish ring connections
     if (leftNode && rightNode) {
@@ -272,14 +272,14 @@ export class TopologyManager extends EventEmitter {
   }
 
   private establishHierarchicalConnections(newNode: TopologyNode): void {
-    if (this.nodes.size === 1) return; // Root node
+    if (this.nodes.size === 1) {return;} // Root node
 
     const branchingFactor = this.config.branchingFactor || 3;
     
     // Find parent at the previous depth level
     const potentialParents = Array.from(this.nodes.values())
       .filter(n => n.depth === newNode.depth - 1)
-      .sort((a, b) => a.children.length - b.children.length);
+      .toSorted((a, b) => a.children.length - b.children.length);
 
     let parent = potentialParents.find(p => p.children.length < branchingFactor);
     
@@ -291,7 +291,7 @@ export class TopologyManager extends EventEmitter {
     if (!parent) {
       // No valid parent found, attach to root
       const root = this.nodes.get(this.rootNode!);
-      if (root) parent = root;
+      if (root) {parent = root;}
     }
 
     if (parent) {
@@ -325,7 +325,7 @@ export class TopologyManager extends EventEmitter {
       // Hub removal - promote a spoke to be the new hub
       const spokes = Array.from(this.nodes.values())
         .filter(n => n.agentId !== node.agentId)
-        .sort((a, b) => b.connections.length - a.connections.length);
+        .toSorted((a, b) => b.connections.length - a.connections.length);
 
       if (spokes.length > 0) {
         const newHub = spokes[0];
@@ -402,11 +402,11 @@ export class TopologyManager extends EventEmitter {
 
   private findCentralNode(): TopologyNode | null {
     return Array.from(this.nodes.values())
-      .sort((a, b) => b.connections.length - a.connections.length)[0] || null;
+      .toSorted((a, b) => b.connections.length - a.connections.length)[0] || null;
   }
 
   private isCentralNode(node: TopologyNode): boolean {
-    if (this.topology !== 'star') return false;
+    if (this.topology !== 'star') {return false;}
     
     const avgConnections = this.getTopologyStats().avgConnections;
     return node.connections.length > avgConnections * 1.5;
@@ -423,8 +423,8 @@ export class TopologyManager extends EventEmitter {
     const from = this.nodes.get(fromId);
     const to = this.nodes.get(toId);
     
-    if (!from || !to) return [];
-    if (fromId === toId) return [fromId];
+    if (!from || !to) {return [];}
+    if (fromId === toId) {return [fromId];}
 
     // BFS to find shortest path
     const queue: Array<{ nodeId: string; path: string[] }> = [{ nodeId: fromId, path: [fromId] }];
@@ -437,7 +437,7 @@ export class TopologyManager extends EventEmitter {
         return path;
       }
 
-      if (visited.has(nodeId)) continue;
+      if (visited.has(nodeId)) {continue;}
       visited.add(nodeId);
 
       const node = this.nodes.get(nodeId);
@@ -477,12 +477,12 @@ export class TopologyManager extends EventEmitter {
 
   private getHierarchicalBroadcastTargets(fromId: string): string[] {
     const node = this.nodes.get(fromId);
-    if (!node) return [];
+    if (!node) {return [];}
 
     const targets: string[] = [];
     
     // Send to parent
-    if (node.parent) targets.push(node.parent);
+    if (node.parent) {targets.push(node.parent);}
     
     // Send to children
     targets.push(...node.children);
@@ -530,7 +530,7 @@ export class TopologyManager extends EventEmitter {
     for (let i = 0; i < nodeIds.length; i++) {
       for (let j = i + 1; j < nodeIds.length; j++) {
         const path = this.findPath(nodeIds[i], nodeIds[j]);
-        if (path.length > 0) paths++;
+        if (path.length > 0) {paths++;}
       }
     }
     
@@ -539,7 +539,7 @@ export class TopologyManager extends EventEmitter {
 
   private calculateTopologyEfficiency(): number {
     const nodes = this.nodes.size;
-    if (nodes <= 1) return 1.0;
+    if (nodes <= 1) {return 1.0;}
 
     const stats = this.getTopologyStats();
     const maxPossiblePaths = (nodes * (nodes - 1)) / 2;

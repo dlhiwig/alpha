@@ -69,7 +69,7 @@ export class SwarmCoordinator {
   }
 
   async initialize(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {return;}
     this.initialized = true;
   }
 
@@ -149,7 +149,7 @@ export class SwarmCoordinator {
         agent.canExecute(task.type) && agent.status === 'active'
       );
 
-      if (suitableAgents.length === 0) continue;
+      if (suitableAgents.length === 0) {continue;}
 
       let bestAgent = suitableAgents[0];
       let lowestLoad = agentLoads.get(bestAgent.id) || 0;

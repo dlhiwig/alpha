@@ -63,8 +63,8 @@ vi.mock('../DoltService', () => {
               // Find status in params - it's usually first for tombstone update
               issue.status = params?.[0] === 'tombstone' ? 'tombstone' : (params?.[1] || issue.status)
             }
-            if (sql.includes('agent_state = ?')) issue.agent_state = params?.[0]
-            if (sql.includes('hook_bead = ?')) issue.hook_bead = params?.[1]
+            if (sql.includes('agent_state = ?')) {issue.agent_state = params?.[0]}
+            if (sql.includes('hook_bead = ?')) {issue.hook_bead = params?.[1]}
             issue.updated_at = new Date()
           }
           return { affectedRows: issue ? 1 : 0 }
@@ -199,7 +199,7 @@ vi.mock('../DoltService', () => {
         // Handle SELECT from beads_comments
         if (sql.includes('FROM beads_comments')) {
           const issueId = params?.[0]
-          return mockCommentsDb.filter(c => c.issue_id === issueId).sort((a, b) => 
+          return mockCommentsDb.filter(c => c.issue_id === issueId).toSorted((a, b) => 
             a.created_at.getTime() - b.created_at.getTime()
           )
         }

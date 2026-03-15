@@ -232,7 +232,7 @@ export class ClaudeFlowMCPServer {
         id: request.id,
         error: { 
           code: -32603, 
-          message: error instanceof Error ? (error as Error).message : 'Internal error' 
+          message: error instanceof Error ? (error).message : 'Internal error' 
         }
       };
     }
@@ -541,8 +541,8 @@ export class SwarmCoordinator {
   private selectModelTier(specialization: AgentSpecialization): string {
     const { local, efficient, advanced } = this.config.modelRouting;
     
-    if (local.includes(specialization)) return 'dolphin-llama3:8b';
-    if (efficient.includes(specialization)) return 'claude-sonnet';
+    if (local.includes(specialization)) {return 'dolphin-llama3:8b';}
+    if (efficient.includes(specialization)) {return 'claude-sonnet';}
     return 'claude-opus'; // Advanced tier
   }
   
@@ -550,8 +550,8 @@ export class SwarmCoordinator {
     const simpleTasks = ['documentation-writer', 'technical-writer', 'user-support'];
     const complexTasks = ['architect', 'security-auditor', 'ai-researcher', 'ml-engineer'];
     
-    if (simpleTasks.includes(specialization)) return 'local';
-    if (complexTasks.includes(specialization)) return 'advanced';
+    if (simpleTasks.includes(specialization)) {return 'local';}
+    if (complexTasks.includes(specialization)) {return 'advanced';}
     return 'efficient';
   }
   
@@ -637,7 +637,7 @@ export class SwarmCoordinator {
   }
   
   private estimateDuration(agents: ClaudeFlowAgent[], task: any): number {
-    if (agents.length === 0) return 0;
+    if (agents.length === 0) {return 0;}
     
     const avgExecutionTime = agents.reduce((sum, agent) => 
       sum + agent.performance.avgExecutionTime, 0) / agents.length;
@@ -757,7 +757,7 @@ export class DriftDetector {
   
   getDriftScore(agentId: string): number {
     const history = this.driftHistory.get(agentId) || [];
-    if (history.length === 0) return 0;
+    if (history.length === 0) {return 0;}
     
     // Return average drift over recent history
     return history.reduce((sum, score) => sum + score, 0) / history.length;

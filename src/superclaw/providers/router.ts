@@ -87,7 +87,7 @@ export class SuperClawRouter implements IRouter {
     // Try providers in priority order
     for (const candidate of candidates) {
       const provider = this.providers.get(candidate.provider);
-      if (!provider) continue;
+      if (!provider) {continue;}
       
       // Check circuit breaker
       const circuitState = this.circuitBreaker.getState(provider.name);
@@ -365,7 +365,7 @@ export class SuperClawRouter implements IRouter {
     // For code generation, prefer specialized models
     if (capabilities.includes(ModelCapability.CODE_GENERATION)) {
       const codeModel = compatibleModels.find(m => m.name.includes('coder') || m.name.includes('code'));
-      if (codeModel) return codeModel.name;
+      if (codeModel) {return codeModel.name;}
     }
     
     // For reasoning, prefer larger models
@@ -373,7 +373,7 @@ export class SuperClawRouter implements IRouter {
       const reasoningModel = compatibleModels.find(m => 
         m.name.includes('70b') || m.name.includes('opus') || m.name.includes('pro')
       );
-      if (reasoningModel) return reasoningModel.name;
+      if (reasoningModel) {return reasoningModel.name;}
     }
     
     // Default to the provider's default model
@@ -426,7 +426,7 @@ export class SuperClawRouter implements IRouter {
     
     for (const alternative of failedDecision.alternatives) {
       const provider = this.providers.get(alternative.provider);
-      if (!provider) continue;
+      if (!provider) {continue;}
       
       // Check if provider is healthy and not circuit-broken
       if (await provider.isHealthy() && this.circuitBreaker.getState(provider.name) !== 'open') {

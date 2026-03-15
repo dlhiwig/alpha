@@ -196,7 +196,7 @@ export class ToolRegistry {
     } catch (error: unknown) {
       const result: ToolExecutionResult<T> = {
         success: false,
-        error: error instanceof Error ? (error as Error).message : String(error),
+        error: error instanceof Error ? (error).message : String(error),
         duration: Date.now() - startTime,
       };
 
@@ -245,7 +245,7 @@ export class ToolRegistry {
     // Basic type validation for known types
     for (const [key, value] of Object.entries(params)) {
       const propSchema = schema.properties?.[key];
-      if (!propSchema) continue;
+      if (!propSchema) {continue;}
       
       const expectedType = propSchema.type;
       const actualType = Array.isArray(value) ? 'array' : typeof value;

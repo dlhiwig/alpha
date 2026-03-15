@@ -83,7 +83,7 @@ export class ProviderManager {
     // For now, we'll create placeholder providers
     
     for (const [name, config] of this.configs) {
-      if (!config.enabled) continue;
+      if (!config.enabled) {continue;}
       
       switch (name) {
         case 'claude':
@@ -118,7 +118,7 @@ export class ProviderManager {
   
   async getProvider(name: string): Promise<LLMProvider | null> {
     const provider = this.providers.get(name);
-    if (!provider) return null;
+    if (!provider) {return null;}
     
     // Check if provider is healthy
     const isHealthy = await this.isProviderHealthy(name);
@@ -131,7 +131,7 @@ export class ProviderManager {
     
     for (const [name, provider] of this.providers) {
       const config = this.configs.get(name);
-      if (!config?.enabled) continue;
+      if (!config?.enabled) {continue;}
       
       const isHealthy = await this.isProviderHealthy(name);
       if (isHealthy) {
@@ -161,7 +161,7 @@ export class ProviderManager {
     }
     
     const provider = this.providers.get(name);
-    if (!provider) return false;
+    if (!provider) {return false;}
     
     try {
       const isHealthy = await provider.isAvailable();

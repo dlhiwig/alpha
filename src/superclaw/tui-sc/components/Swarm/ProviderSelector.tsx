@@ -16,7 +16,7 @@ export const ProviderSelector: React.FC<ProviderSelectorProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   useInput((input, key) => {
-    if (!focused) return;
+    if (!focused) {return;}
 
     if (key.upArrow && selectedIndex > 0) {
       setSelectedIndex(selectedIndex - 1);

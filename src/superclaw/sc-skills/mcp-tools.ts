@@ -102,7 +102,7 @@ export class MCPToolsSkill extends EventEmitter {
       return servers;
     } catch (error: unknown) {
       this.log.error({ error }, 'Failed to list MCP servers');
-      throw new Error(`Failed to list MCP servers: ${error}`);
+      throw new Error(`Failed to list MCP servers: ${error}`, { cause: error });
     }
   }
 
@@ -134,7 +134,7 @@ export class MCPToolsSkill extends EventEmitter {
       return tools;
     } catch (error: unknown) {
       this.log.error({ server: serverName, error }, 'Failed to list tools');
-      throw new Error(`Failed to list tools for ${serverName}: ${error}`);
+      throw new Error(`Failed to list tools for ${serverName}: ${error}`, { cause: error });
     }
   }
 
@@ -146,7 +146,7 @@ export class MCPToolsSkill extends EventEmitter {
     const allTools: MCPToolDefinition[] = [];
 
     for (const server of servers) {
-      if (server.status !== 'ok') continue;
+      if (server.status !== 'ok') {continue;}
       
       try {
         const tools = await this.listTools(server.name);
@@ -253,7 +253,7 @@ export class MCPToolsSkill extends EventEmitter {
       args: { path, ...options },
     });
     
-    if (!result.success) throw new Error(result.error);
+    if (!result.success) {throw new Error(result.error);}
     return (result.result as any)?.content || String(result.result);
   }
 
@@ -263,7 +263,7 @@ export class MCPToolsSkill extends EventEmitter {
       args: { path, content },
     });
     
-    if (!result.success) throw new Error(result.error);
+    if (!result.success) {throw new Error(result.error);}
   }
 
   async listDirectory(path: string): Promise<string[]> {
@@ -272,7 +272,7 @@ export class MCPToolsSkill extends EventEmitter {
       args: { path },
     });
     
-    if (!result.success) throw new Error(result.error);
+    if (!result.success) {throw new Error(result.error);}
     return (result.result as any)?.entries || [];
   }
 
@@ -282,7 +282,7 @@ export class MCPToolsSkill extends EventEmitter {
       args: { url },
     });
     
-    if (!result.success) throw new Error(result.error);
+    if (!result.success) {throw new Error(result.error);}
     return (result.result as any)?.content || String(result.result);
   }
 
@@ -292,7 +292,7 @@ export class MCPToolsSkill extends EventEmitter {
       args: options,
     });
     
-    if (!result.success) throw new Error(result.error);
+    if (!result.success) {throw new Error(result.error);}
     return (result.result as any)?.issues || [];
   }
 
@@ -302,7 +302,7 @@ export class MCPToolsSkill extends EventEmitter {
       args: {},
     });
     
-    if (!result.success) throw new Error(result.error);
+    if (!result.success) {throw new Error(result.error);}
     return (result.result as any)?.containers || [];
   }
 
@@ -312,7 +312,7 @@ export class MCPToolsSkill extends EventEmitter {
       args: { key, value },
     });
     
-    if (!result.success) throw new Error(result.error);
+    if (!result.success) {throw new Error(result.error);}
   }
 
   async memoryRetrieve(key: string): Promise<string | null> {
@@ -321,7 +321,7 @@ export class MCPToolsSkill extends EventEmitter {
       args: { key },
     });
     
-    if (!result.success) return null;
+    if (!result.success) {return null;}
     return (result.result as any)?.value || null;
   }
 
@@ -353,7 +353,7 @@ export class MCPToolsSkill extends EventEmitter {
           for (const param of tool.parameters) {
             const req = param.required ? '(required)' : '(optional)';
             prompt += `- ${param.name}: ${param.type} ${req}`;
-            if (param.description) prompt += ` — ${param.description}`;
+            if (param.description) {prompt += ` — ${param.description}`;}
             prompt += '\n';
           }
         }
@@ -368,7 +368,7 @@ export class MCPToolsSkill extends EventEmitter {
    * Extract parameters from JSON schema
    */
   private extractParameters(schema?: Record<string, unknown>): MCPParameter[] {
-    if (!schema || typeof schema !== 'object') return [];
+    if (!schema || typeof schema !== 'object') {return [];}
     
     const properties = (schema as any).properties || {};
     const required = new Set((schema as any).required || []);

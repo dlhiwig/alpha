@@ -23,13 +23,13 @@ export const ComparisonChart: React.FC = () => {
   }, [])
 
   const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+    if (num >= 1000000) {return `${(num / 1000000).toFixed(1)}M`}
+    if (num >= 1000) {return `${(num / 1000).toFixed(1)}K`}
     return num.toFixed(0)
   }
 
   const renderMiniChart = (values: number[], width: number = 40, height: number = 10): string[] => {
-    if (values.length === 0) return Array(height).fill(' '.repeat(width))
+    if (values.length === 0) {return Array(height).fill(' '.repeat(width))}
     
     const max = Math.max(...values)
     const min = Math.min(...values)
@@ -55,7 +55,7 @@ export const ComparisonChart: React.FC = () => {
           row += ' '
         }
       }
-      while (row.length < width) row += ' '
+      while (row.length < width) {row += ' '}
       chart.push(row)
     }
     
@@ -63,8 +63,8 @@ export const ComparisonChart: React.FC = () => {
   }
 
   const getColorForSavings = (savings: number): string => {
-    if (savings > 1000) return 'green'
-    if (savings > 0) return 'yellow'
+    if (savings > 1000) {return 'green'}
+    if (savings > 0) {return 'yellow'}
     return 'red'
   }
 
@@ -93,7 +93,7 @@ export const ComparisonChart: React.FC = () => {
     return acc
   }, {} as Record<string, any>)
 
-  const sortedDays = Object.values(dailyData).sort((a: any, b: any) => 
+  const sortedDays = Object.values(dailyData).toSorted((a: any, b: any) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   )
 

@@ -197,7 +197,7 @@ export class CerebrasProvider implements ILLMProvider {
       this.updateHealthStatus(false, latency);
       
       throw new ProviderError(
-        `Generation failed: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        `Generation failed: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         this.name,
         'GENERATE_FAILED',
         true
@@ -251,7 +251,7 @@ export class CerebrasProvider implements ILLMProvider {
         while (true) {
           const { done, value } = await reader.read();
           
-          if (done) break;
+          if (done) {break;}
           
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
@@ -259,10 +259,10 @@ export class CerebrasProvider implements ILLMProvider {
           
           for (const line of lines) {
             const trimmed = line.trim();
-            if (!trimmed || !trimmed.startsWith('data: ')) continue;
+            if (!trimmed || !trimmed.startsWith('data: ')) {continue;}
             
             const data = trimmed.slice(6);
-            if (data === '[DONE]') break;
+            if (data === '[DONE]') {break;}
             
             try {
               const parsed = JSON.parse(data);
@@ -305,7 +305,7 @@ export class CerebrasProvider implements ILLMProvider {
       this.updateHealthStatus(false, latency);
       
       throw new ProviderError(
-        `Streaming failed: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        `Streaming failed: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         this.name,
         'STREAM_FAILED',
         true
@@ -329,12 +329,12 @@ export class CerebrasProvider implements ILLMProvider {
     
     // Check capabilities
     if (context?.requiredCapabilities) {
-      const capabilities = [
+      const capabilities = new Set([
         ModelCapability.TEXT_GENERATION,
         // TODO: Add capabilities this provider actually supports
-      ];
+      ]);
       
-      return context.requiredCapabilities.every(cap => capabilities.includes(cap));
+      return context.requiredCapabilities.every(cap => capabilities.has(cap));
     }
     
     return true;

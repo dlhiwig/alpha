@@ -277,7 +277,7 @@ function extractCommands(script: string): string[] {
 
   for (const line of lines) {
     // Skip comments and empty lines
-    if (!line || line.startsWith('#')) continue;
+    if (!line || line.startsWith('#')) {continue;}
     
     // Extract command (first word)
     const match = line.match(/^(\w+)/);
@@ -532,13 +532,13 @@ export async function shell_execute(options: ShellExecuteOptions): Promise<Shell
       const exitCode = await new Promise<number | null>((resolve, reject) => {
         child.on('close', (code) => {
           clearTimeout(timeoutHandle);
-          if (progressInterval) clearInterval(progressInterval);
+          if (progressInterval) {clearInterval(progressInterval);}
           resolve(code);
         });
 
         child.on('error', (error) => {
           clearTimeout(timeoutHandle);
-          if (progressInterval) clearInterval(progressInterval);
+          if (progressInterval) {clearInterval(progressInterval);}
           reject(error);
         });
       });

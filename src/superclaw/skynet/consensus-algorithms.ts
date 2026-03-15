@@ -126,7 +126,7 @@ export abstract class ConsensusEngine extends EventEmitter {
   }
   
   protected calculateQuorum(): number {
-    if (this.config.quorumSize) return this.config.quorumSize;
+    if (this.config.quorumSize) {return this.config.quorumSize;}
     return Math.floor(this.nodes.size / 2) + 1;
   }
   
@@ -135,13 +135,13 @@ export abstract class ConsensusEngine extends EventEmitter {
   }
   
   start(): void {
-    if (this.isRunning) return;
+    if (this.isRunning) {return;}
     this.isRunning = true;
     this.emit('consensus:started');
   }
   
   stop(): void {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
     this.isRunning = false;
     this.emit('consensus:stopped');
   }
@@ -184,8 +184,8 @@ export class RaftConsensus extends ConsensusEngine {
   
   stop(): void {
     super.stop();
-    if (this.electionTimer) clearTimeout(this.electionTimer);
-    if (this.heartbeatTimer) clearTimeout(this.heartbeatTimer);
+    if (this.electionTimer) {clearTimeout(this.electionTimer);}
+    if (this.heartbeatTimer) {clearTimeout(this.heartbeatTimer);}
   }
   
   async propose(proposal: Omit<ConsensusProposal, 'id' | 'timestamp' | 'term'>): Promise<ConsensusResult> {
@@ -227,7 +227,7 @@ export class RaftConsensus extends ConsensusEngine {
     const node = this.nodes.get(nodeId);
     const proposal = this.proposals.get(proposalId);
     
-    if (!node || !proposal) return;
+    if (!node || !proposal) {return;}
     
     const consensusVote: ConsensusVote = {
       nodeId,
@@ -252,7 +252,7 @@ export class RaftConsensus extends ConsensusEngine {
   
   async handleNodeFailure(nodeId: string): Promise<void> {
     const node = this.nodes.get(nodeId);
-    if (!node) return;
+    if (!node) {return;}
     
     // If leader failed, trigger election
     if (this.leaderId === nodeId) {
@@ -265,7 +265,7 @@ export class RaftConsensus extends ConsensusEngine {
   
   async handleNodeRecovery(nodeId: string): Promise<void> {
     const node = this.nodes.get(nodeId);
-    if (!node) return;
+    if (!node) {return;}
     
     // Reset node state and sync log
     node.state = 'follower';
@@ -275,14 +275,14 @@ export class RaftConsensus extends ConsensusEngine {
   }
   
   private startElectionTimer(): void {
-    if (this.electionTimer) clearTimeout(this.electionTimer);
+    if (this.electionTimer) {clearTimeout(this.electionTimer);}
     
     const timeout = this.config.electionTimeout + Math.random() * this.config.electionTimeout;
     this.electionTimer = setTimeout(() => this.startElection(), timeout);
   }
   
   private startElection(): void {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
     
     this.currentTerm++;
     this.leaderId = undefined;
@@ -290,9 +290,9 @@ export class RaftConsensus extends ConsensusEngine {
     // Find a candidate node (highest reliability)
     const candidates = Array.from(this.nodes.values())
       .filter(n => n.reliability > 0.7)
-      .sort((a, b) => b.reliability - a.reliability);
+      .toSorted((a, b) => b.reliability - a.reliability);
     
-    if (candidates.length === 0) return;
+    if (candidates.length === 0) {return;}
     
     const candidate = candidates[0];
     candidate.state = 'candidate';
@@ -335,11 +335,11 @@ export class RaftConsensus extends ConsensusEngine {
   }
   
   private startHeartbeat(): void {
-    if (this.heartbeatTimer) clearTimeout(this.heartbeatTimer);
+    if (this.heartbeatTimer) {clearTimeout(this.heartbeatTimer);}
     
     this.heartbeatTimer = setTimeout(() => {
       this.emit('heartbeat', { leaderId: this.leaderId, term: this.currentTerm });
-      if (this.isRunning) this.startHeartbeat();
+      if (this.isRunning) {this.startHeartbeat();}
     }, this.config.heartbeatInterval);
   }
   
@@ -411,7 +411,7 @@ export class ByzantineConsensus extends ConsensusEngine {
   
   async vote(nodeId: string, proposalId: string, vote: VoteType, reason?: string): Promise<void> {
     const node = this.nodes.get(nodeId);
-    if (!node) return;
+    if (!node) {return;}
     
     // Check if node is Byzantine (unreliable)
     if (node.reliability < 0.5) {

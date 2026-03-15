@@ -373,9 +373,9 @@ if __name__ == "__main__":
     const jaccardSimilarity = intersection.size / union.size;
     
     // Boost score if key programming/technical terms are preserved
-    const technicalTerms = ['function', 'class', 'method', 'variable', 'return', 'if', 'else', 'for', 'while'];
-    const originalTechnical = originalWords.filter(word => technicalTerms.includes(word));
-    const optimizedTechnical = optimizedWords.filter(word => technicalTerms.includes(word));
+    const technicalTerms = new Set(['function', 'class', 'method', 'variable', 'return', 'if', 'else', 'for', 'while']);
+    const originalTechnical = originalWords.filter(word => technicalTerms.has(word));
+    const optimizedTechnical = optimizedWords.filter(word => technicalTerms.has(word));
     
     const technicalPreservation = originalTechnical.length > 0 
       ? optimizedTechnical.length / originalTechnical.length 
@@ -399,7 +399,7 @@ if __name__ == "__main__":
    * Calculate speed improvement based on token reduction
    */
   private calculateSpeedImprovement(originalTokens: number, optimizedTokens: number): number {
-    if (optimizedTokens >= originalTokens) return 1.0;
+    if (optimizedTokens >= originalTokens) {return 1.0;}
     
     // Speed improvement is roughly proportional to token reduction
     // Plus bonus for reduced network/processing overhead

@@ -259,7 +259,7 @@ export class OllamaProvider implements ILLMProvider {
       try {
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {break;}
           
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
@@ -353,7 +353,7 @@ export class OllamaProvider implements ILLMProvider {
       try {
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {break;}
           
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
@@ -548,10 +548,10 @@ export class OllamaProvider implements ILLMProvider {
     } catch (error: unknown) {
       // @ts-expect-error - Post-Merge Reconciliation
       if (error.name === 'TypeError' && (error as Error).message.includes('fetch')) {
-        throw new Error('Ollama server is not running. Please start Ollama with: ollama serve');
+        throw new Error('Ollama server is not running. Please start Ollama with: ollama serve', { cause: error });
       // @ts-expect-error - Post-Merge Reconciliation
       } else if (error.name === 'AbortError') {
-        throw new Error('Ollama server timeout. Check if the service is responsive.');
+        throw new Error('Ollama server timeout. Check if the service is responsive.', { cause: error });
       } else {
         throw error;
       }

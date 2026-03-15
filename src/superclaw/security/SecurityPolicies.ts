@@ -613,18 +613,18 @@ function isValidDomainPattern(domain: string): boolean {
  */
 function isValidCIDR(cidr: string): boolean {
   const parts = cidr.split('/')
-  if (parts.length !== 2) return false
+  if (parts.length !== 2) {return false}
   
   const [ip, prefix] = parts
   const prefixNum = parseInt(prefix, 10)
   
   // Validate IP address
   const ipParts = ip.split('.')
-  if (ipParts.length !== 4) return false
+  if (ipParts.length !== 4) {return false}
   
   for (const part of ipParts) {
     const num = parseInt(part, 10)
-    if (isNaN(num) || num < 0 || num > 255) return false
+    if (isNaN(num) || num < 0 || num > 255) {return false}
   }
   
   // Validate prefix

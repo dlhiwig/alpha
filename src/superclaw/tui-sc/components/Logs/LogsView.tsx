@@ -106,7 +106,7 @@ export const LogsView: React.FC = () => {
   }, [isPaused, isStreaming, generateMockLog]);
 
   const filteredLogs = logs.filter(log => {
-    if (filter === 'all') return true;
+    if (filter === 'all') {return true;}
     return log.level === filter;
   });
 

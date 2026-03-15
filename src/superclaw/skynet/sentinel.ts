@@ -218,7 +218,7 @@ export function recordProviderRequest(
   rateLimited: boolean = false
 ): void {
   const metrics = state.providers[provider];
-  if (!metrics) return;
+  if (!metrics) {return;}
   
   metrics.requests++;
   metrics.totalLatencyMs += latencyMs;
@@ -254,7 +254,7 @@ export function recordChannelEvent(
   event: 'connect' | 'disconnect' | 'message' | 'error'
 ): void {
   const status = state.channels[channel];
-  if (!status) return;
+  if (!status) {return;}
   
   switch (event) {
     case 'connect':
@@ -584,7 +584,7 @@ export async function startSentinel(): Promise<void> {
 }
 
 export async function stopSentinel(): Promise<void> {
-  if (!isRunning) return;
+  if (!isRunning) {return;}
   
   if (checkInterval) {
     clearInterval(checkInterval);

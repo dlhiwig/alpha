@@ -390,7 +390,7 @@ export class TokenEfficiencyTracker extends EventEmitter {
       return JSON.stringify(results, null, 2)
     } else {
       // CSV format
-      if (results.length === 0) return 'No data available'
+      if (results.length === 0) {return 'No data available'}
       
       const headers = Object.keys(results[0]).join(',')
       const rows = results.map(row => 

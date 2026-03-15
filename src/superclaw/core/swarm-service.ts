@@ -161,7 +161,7 @@ export class SwarmService extends EventEmitter {
 
   listRuns(limit = 10): SwarmRun[] {
     return Array.from(this.runs.values())
-      .sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime())
+      .toSorted((a, b) => b.startedAt.getTime() - a.startedAt.getTime())
       .slice(0, limit);
   }
 
@@ -258,7 +258,7 @@ export class SwarmService extends EventEmitter {
 
     } catch (error: unknown) {
       run.status = 'failed';
-      run.error = error instanceof Error ? (error as Error).message : String(error);
+      run.error = error instanceof Error ? (error).message : String(error);
       
       // Persist failure
       this.db.updateRunStatus(runId, 'failed', { error: run.error });
@@ -320,7 +320,7 @@ export class SwarmService extends EventEmitter {
     try {
       const { text } = await this.callLLM(system, prompt);
       const jsonMatch = text.match(/\[[\s\S]*\]/);
-      if (!jsonMatch) throw new Error('No JSON array found in response');
+      if (!jsonMatch) {throw new Error('No JSON array found in response');}
       return JSON.parse(jsonMatch[0]);
     } catch (error: unknown) {
       console.error('[SwarmService] Decomposition failed, using fallback:', error);
@@ -428,7 +428,7 @@ export class SwarmService extends EventEmitter {
         tokens,
       };
     } catch (error: unknown) {
-      const errorMsg = error instanceof Error ? (error as Error).message : String(error);
+      const errorMsg = error instanceof Error ? (error).message : String(error);
       const latency = Date.now() - start;
       
       // Record failure for SONA learning
@@ -529,7 +529,7 @@ export class SwarmService extends EventEmitter {
             executing[i].then(() => 'done'),
             Promise.resolve('pending'),
           ]);
-          if (status === 'done') executing.splice(i, 1);
+          if (status === 'done') {executing.splice(i, 1);}
         }
       }
     }

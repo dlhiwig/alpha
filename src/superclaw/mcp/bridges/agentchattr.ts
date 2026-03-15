@@ -106,7 +106,7 @@ export class AgentChattrBridge extends EventEmitter {
    * Start polling for new messages
    */
   startPolling(intervalMs = 2000): void {
-    if (this.pollInterval) return;
+    if (this.pollInterval) {return;}
     
     this.pollInterval = setInterval(async () => {
       try {
@@ -221,7 +221,7 @@ export class AgentChattrBridge extends EventEmitter {
     const result = await this.callTool('chat_who', {});
     // Parse "Online: claude, codex, gemini" format
     const match = result.match(/Online:\s*(.+)/);
-    if (!match) return [];
+    if (!match) {return [];}
     return match[1].split(',').map(s => s.trim()).filter(Boolean);
   }
   
@@ -291,7 +291,7 @@ export class AgentChattrBridge extends EventEmitter {
    * Initialize MCP session (required before tool calls)
    */
   private async initSession(): Promise<void> {
-    if (this.sessionId) return;
+    if (this.sessionId) {return;}
     
     const request: MCPRequest = {
       jsonrpc: '2.0',
@@ -487,7 +487,7 @@ export class SwarmCoordinator {
    */
   async getConversation(limit = 50): Promise<ChatMessage[]> {
     const bridge = this.getFirstBridge();
-    if (!bridge) return [];
+    if (!bridge) {return [];}
     return bridge.resync({ limit });
   }
   
@@ -496,7 +496,7 @@ export class SwarmCoordinator {
    */
   async proposeDecision(decision: string, reason?: string): Promise<string> {
     const bridge = this.getFirstBridge();
-    if (!bridge) return 'No bridge available';
+    if (!bridge) {return 'No bridge available';}
     return bridge.proposeDecision(decision, reason);
   }
   

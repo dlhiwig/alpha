@@ -162,7 +162,7 @@ export class TwilioProvider extends SMSProvider {
     } catch (error: unknown) {
       console.error('Failed to send SMS via Twilio:', error);
       
-      throw new Error(`SMS send failed: ${(error as Error).message}`);
+      throw new Error(`SMS send failed: ${(error as Error).message}`, { cause: error });
     }
   }
 
@@ -202,7 +202,7 @@ export class TwilioProvider extends SMSProvider {
 
     // Create the expected signature
     const params = new URLSearchParams();
-    Object.keys(request.body).sort().forEach(key => {
+    Object.keys(request.body).toSorted().forEach(key => {
       params.append(key, request.body[key]);
     });
 
@@ -237,7 +237,7 @@ export class TwilioProvider extends SMSProvider {
     } catch (error: unknown) {
       console.error(`Failed to get message status for ${messageId}:`, error);
       
-      throw new Error(`Status check failed: ${(error as Error).message}`);
+      throw new Error(`Status check failed: ${(error as Error).message}`, { cause: error });
     }
   }
 
@@ -279,7 +279,7 @@ export class TwilioProvider extends SMSProvider {
     } catch (error: unknown) {
       console.error(`Failed to get message details for ${messageId}:`, error);
       
-      throw new Error(`Message details failed: ${(error as Error).message}`);
+      throw new Error(`Message details failed: ${(error as Error).message}`, { cause: error });
     }
   }
 

@@ -78,12 +78,12 @@ const INTENT_PATTERNS: Record<TransformIntent, RegExp[]> = {
   ],
   'add-error-handling': [
     /add\s+(error\s+)?handling/i,
-    /wrap\s+in\s+try[\/-]?catch/i,
+    /wrap\s+in\s+try[/-]?catch/i,
     /handle\s+errors?/i,
   ],
   'async-await': [
-    /convert\s+to\s+async[\/-]?await/i,
-    /use\s+async[\/-]?await/i,
+    /convert\s+to\s+async[/-]?await/i,
+    /use\s+async[/-]?await/i,
     /\.then\s*\(/,  // Promise chain
   ],
   'add-logging': [
@@ -267,11 +267,11 @@ export class AgentBooster extends EventEmitter {
     const result = code.replace(
       /function\s+(\w+)\s*\(([^)]*)\)\s*{/g,
       (match, name, params) => {
-        if (params.includes(':')) return match;  // Already typed
+        if (params.includes(':')) {return match;}  // Already typed
         
         const typedParams = params.split(',').map((p: string) => {
           const param = p.trim();
-          if (!param) return param;
+          if (!param) {return param;}
           changes++;
           return `${param}: any`;
         }).join(', ');
@@ -284,11 +284,11 @@ export class AgentBooster extends EventEmitter {
     const result2 = result.replace(
       /const\s+(\w+)\s*=\s*\(([^)]*)\)\s*=>/g,
       (match, name, params) => {
-        if (params.includes(':')) return match;
+        if (params.includes(':')) {return match;}
         
         const typedParams = params.split(',').map((p: string) => {
           const param = p.trim();
-          if (!param) return param;
+          if (!param) {return param;}
           changes++;
           return `${param}: any`;
         }).join(', ');

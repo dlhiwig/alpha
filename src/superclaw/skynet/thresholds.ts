@@ -382,7 +382,7 @@ export class ThresholdEnforcer {
     
     // Recommend most cost-efficient provider
     const recommendedProvider = costSummary.topProviders
-      .sort((a, b) => (a.spent / a.calls) - (b.spent / b.calls))[0]?.provider || 'ollama';
+      .toSorted((a, b) => (a.spent / a.calls) - (b.spent / b.calls))[0]?.provider || 'ollama';
 
     return {
       ...baseStats,
@@ -541,9 +541,9 @@ export class ThresholdEnforcer {
   ): 'low' | 'medium' | 'high' | 'critical' {
     const utilization = value / limit;
 
-    if (utilization >= 0.95) return 'critical';
-    if (utilization >= 0.85) return 'high';
-    if (utilization >= 0.70) return 'medium';
+    if (utilization >= 0.95) {return 'critical';}
+    if (utilization >= 0.85) {return 'high';}
+    if (utilization >= 0.70) {return 'medium';}
     return 'low';
   }
 
@@ -735,9 +735,9 @@ export class ThresholdEnforcer {
    * Assess safety level for financial decisions
    */
   private assessFinancialSafetyLevel(amount: number): 'low' | 'medium' | 'high' | 'critical' {
-    if (amount >= 200) return 'critical';
-    if (amount >= 100) return 'high';
-    if (amount >= 50) return 'medium';
+    if (amount >= 200) {return 'critical';}
+    if (amount >= 100) {return 'high';}
+    if (amount >= 50) {return 'medium';}
     return 'low';
   }
 
@@ -832,7 +832,7 @@ export class ThresholdEnforcer {
         .map(line => JSON.parse(line) as ThresholdCheckLog)
         .slice(-limit);
       
-      return logs.reverse(); // Most recent first
+      return logs.toReversed(); // Most recent first
     } catch (error: unknown) {
       console.warn('Failed to read audit log:', error);
       return [];

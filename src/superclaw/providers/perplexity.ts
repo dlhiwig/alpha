@@ -264,7 +264,7 @@ export class PerplexityProvider implements ILLMProvider {
       if (!response.ok) {
         let error = '';
         try {
-          const errorData = await response.json() as any;
+          const errorData = await response.json();
           error = errorData.error?.message || errorData.detail || JSON.stringify(errorData);
         } catch {
           error = await response.text();
@@ -304,7 +304,7 @@ export class PerplexityProvider implements ILLMProvider {
       this.updateHealthStatus(false, latency);
       
       throw new ProviderError(
-        `Generation failed: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        `Generation failed: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         this.name,
         'GENERATE_FAILED',
         true
@@ -332,7 +332,7 @@ export class PerplexityProvider implements ILLMProvider {
       if (!response.ok) {
         let error = '';
         try {
-          const errorData = await response.json() as any;
+          const errorData = await response.json();
           error = errorData.error?.message || errorData.detail || JSON.stringify(errorData);
         } catch {
           error = await response.text();
@@ -352,7 +352,7 @@ export class PerplexityProvider implements ILLMProvider {
         while (true) {
           const { done, value } = await reader.read();
           
-          if (done) break;
+          if (done) {break;}
           
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
@@ -360,10 +360,10 @@ export class PerplexityProvider implements ILLMProvider {
           
           for (const line of lines) {
             const trimmed = line.trim();
-            if (!trimmed || !trimmed.startsWith('data: ')) continue;
+            if (!trimmed || !trimmed.startsWith('data: ')) {continue;}
             
             const data = trimmed.slice(6);
-            if (data === '[DONE]') break;
+            if (data === '[DONE]') {break;}
             
             try {
               const parsed = JSON.parse(data) as PerplexityStreamChunk;
@@ -410,7 +410,7 @@ export class PerplexityProvider implements ILLMProvider {
       this.updateHealthStatus(false, latency);
       
       throw new ProviderError(
-        `Streaming failed: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        `Streaming failed: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         this.name,
         'STREAM_FAILED',
         true
@@ -434,14 +434,14 @@ export class PerplexityProvider implements ILLMProvider {
     
     // Check capabilities - we're best for web research and RAG
     if (context?.requiredCapabilities) {
-      const ourCapabilities = [
+      const ourCapabilities = new Set([
         ModelCapability.TEXT_GENERATION,
         ModelCapability.RAG,
         ModelCapability.LONG_CONTEXT,
         ModelCapability.REASONING
-      ];
+      ]);
       
-      return context.requiredCapabilities.every(cap => ourCapabilities.includes(cap));
+      return context.requiredCapabilities.every(cap => ourCapabilities.has(cap));
     }
     
     // We're particularly good for web research queries

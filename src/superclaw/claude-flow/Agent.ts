@@ -140,7 +140,7 @@ export class Agent implements IAgent {
       return {
         taskId: task.id,
         status: 'failed',
-        error: error instanceof Error ? (error as Error).message : String(error),
+        error: error instanceof Error ? (error).message : String(error),
         duration,
         agentId: this.id
       };

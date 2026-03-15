@@ -317,10 +317,10 @@ export class HybridMemoryService extends EventEmitter {
     `);
     
     const params: any[] = [ftsQuery, agentId];
-    if (options.category) params.push(options.category);
-    if (options.entity) params.push(options.entity);
-    if (options.decayTier) params.push(options.decayTier);
-    if (!options.includeExpired) params.push(Date.now());
+    if (options.category) {params.push(options.category);}
+    if (options.entity) {params.push(options.entity);}
+    if (options.decayTier) {params.push(options.decayTier);}
+    if (!options.includeExpired) {params.push(Date.now());}
     params.push(limit);
     
     const rows = stmt.all(...params) as any[];
@@ -351,7 +351,7 @@ export class HybridMemoryService extends EventEmitter {
     `);
     
     const row = stmt.get(agentId, entity, key, Date.now()) as any;
-    if (!row) return null;
+    if (!row) {return null;}
     
     // Touch access time
     this.touchFact(row.id);
@@ -453,7 +453,7 @@ export class HybridMemoryService extends EventEmitter {
     `);
     
     const row = stmt.get(agentId, Date.now()) as any;
-    if (!row) return null;
+    if (!row) {return null;}
     
     return {
       id: row.id,

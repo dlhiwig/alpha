@@ -253,7 +253,7 @@ class OpenAIProvider {
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done)
-                        break;
+                        {break;}
                     buffer += decoder.decode(value, { stream: true });
                     const lines = buffer.split('\n');
                     buffer = lines.pop() || '';
@@ -341,7 +341,7 @@ class OpenAIProvider {
         if (context?.requiredCapabilities) {
             const modelInfo = this.availableModels.find(m => m.name === model);
             if (!modelInfo)
-                return false;
+                {return false;}
             return context.requiredCapabilities.every(cap => modelInfo.capabilities.includes(cap));
         }
         // Check health status

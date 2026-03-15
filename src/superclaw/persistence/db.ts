@@ -172,7 +172,7 @@ export class SuperClawDB {
 
   getRun(id: string): SwarmRun | null {
     const row = this.db.prepare('SELECT * FROM swarm_runs WHERE id = ?').get(id) as any;
-    if (!row) return null;
+    if (!row) {return null;}
     return this.mapRun(row);
   }
 
@@ -182,7 +182,7 @@ export class SuperClawDB {
   }): void {
     const now = Math.floor(Date.now() / 1000);
     const run = this.getRun(id);
-    if (!run) return;
+    if (!run) {return;}
 
     const updates: string[] = ['status = ?'];
     const params: unknown[] = [status];

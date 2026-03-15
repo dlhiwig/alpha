@@ -315,7 +315,7 @@ export class AnthropicProvider implements ILLMProvider {
         
         if (retryCount >= maxRetries) {
           throw new ProviderError(
-            `Generation failed after ${maxRetries} retries: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+            `Generation failed after ${maxRetries} retries: ${error instanceof Error ? (error).message : 'Unknown error'}`,
             this.name,
             'GENERATE_FAILED',
             true
@@ -358,7 +358,7 @@ export class AnthropicProvider implements ILLMProvider {
       try {
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {break;}
 
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
@@ -367,7 +367,7 @@ export class AnthropicProvider implements ILLMProvider {
           for (const line of lines) {
             if (line.startsWith('data: ')) {
               const data = line.slice(6);
-              if (data === '[DONE]') continue;
+              if (data === '[DONE]') {continue;}
 
               try {
                 const event = JSON.parse(data) as AnthropicStreamEvent;
@@ -403,7 +403,7 @@ export class AnthropicProvider implements ILLMProvider {
     } catch (error: unknown) {
       this.updateHealthStatus(false, 0);
       throw new ProviderError(
-        `Streaming failed: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        `Streaming failed: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         this.name,
         'STREAM_FAILED',
         true
@@ -525,7 +525,7 @@ export class AnthropicProvider implements ILLMProvider {
   }
 
   private shouldRetry(statusCode: number, currentRetry: number, maxRetries: number): boolean {
-    if (currentRetry >= maxRetries) return false;
+    if (currentRetry >= maxRetries) {return false;}
     
     // Retry on server errors and rate limits
     return statusCode >= 500 || statusCode === 429 || statusCode === 408;

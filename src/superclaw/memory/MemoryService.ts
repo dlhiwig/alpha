@@ -77,8 +77,8 @@ export class MemoryService {
       this.log('info', 'MemoryService initialized successfully')
       
     } catch (error: unknown) {
-      this.log('error', 'Failed to initialize MemoryService', { error: error instanceof Error ? (error as Error).message : String(error) })
-      throw new Error(`Memory service initialization failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      this.log('error', 'Failed to initialize MemoryService', { error: error instanceof Error ? (error).message : String(error) })
+      throw new Error(`Memory service initialization failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -134,7 +134,7 @@ export class MemoryService {
       this.log('info', 'Database migrations completed successfully')
       
     } catch (error: unknown) {
-      this.log('error', 'Failed to run migrations', { error: error instanceof Error ? (error as Error).message : String(error) })
+      this.log('error', 'Failed to run migrations', { error: error instanceof Error ? (error).message : String(error) })
       throw error
     }
   }
@@ -173,9 +173,9 @@ export class MemoryService {
       this.log('error', 'Failed to store memory', { 
         agentId, 
         type: memory.type,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to store memory: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to store memory: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -195,8 +195,8 @@ export class MemoryService {
       return this.mapRowToMemory(results[0])
       
     } catch (error: unknown) {
-      this.log('error', 'Failed to get memory', { id, error: error instanceof Error ? (error as Error).message : String(error) })
-      throw new Error(`Failed to get memory: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      this.log('error', 'Failed to get memory', { id, error: error instanceof Error ? (error).message : String(error) })
+      throw new Error(`Failed to get memory: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -246,8 +246,8 @@ export class MemoryService {
       }
       
     } catch (error: unknown) {
-      this.log('error', 'Failed to update memory', { id, error: error instanceof Error ? (error as Error).message : String(error) })
-      throw new Error(`Failed to update memory: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      this.log('error', 'Failed to update memory', { id, error: error instanceof Error ? (error).message : String(error) })
+      throw new Error(`Failed to update memory: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -259,8 +259,8 @@ export class MemoryService {
       this.log('debug', 'Memory deleted', { id })
       
     } catch (error: unknown) {
-      this.log('error', 'Failed to delete memory', { id, error: error instanceof Error ? (error as Error).message : String(error) })
-      throw new Error(`Failed to delete memory: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      this.log('error', 'Failed to delete memory', { id, error: error instanceof Error ? (error).message : String(error) })
+      throw new Error(`Failed to delete memory: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
 
@@ -343,9 +343,9 @@ export class MemoryService {
     } catch (error: unknown) {
       this.log('error', 'Failed to get agent memories', { 
         agentId: query.agentId, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to get agent memories: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to get agent memories: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -367,9 +367,9 @@ export class MemoryService {
       this.log('error', 'Failed to search memories', { 
         agentId, 
         searchText, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to search memories: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to search memories: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -390,9 +390,9 @@ export class MemoryService {
     } catch (error: unknown) {
       this.log('error', 'Failed to get related memories', { 
         memoryId, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to get related memories: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to get related memories: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -424,9 +424,9 @@ export class MemoryService {
       this.log('error', 'Failed to add relationship', { 
         sourceId: relationship.sourceId, 
         targetId: relationship.targetId,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to add relationship: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to add relationship: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -451,9 +451,9 @@ export class MemoryService {
     } catch (error: unknown) {
       this.log('error', 'Failed to get relationships', { 
         memoryId, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to get relationships: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to get relationships: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -472,9 +472,9 @@ export class MemoryService {
       this.log('error', 'Failed to remove relationship', { 
         sourceId, 
         targetId,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to remove relationship: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to remove relationship: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -528,9 +528,9 @@ export class MemoryService {
     } catch (error: unknown) {
       this.log('error', 'Failed to compact stale memories', { 
         agentId, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to compact stale memories: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to compact stale memories: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -576,9 +576,9 @@ export class MemoryService {
     } catch (error: unknown) {
       this.log('error', 'Failed to get agent stats', { 
         agentId, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to get agent stats: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to get agent stats: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -619,9 +619,9 @@ export class MemoryService {
       this.log('error', 'Failed to prune old memories', { 
         agentId, 
         keepCount,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to prune old memories: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to prune old memories: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -685,7 +685,7 @@ export class MemoryService {
       
     } catch (error: unknown) {
       this.log('error', 'Error during MemoryService destruction', { 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
     }
   }

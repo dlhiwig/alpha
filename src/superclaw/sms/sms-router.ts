@@ -405,7 +405,7 @@ export class SMSRouter {
     }
     
     for (const rule of this.config.autoResponseRules) {
-      if (!rule.enabled) continue;
+      if (!rule.enabled) {continue;}
       
       if (this.ruleMatches(rule, message, contact)) {
         return rule;
@@ -431,7 +431,7 @@ export class SMSRouter {
       const hasKeyword = conditions.keywords.some(keyword => 
         messageText.includes(keyword.toLowerCase())
       );
-      if (!hasKeyword) return false;
+      if (!hasKeyword) {return false;}
     }
     
     // Check phone numbers
@@ -543,7 +543,7 @@ export class SMSRouter {
   ): Promise<void> {
     try {
       const contact = this.contacts.get(conversation.phoneNumber);
-      if (!contact) return;
+      if (!contact) {return;}
       
       // Get conversation context
       const context = await this.cortex.getConversationContext(conversation.id);

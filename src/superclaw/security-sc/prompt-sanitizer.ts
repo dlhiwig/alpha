@@ -190,9 +190,9 @@ export function extractValidatedJSON<T>(
   }
   
   // 5. VALIDATE ALL FIELDS ARE EXPECTED
-  const allowedFields = [...schema.required, ...(schema.optional || [])];
+  const allowedFields = new Set([...schema.required, ...(schema.optional || [])]);
   for (const field of Object.keys(parsed)) {
-    if (!allowedFields.includes(field)) {
+    if (!allowedFields.has(field)) {
       return { success: false, error: `Unexpected field: ${field}` };
     }
   }

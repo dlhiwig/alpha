@@ -118,7 +118,7 @@ export abstract class BaseProvider {
       );
     } else {
       throw new ProviderError(
-        `${operation} failed: ${(error instanceof Error ? (error as Error).message : String(error)) || 'Unknown error'}`,
+        `${operation} failed: ${(error instanceof Error ? (error).message : String(error)) || 'Unknown error'}`,
         providerName,
         'OPERATION_FAILED',
         true

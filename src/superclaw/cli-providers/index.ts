@@ -35,7 +35,7 @@ export class CLIProviderManager {
    * Initialize and check available providers
    */
   async init(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {return;}
     
     const statuses = await checkAllProviders();
     this.availableProviders = statuses

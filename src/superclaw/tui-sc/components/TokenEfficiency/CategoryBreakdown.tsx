@@ -9,8 +9,8 @@ interface CategoryBreakdownProps {
 
 export const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({ categories }) => {
   const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+    if (num >= 1000000) {return `${(num / 1000000).toFixed(1)}M`}
+    if (num >= 1000) {return `${(num / 1000).toFixed(1)}K`}
     return num.toFixed(0)
   }
 
@@ -19,14 +19,14 @@ export const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({ categories
   }
 
   const getEfficiencyColor = (ratio: number): string => {
-    if (ratio < 0.5) return 'green'
-    if (ratio < 0.8) return 'yellow'
+    if (ratio < 0.5) {return 'green'}
+    if (ratio < 0.8) {return 'yellow'}
     return 'red'
   }
 
   const getEfficiencyIcon = (ratio: number): string => {
-    if (ratio < 0.5) return '🟢'
-    if (ratio < 0.8) return '🟡'
+    if (ratio < 0.5) {return '🟢'}
+    if (ratio < 0.8) {return '🟡'}
     return '🔴'
   }
 
@@ -50,7 +50,7 @@ export const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({ categories
     return bar
   }
 
-  const sortedCategories = Object.entries(categories).sort(([, a], [, b]) => {
+  const sortedCategories = Object.entries(categories).toSorted(([, a], [, b]) => {
     // @ts-expect-error - Post-Merge Reconciliation
     return a.efficiency - b.efficiency // Sort by efficiency (best first)
   })

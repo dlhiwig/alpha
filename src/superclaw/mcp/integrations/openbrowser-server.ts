@@ -272,7 +272,7 @@ export class OpenBrowserMCPServerManager extends EventEmitter {
       const executionTime = Date.now() - startTime;
       this.errorCount++;
       
-      const errorMessage = error instanceof Error ? (error as Error).message : String(error);
+      const errorMessage = error instanceof Error ? (error).message : String(error);
       this.emit('execution_error', { code, error: errorMessage, executionTime });
       
       return {
@@ -458,7 +458,7 @@ export class OpenBrowserMCPServerManager extends EventEmitter {
 
   private handleResponse(response: MCPResponse): void {
     const request = this.pendingRequests.get(response.id as number);
-    if (!request) return;
+    if (!request) {return;}
 
     const { resolve, reject, timeout } = request;
     this.pendingRequests.delete(response.id as number);

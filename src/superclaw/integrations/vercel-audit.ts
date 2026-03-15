@@ -22,7 +22,7 @@ async function auditVercel() {
     
     // Git info
     if (project.link) {
-      const link = project.link as any;
+      const link = project.link;
       console.log(`\n📂 Git Repository:`);
       console.log(`   Type: ${link.type}`);
       console.log(`   Repo: ${link.repo}`);
@@ -66,7 +66,7 @@ async function auditVercel() {
       for (const env of envs) {
         console.log(`   - ${env.key} [${env.target?.join(', ') || 'all'}]`);
       }
-      if (envs.length === 0) console.log('   (none configured)');
+      if (envs.length === 0) {console.log('   (none configured)');}
     } catch (e) {
       console.log('   (unable to fetch env vars)');
     }

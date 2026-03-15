@@ -141,7 +141,7 @@ export class GeminiProvider implements ILLMProvider {
       await this.isHealthy();
     } catch (error: unknown) {
       throw new ProviderError(
-        `Failed to initialize Gemini provider: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        `Failed to initialize Gemini provider: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         this.name,
         'INIT_FAILED',
         true
@@ -243,20 +243,20 @@ export class GeminiProvider implements ILLMProvider {
       let retryable = true;
       
       if (error instanceof Error) {
-        if ((error as Error).message.includes('API_KEY_INVALID')) {
+        if ((error).message.includes('API_KEY_INVALID')) {
           errorCode = 'INVALID_API_KEY';
           retryable = false;
-        } else if ((error as Error).message.includes('QUOTA_EXCEEDED')) {
+        } else if ((error).message.includes('QUOTA_EXCEEDED')) {
           errorCode = 'QUOTA_EXCEEDED';
           retryable = true;
-        } else if ((error as Error).message.includes('SAFETY')) {
+        } else if ((error).message.includes('SAFETY')) {
           errorCode = 'SAFETY_FILTER';
           retryable = false;
         }
       }
       
       throw new ProviderError(
-        `Gemini generation failed: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        `Gemini generation failed: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         this.name,
         errorCode,
         retryable
@@ -309,7 +309,7 @@ export class GeminiProvider implements ILLMProvider {
     } catch (error: unknown) {
       this.updateHealthStatus(false, 0);
       throw new ProviderError(
-        `Gemini streaming failed: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        `Gemini streaming failed: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         this.name,
         'STREAM_FAILED',
         true

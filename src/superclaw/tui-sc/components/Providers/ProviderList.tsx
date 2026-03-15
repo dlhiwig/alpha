@@ -28,18 +28,18 @@ const getStatusColor = (status: ProviderInfo['status']): string => {
 };
 
 const formatLatency = (latency?: number): string => {
-  if (latency === undefined) return '-';
+  if (latency === undefined) {return '-';}
   return `${latency}ms`;
 };
 
 const formatCost = (cost?: number): string => {
-  if (cost === undefined || cost === 0) return 'FREE';
+  if (cost === undefined || cost === 0) {return 'FREE';}
   return `$${cost.toFixed(3)}`;
 };
 
 const formatModels = (models: string[]): string => {
-  if (models.length === 0) return '-';
-  if (models.length <= 2) return models.join(', ');
+  if (models.length === 0) {return '-';}
+  if (models.length <= 2) {return models.join(', ');}
   return `${models.slice(0, 2).join(', ')} +${models.length - 2}`;
 };
 

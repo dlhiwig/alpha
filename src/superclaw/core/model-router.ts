@@ -324,9 +324,9 @@ export class ModelRouter extends EventEmitter {
     }
 
     // Factor in intent length (longer = potentially more complex)
-    if (intent.length > 200) complexity += 0.1;
-    if (intent.length > 500) complexity += 0.1;
-    if (intent.length < 50) complexity -= 0.1;
+    if (intent.length > 200) {complexity += 0.1;}
+    if (intent.length > 500) {complexity += 0.1;}
+    if (intent.length < 50) {complexity -= 0.1;}
 
     // Clamp to [0, 1]
     return Math.max(0, Math.min(1, complexity));

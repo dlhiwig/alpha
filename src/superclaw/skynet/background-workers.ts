@@ -212,8 +212,8 @@ export class BackgroundWorkers extends EventEmitter {
     this.timers.clear();
     this.running.clear();
 
-    if (this.ewc) await this.ewc.shutdown();
-    if (this.knowledgeGraph) await this.knowledgeGraph.shutdown();
+    if (this.ewc) {await this.ewc.shutdown();}
+    if (this.knowledgeGraph) {await this.knowledgeGraph.shutdown();}
 
     this.emit('stopped');
   }
@@ -252,7 +252,7 @@ export class BackgroundWorkers extends EventEmitter {
     const workers = Array.from(this.workers.entries()).map(([type, config]) => {
       const lastRun = this.history
         .filter(h => h.workerType === type)
-        .sort((a, b) => b.startedAt - a.startedAt)[0]?.startedAt;
+        .toSorted((a, b) => b.startedAt - a.startedAt)[0]?.startedAt;
 
       return {
         type,

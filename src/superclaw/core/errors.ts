@@ -72,7 +72,7 @@ export async function safeCall<T>(
     return {
       ok: false,
       error: new SuperClawError(
-        `${context}: ${(error as Error).message}`,
+        `${context}: ${(error).message}`,
         code,
         true,
         { context },
@@ -98,7 +98,7 @@ export function safeCallSync<T>(
     return {
       ok: false,
       error: new SuperClawError(
-        `${context}: ${(error as Error).message}`,
+        `${context}: ${(error).message}`,
         code,
         true,
         { context },
@@ -187,7 +187,7 @@ export async function withTimeout<T>(
         resolve({
           ok: false,
           error: new SuperClawError(
-            `${context}: ${(error as Error).message}`,
+            `${context}: ${(error).message}`,
             'UNKNOWN_ERROR',
             true,
             { context },

@@ -53,7 +53,7 @@ export class Neo4jGraphAdapter implements KnowledgeGraphPort {
 
   private async run(cypher: string, params: Record<string, unknown> = {}): Promise<any> {
     const driver = await this.getDriver();
-    const session = (driver as any).session({ database: this.database });
+    const session = (driver).session({ database: this.database });
     try {
       return await session.run(cypher, params);
     } finally {
@@ -102,9 +102,9 @@ export class Neo4jGraphAdapter implements KnowledgeGraphPort {
       });
     }
 
-    if (where.length) cypher += ` WHERE ${where.join(' AND ')}`;
+    if (where.length) {cypher += ` WHERE ${where.join(' AND ')}`;}
     cypher += ' RETURN n';
-    if (filter.limit) cypher += ` LIMIT ${filter.limit}`;
+    if (filter.limit) {cypher += ` LIMIT ${filter.limit}`;}
 
     const result = await this.run(cypher, params);
     return result.records.map((r: any) => {
@@ -154,7 +154,7 @@ export class Neo4jGraphAdapter implements KnowledgeGraphPort {
       { from: fromId, to: toId }
     );
 
-    if (result.records.length === 0) return [];
+    if (result.records.length === 0) {return [];}
 
     return result.records[0].get('path').map((node: any) => ({
       id: node.properties.id,

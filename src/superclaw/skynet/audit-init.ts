@@ -174,7 +174,7 @@ export async function initializeAuditSystem(config: Partial<SuperClawAuditConfig
         result: 'failure',
         durationMs: 0,
         severity: 'critical',
-        errorMessage: error instanceof Error ? (error as Error).message : String(error),
+        errorMessage: error instanceof Error ? (error).message : String(error),
         metadata: {
           event: 'audit_system_initialization_failed',
           error: error
@@ -252,7 +252,7 @@ async function ensureDataDirectory(dataDir: string): Promise<void> {
     await fs.unlink(testFile);
     
   } catch (error: unknown) {
-    throw new Error(`Cannot create or write to data directory ${dataDir}: ${error}`);
+    throw new Error(`Cannot create or write to data directory ${dataDir}: ${error}`, { cause: error });
   }
 }
 
@@ -264,7 +264,7 @@ let shutdownInitiated = false;
 
 export function setupProcessHandlers(): void {
   const gracefulShutdown = async (signal: string) => {
-    if (shutdownInitiated) return;
+    if (shutdownInitiated) {return;}
     shutdownInitiated = true;
 
     console.log(`🦊 AUDIT: Received ${signal}, initiating graceful shutdown...`);
@@ -289,13 +289,13 @@ export function setupProcessHandlers(): void {
         result: 'failure',
         durationMs: 0,
         severity: 'critical',
-        errorMessage: (error as Error).message,
+        errorMessage: (error).message,
         stackTrace: error.stack,
         metadata: {
           event: 'uncaught_exception',
           error: {
             name: error.name,
-            message: (error as Error).message,
+            message: (error).message,
             stack: error.stack
           }
         }

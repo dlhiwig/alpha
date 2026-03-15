@@ -30,7 +30,7 @@ const getStatusColor = (status: string): string => {
 };
 
 const formatDuration = (ms?: number): string => {
-  if (!ms) return '-';
+  if (!ms) {return '-';}
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;

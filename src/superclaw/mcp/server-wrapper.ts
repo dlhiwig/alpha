@@ -78,7 +78,7 @@ export class SuperClawMCPServer {
    * Stop the MCP server
    */
   async stop(): Promise<void> {
-    if (!this.isRunning || !this.server) return;
+    if (!this.isRunning || !this.server) {return;}
 
     await this.server.close();
     this.server = undefined;
@@ -172,7 +172,7 @@ export class SuperClawMCPServer {
     // Call tool (MCP standard)
     // @ts-expect-error - Post-Merge Reconciliation
     server.post('/tools/call', async (request, reply) => {
-      const body = request.body as any;
+      const body = request.body;
       const { name, arguments: args } = body.params || {};
 
       if (!name) {
@@ -214,7 +214,7 @@ export class SuperClawMCPServer {
         return this.createMCPError(
           body.id || 1,
           -32603,
-          error instanceof Error ? (error as Error).message : 'Internal error'
+          error instanceof Error ? (error).message : 'Internal error'
         );
       }
     });
@@ -317,7 +317,7 @@ export class SuperClawMCPServer {
           return this.createMCPError(
             message.id,
             -32603,
-            error instanceof Error ? (error as Error).message : 'Internal error'
+            error instanceof Error ? (error).message : 'Internal error'
           );
         }
 

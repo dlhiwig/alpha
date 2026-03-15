@@ -47,7 +47,7 @@ export class ToolExecutionInterceptor {
     costUsd?: number;
   }): void {
     const context = this.contexts.get(contextId);
-    if (!context) return;
+    if (!context) {return;}
 
     const durationMs = Date.now() - context.startTime;
     const audit = getAuditTrail();
@@ -109,7 +109,7 @@ export class AgentSpawnInterceptor {
     metadata?: any;
   }): void {
     const context = this.spawnContexts.get(spawnId);
-    if (!context) return;
+    if (!context) {return;}
 
     const durationMs = Date.now() - context.startTime;
     const audit = getAuditTrail();
@@ -303,17 +303,17 @@ export class AuditAutoIntegration {
 
   private static extractSessionId(args: any[]): string {
     // Try to extract session ID from various argument patterns
-    if (args[0]?.sessionId) return args[0].sessionId;
-    if (args[0]?.context?.sessionId) return args[0].context.sessionId;
-    if (args[1]?.sessionId) return args[1].sessionId;
+    if (args[0]?.sessionId) {return args[0].sessionId;}
+    if (args[0]?.context?.sessionId) {return args[0].context.sessionId;}
+    if (args[1]?.sessionId) {return args[1].sessionId;}
     return process.env.OPENCLAW_SESSION_ID || 'unknown';
   }
 
   private static extractAgentId(args: any[]): string {
     // Try to extract agent ID from various argument patterns
-    if (args[0]?.agentId) return args[0].agentId;
-    if (args[0]?.context?.agentId) return args[0].context.agentId;
-    if (args[1]?.agentId) return args[1].agentId;
+    if (args[0]?.agentId) {return args[0].agentId;}
+    if (args[0]?.context?.agentId) {return args[0].context.agentId;}
+    if (args[1]?.agentId) {return args[1].agentId;}
     return process.env.OPENCLAW_AGENT_ID || 'main';
   }
 

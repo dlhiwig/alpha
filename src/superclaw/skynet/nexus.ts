@@ -144,16 +144,16 @@ function parseSkillMetadata(content: string): SkillMetadata {
     
     // Simple YAML parsing
     const nameMatch = yaml.match(/name:\s*(.+)/);
-    if (nameMatch) metadata.name = nameMatch[1].trim();
+    if (nameMatch) {metadata.name = nameMatch[1].trim();}
     
     const descMatch = yaml.match(/description:\s*(.+)/);
-    if (descMatch) metadata.description = descMatch[1].trim();
+    if (descMatch) {metadata.description = descMatch[1].trim();}
     
     const versionMatch = yaml.match(/version:\s*(.+)/);
-    if (versionMatch) metadata.version = versionMatch[1].trim();
+    if (versionMatch) {metadata.version = versionMatch[1].trim();}
     
     const authorMatch = yaml.match(/author:\s*(.+)/);
-    if (authorMatch) metadata.author = authorMatch[1].trim();
+    if (authorMatch) {metadata.author = authorMatch[1].trim();}
     
     // Parse arrays
     const tagsMatch = yaml.match(/tags:\s*\[(.*?)\]/);
@@ -175,13 +175,13 @@ function parseSkillMetadata(content: string): SkillMetadata {
   // Fallback: extract name from first heading
   if (metadata.name === 'Unknown Skill') {
     const headingMatch = content.match(/^#\s+(.+)/m);
-    if (headingMatch) metadata.name = headingMatch[1].trim();
+    if (headingMatch) {metadata.name = headingMatch[1].trim();}
   }
   
   // Extract description from first paragraph after heading
   if (!metadata.description) {
     const descMatch = content.match(/^#.*\n\n(.+)/m);
-    if (descMatch) metadata.description = descMatch[1].slice(0, 200);
+    if (descMatch) {metadata.description = descMatch[1].slice(0, 200);}
   }
   
   return metadata;
@@ -354,7 +354,7 @@ export async function startNexus(): Promise<void> {
 }
 
 export async function stopNexus(): Promise<void> {
-  if (!isRunning) return;
+  if (!isRunning) {return;}
   
   stopWatchers();
   await saveState();
@@ -378,7 +378,7 @@ export function findSkills(query: string): LoadedSkill[] {
   const queryLower = query.toLowerCase();
   
   for (const skill of state.skills.values()) {
-    if (!skill.enabled) continue;
+    if (!skill.enabled) {continue;}
     
     // Check triggers
     for (const trigger of skill.metadata.triggers) {

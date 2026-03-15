@@ -47,8 +47,8 @@ export class InMemoryGraphAdapter implements KnowledgeGraphPort {
     const stored = { ...rel, id };
     this.relationships.set(id, stored);
 
-    if (!this.outEdges.has(rel.fromId)) this.outEdges.set(rel.fromId, new Set());
-    if (!this.inEdges.has(rel.toId)) this.inEdges.set(rel.toId, new Set());
+    if (!this.outEdges.has(rel.fromId)) {this.outEdges.set(rel.fromId, new Set());}
+    if (!this.inEdges.has(rel.toId)) {this.inEdges.set(rel.toId, new Set());}
 
     this.outEdges.get(rel.fromId)!.add(id);
     this.inEdges.get(rel.toId)!.add(id);
@@ -58,17 +58,17 @@ export class InMemoryGraphAdapter implements KnowledgeGraphPort {
     let results: GraphEntity[] = [];
 
     for (const entity of this.entities.values()) {
-      if (filter.type && entity.type !== filter.type) continue;
+      if (filter.type && entity.type !== filter.type) {continue;}
       if (filter.properties) {
         const match = Object.entries(filter.properties).every(
           ([k, v]) => entity.properties[k] === v
         );
-        if (!match) continue;
+        if (!match) {continue;}
       }
       results.push(entity);
     }
 
-    if (filter.limit) results = results.slice(0, filter.limit);
+    if (filter.limit) {results = results.slice(0, filter.limit);}
     return results;
   }
 
@@ -81,14 +81,14 @@ export class InMemoryGraphAdapter implements KnowledgeGraphPort {
     if (direction === 'out' || direction === 'both') {
       for (const relId of this.outEdges.get(entityId) ?? []) {
         const rel = this.relationships.get(relId);
-        if (rel) results.push(rel);
+        if (rel) {results.push(rel);}
       }
     }
 
     if (direction === 'in' || direction === 'both') {
       for (const relId of this.inEdges.get(entityId) ?? []) {
         const rel = this.relationships.get(relId);
-        if (rel) results.push(rel);
+        if (rel) {results.push(rel);}
       }
     }
 
@@ -112,7 +112,7 @@ export class InMemoryGraphAdapter implements KnowledgeGraphPort {
 
       for (const relId of this.outEdges.get(current) ?? []) {
         const rel = this.relationships.get(relId);
-        if (!rel) continue;
+        if (!rel) {continue;}
         const neighbor = rel.toId;
 
         if (!visited.has(neighbor)) {
@@ -125,7 +125,7 @@ export class InMemoryGraphAdapter implements KnowledgeGraphPort {
             let node: string | undefined = toId;
             while (node !== undefined) {
               const entity = this.entities.get(node);
-              if (entity) path.unshift(entity);
+              if (entity) {path.unshift(entity);}
               node = parent.get(node);
             }
             return path;
@@ -162,14 +162,14 @@ export class InMemoryGraphAdapter implements KnowledgeGraphPort {
       const results: GraphMatch[] = [];
 
       for (const rel of this.relationships.values()) {
-        if (edge.type && rel.type !== edge.type) continue;
+        if (edge.type && rel.type !== edge.type) {continue;}
 
         const fromEntity = this.entities.get(rel.fromId);
         const toEntity = this.entities.get(rel.toId);
-        if (!fromEntity || !toEntity) continue;
+        if (!fromEntity || !toEntity) {continue;}
 
-        if (fromSpec?.type && fromEntity.type !== fromSpec.type) continue;
-        if (toSpec?.type && toEntity.type !== toSpec.type) continue;
+        if (fromSpec?.type && fromEntity.type !== fromSpec.type) {continue;}
+        if (toSpec?.type && toEntity.type !== toSpec.type) {continue;}
 
         results.push({
           bindings: {
@@ -209,8 +209,8 @@ export class InMemoryGraphAdapter implements KnowledgeGraphPort {
   import(data: { entities: GraphEntity[]; relationships: GraphRelationship[] }): void {
     for (const entity of data.entities) {
       this.entities.set(entity.id, entity);
-      if (!this.outEdges.has(entity.id)) this.outEdges.set(entity.id, new Set());
-      if (!this.inEdges.has(entity.id)) this.inEdges.set(entity.id, new Set());
+      if (!this.outEdges.has(entity.id)) {this.outEdges.set(entity.id, new Set());}
+      if (!this.inEdges.has(entity.id)) {this.inEdges.set(entity.id, new Set());}
     }
     for (const rel of data.relationships) {
       const id = rel.id ?? `rel_${++this.relCounter}`;

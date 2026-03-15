@@ -183,8 +183,8 @@ export class PinchTabTool implements Tool {
     await this.ensureInstance();
     
     const params = new URLSearchParams();
-    if (options.interactive) params.append('filter', 'interactive');
-    if (options.compact) params.append('compact', 'true');
+    if (options.interactive) {params.append('filter', 'interactive');}
+    if (options.compact) {params.append('compact', 'true');}
 
     const response = await fetch(
       `${this.config.baseUrl}/instances/${this.activeInstance}/snapshot?${params}`

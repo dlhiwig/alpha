@@ -117,7 +117,7 @@ class CodeAgentApiToolAdapter implements ITool {
     } catch (error: unknown) {
       return {
         success: false,
-        error: error instanceof Error ? (error as Error).message : 'Unknown execution error',
+        error: error instanceof Error ? (error).message : 'Unknown execution error',
         metadata: {
           timestamp: new Date().toISOString(),
           toolName: this.name

@@ -76,7 +76,7 @@ export class PrivateDataSandbox {
    */
   checkAccess(agentId: string, dataPath: string): boolean {
     const data = this.dataStore.get(dataPath);
-    if (!data) return false;
+    if (!data) {return false;}
 
     // Update last accessed
     data.lastAccessed = new Date();
@@ -365,7 +365,7 @@ export class RollbackCapability {
     const checkpointIds = this.agentCheckpoints.get(agentId) || [];
     return checkpointIds
       .map(id => this.checkpoints.get(id))
-      .filter(cp => cp !== undefined) as Checkpoint[];
+      .filter(cp => cp !== undefined);
   }
 
   /**
@@ -373,7 +373,7 @@ export class RollbackCapability {
    */
   getLatestCheckpoint(agentId: string): Checkpoint | null {
     const checkpoints = this.listCheckpoints(agentId);
-    if (checkpoints.length === 0) return null;
+    if (checkpoints.length === 0) {return null;}
     
     return checkpoints.reduce((latest, current) => 
       current.timestamp > latest.timestamp ? current : latest
@@ -385,7 +385,7 @@ export class RollbackCapability {
    */
   cleanupCheckpoints(agentId: string, keepCount = 5): void {
     const checkpoints = this.listCheckpoints(agentId);
-    if (checkpoints.length <= keepCount) return;
+    if (checkpoints.length <= keepCount) {return;}
 
     // Sort by timestamp, keep most recent
     checkpoints.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
@@ -526,7 +526,7 @@ export class LethalTrifectaSandbox {
       console.error(`❌ Formal verification error for ${agentId}:${action}:`, error);
       return {
         valid: false,
-        error: error instanceof Error ? (error as Error).message : 'Verification system error',
+        error: error instanceof Error ? (error).message : 'Verification system error',
         risk_score: 100,
         execution_allowed: false
       };
@@ -619,17 +619,17 @@ export class LethalTrifectaSandbox {
    */
   private assessSafetyLevel(action: string, parameters?: any): 'low' | 'medium' | 'high' | 'critical' {
     // Critical actions
-    if (action === 'exec' && parameters?.command?.includes('sudo')) return 'critical';
-    if (action === 'exec' && parameters?.command?.includes('rm -rf')) return 'critical';
-    if (action === 'message' && parameters?.targets?.length > 10) return 'critical';
+    if (action === 'exec' && parameters?.command?.includes('sudo')) {return 'critical';}
+    if (action === 'exec' && parameters?.command?.includes('rm -rf')) {return 'critical';}
+    if (action === 'message' && parameters?.targets?.length > 10) {return 'critical';}
 
     // High risk actions
-    if (action === 'exec') return 'high';
-    if (action === 'edit' && parameters?.path?.includes('/etc/')) return 'high';
-    if (action === 'write' && parameters?.path?.startsWith('/')) return 'high';
+    if (action === 'exec') {return 'high';}
+    if (action === 'edit' && parameters?.path?.includes('/etc/')) {return 'high';}
+    if (action === 'write' && parameters?.path?.startsWith('/')) {return 'high';}
 
     // Medium risk actions
-    if (['edit', 'write', 'message'].includes(action)) return 'medium';
+    if (['edit', 'write', 'message'].includes(action)) {return 'medium';}
 
     // Low risk actions (read-only)
     return 'low';

@@ -149,7 +149,7 @@ export function getTokenUsageStats(): {
       tokens: data.tokens,
       operations: data.operations,
     }))
-    .sort((a, b) => b.tokens - a.tokens)
+    .toSorted((a, b) => b.tokens - a.tokens)
     .slice(0, 10);
 
   return stats;
@@ -192,7 +192,7 @@ export function getTokenUsageForPeriod(
 export function getRecentTokenUsage(limit = 100): TokenUsage[] {
   return tokenUsageLog
     .slice(-limit)
-    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    .toSorted((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 }
 
 /**

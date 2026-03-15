@@ -141,7 +141,7 @@ function loadBashrcEnv(): Record<string, string> {
  */
 export function isProviderConfigured(provider: ProviderName): boolean {
   const envKey = REQUIRED_ENV[provider];
-  if (!envKey) return true;
+  if (!envKey) {return true;}
   
   const env = getProviderEnv();
   return !!env[envKey];
@@ -167,7 +167,7 @@ export function getConfiguredProviders(): ProviderName[] {
  */
 export class CLIProvider implements Provider {
   name: ProviderName;
-  type: 'cli' = 'cli';
+  type = 'cli' as const;
   
   constructor(name: ProviderName) {
     this.name = name;
@@ -270,7 +270,7 @@ export class CLIProvider implements Provider {
  */
 export class OllamaProvider implements Provider {
   name: ProviderName = 'ollama';
-  type: 'http' = 'http';
+  type = 'http' as const;
   
   private baseUrl: string;
   private model: string;
@@ -345,7 +345,7 @@ export class OllamaProvider implements Provider {
       const response = await fetch(`${this.baseUrl}/api/tags`, {
         signal: AbortSignal.timeout(5000),
       });
-      if (!response.ok) return false;
+      if (!response.ok) {return false;}
       const data = await response.json() as { models?: unknown[] };
       return (data.models?.length ?? 0) > 0;
     } catch {
@@ -461,7 +461,7 @@ export async function executeCostAware(
       };
     }
   } catch (error: unknown) {
-    const message = error instanceof Error ? (error as Error).message : 'Routing failed';
+    const message = error instanceof Error ? (error).message : 'Routing failed';
     
     return {
       stdout: '',

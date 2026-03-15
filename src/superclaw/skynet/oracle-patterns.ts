@@ -143,13 +143,13 @@ export function extractTags(prompt: string): string[] {
   const tags: string[] = [];
   
   // Detect common task types
-  if (/\b(code|function|implement|class|api)\b/i.test(prompt)) tags.push('coding');
-  if (/\b(explain|what is|how does|why)\b/i.test(prompt)) tags.push('explanation');
-  if (/\b(write|create|generate|draft)\b/i.test(prompt)) tags.push('generation');
-  if (/\b(fix|debug|error|bug)\b/i.test(prompt)) tags.push('debugging');
-  if (/\b(summarize|summary|tldr)\b/i.test(prompt)) tags.push('summarization');
-  if (/\b(translate|convert)\b/i.test(prompt)) tags.push('translation');
-  if (/\b(analyze|analysis|review)\b/i.test(prompt)) tags.push('analysis');
+  if (/\b(code|function|implement|class|api)\b/i.test(prompt)) {tags.push('coding');}
+  if (/\b(explain|what is|how does|why)\b/i.test(prompt)) {tags.push('explanation');}
+  if (/\b(write|create|generate|draft)\b/i.test(prompt)) {tags.push('generation');}
+  if (/\b(fix|debug|error|bug)\b/i.test(prompt)) {tags.push('debugging');}
+  if (/\b(summarize|summary|tldr)\b/i.test(prompt)) {tags.push('summarization');}
+  if (/\b(translate|convert)\b/i.test(prompt)) {tags.push('translation');}
+  if (/\b(analyze|analysis|review)\b/i.test(prompt)) {tags.push('analysis');}
   
   return tags;
 }
@@ -159,7 +159,7 @@ export function extractTags(prompt: string): string[] {
 export function generateSuggestions(state: OracleState): void {
   // Analyze patterns for optimization opportunities
   for (const [hash, pattern] of Array.from(state.patterns.entries())) {
-    if (pattern.totalUses < CONFIG.MIN_SAMPLES) continue;
+    if (pattern.totalUses < CONFIG.MIN_SAMPLES) {continue;}
     
     const successRate = pattern.successCount / pattern.totalUses;
     

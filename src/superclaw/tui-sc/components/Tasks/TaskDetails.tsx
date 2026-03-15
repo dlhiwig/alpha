@@ -36,7 +36,7 @@ const getTypeSymbol = (type: Task['type']): string => {
 };
 
 const formatDuration = (duration?: number): string => {
-  if (!duration) return 'Unknown';
+  if (!duration) {return 'Unknown';}
   const seconds = Math.floor(duration / 1000);
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;

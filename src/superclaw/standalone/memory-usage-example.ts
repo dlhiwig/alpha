@@ -71,7 +71,7 @@ async function demonstrateMemorySystem() {
     totalFiles: stats.workspace.totalFiles,
     totalSize: stats.workspace.totalSize,
     topFileTypes: Object.entries(stats.workspace.fileTypes)
-      .sort(([,a], [,b]) => (b as number) - (a as number))
+      .toSorted(([,a], [,b]) => (b as number) - (a as number))
       .slice(0, 3)
       .map(([ext, count]) => `${ext}:${count}`)
   });

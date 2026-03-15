@@ -67,7 +67,7 @@ export class SqliteService {
       
       this.initialized = true
     } catch (error: unknown) {
-      throw new Error(`Failed to initialize SqliteService: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to initialize SqliteService: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -80,7 +80,7 @@ export class SqliteService {
     
     try {
       const result = await this.retryOperation(() => {
-        if (!this.db) throw new Error('Database not initialized')
+        if (!this.db) {throw new Error('Database not initialized')}
         
         const stmt = this.db.prepare(sql)
         const rows = stmt.all(...(params || []))
@@ -89,7 +89,7 @@ export class SqliteService {
       
       return result
     } catch (error: unknown) {
-      throw new Error(`Query failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Query failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -102,7 +102,7 @@ export class SqliteService {
     
     try {
       const result = await this.retryOperation(() => {
-        if (!this.db) throw new Error('Database not initialized')
+        if (!this.db) {throw new Error('Database not initialized')}
         
         const stmt = this.db.prepare(sql)
         const info = stmt.run(...(params || []))
@@ -111,7 +111,7 @@ export class SqliteService {
       
       return result
     } catch (error: unknown) {
-      throw new Error(`Execute failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Execute failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -146,7 +146,7 @@ export class SqliteService {
       console.log(`SQLite commit logged: ${message} (${commitHash})`)
     } catch (error: unknown) {
       // Commits are optional for SQLite, so we just log errors rather than throw
-      console.warn(`Commit logging failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      console.warn(`Commit logging failed: ${error instanceof Error ? (error).message : String(error)}`)
     }
   }
   

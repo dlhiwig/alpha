@@ -130,7 +130,7 @@ export function recordInteraction(
  */
 export function recordFeedback(interactionId: string, feedback: 'positive' | 'negative'): boolean {
   const interaction = state.recentInteractions.find(i => i.id === interactionId);
-  if (!interaction) return false;
+  if (!interaction) {return false;}
   
   interaction.userFeedback = feedback;
   
@@ -166,7 +166,7 @@ export async function startOracle(): Promise<void> {
 }
 
 export async function stopOracle(): Promise<void> {
-  if (!isRunning) return;
+  if (!isRunning) {return;}
   
   await saveState();
   isRunning = false;

@@ -355,7 +355,7 @@ export class SubAgent extends EventEmitter {
   }
 
   pause(): void {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
     
     if (this.useOrchestrator && this.sessionId) {
       // TODO: Implement pause via orchestrator (not yet supported)
@@ -383,7 +383,7 @@ export class SubAgent extends EventEmitter {
     }
     
     // Legacy resume
-    if (!this.process || (this.agent && this.agent.status !== 'paused')) return;
+    if (!this.process || (this.agent && this.agent.status !== 'paused')) {return;}
     
     this.process.kill('SIGCONT');
     if (this.agent) {
@@ -395,7 +395,7 @@ export class SubAgent extends EventEmitter {
   }
 
   async kill(reason = 'MANUAL'): Promise<void> {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
     
     this.isRunning = false;
     this.stats.endTime = Date.now();
@@ -976,7 +976,7 @@ export class SubAgent extends EventEmitter {
 
   checkResourceLimits(): boolean {
     const limits = this.config.resourceLimits;
-    if (!limits) return true;
+    if (!limits) {return true;}
 
     if (limits.maxTokens && this.stats.tokenCount > limits.maxTokens) {
       this.kill('TOKEN_LIMIT');
@@ -1241,7 +1241,7 @@ export async function createConsensusJudge(
     console.error('❌ Consensus judge error:', error);
     return {
       achieved: false,
-      error: error instanceof Error ? (error as Error).message : 'Unknown error',
+      error: error instanceof Error ? (error).message : 'Unknown error',
       threshold: consensusThreshold,
       agentCount: agents.length,
       task,

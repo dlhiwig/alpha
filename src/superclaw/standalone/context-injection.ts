@@ -300,7 +300,7 @@ export class ContextInjectionService {
         let usedLength = 0;
         const keptMemories = [];
         
-        for (const memory of context.relevantMemory.sort((a, b) => b.relevance - a.relevance)) {
+        for (const memory of context.relevantMemory.toSorted((a, b) => b.relevance - a.relevance)) {
           if (usedLength + memory.snippet.length <= available) {
             keptMemories.push(memory);
             usedLength += memory.snippet.length;
@@ -352,7 +352,7 @@ export class ContextInjectionService {
    * Truncate text to fit within a character limit
    */
   private truncateText(text: string, maxLength: number): string {
-    if (text.length <= maxLength) return text;
+    if (text.length <= maxLength) {return text;}
     
     // Try to truncate at a sentence boundary
     const truncated = text.substring(0, maxLength - 3);

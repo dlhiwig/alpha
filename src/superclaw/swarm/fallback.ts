@@ -168,8 +168,8 @@ export function assessComplexity(task: string): 'simple' | 'medium' | 'complex' 
   const hasReasoning = /explain|analyze|compare|evaluate|design|architect/i.test(task);
   const hasMultiStep = /step.by.step|first.*then|multiple|several/i.test(task);
   
-  if (tokens > 2000 || (hasCode && hasReasoning) || hasMultiStep) return 'complex';
-  if (tokens > 500 || hasCode || hasReasoning) return 'medium';
+  if (tokens > 2000 || (hasCode && hasReasoning) || hasMultiStep) {return 'complex';}
+  if (tokens > 500 || hasCode || hasReasoning) {return 'medium';}
   return 'simple';
 }
 
@@ -323,7 +323,7 @@ export const FALLBACK_PLANS: Record<string, FallbackPlan> = {
  * Should we retry this error?
  */
 function shouldRetry(error: ProviderError | undefined, retryOn: string[]): boolean {
-  if (!error) return false;
+  if (!error) {return false;}
   
   // Map error types to retry categories
   const errorCategory = error.type === 'timeout' ? 'timeout'
@@ -338,10 +338,10 @@ function shouldRetry(error: ProviderError | undefined, retryOn: string[]): boole
  * Should we fallback on this error?
  */
 function shouldFallback(error: ProviderError | undefined): boolean {
-  if (!error) return false;
+  if (!error) {return false;}
   
   // Always fallback on these
-  if (['auth', 'misconfigured', 'quota'].includes(error.type)) return true;
+  if (['auth', 'misconfigured', 'quota'].includes(error.type)) {return true;}
   
   // Fallback if not retryable
   return !error.retryable;

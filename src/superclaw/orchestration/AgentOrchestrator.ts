@@ -205,7 +205,7 @@ export class AgentOrchestrator extends EventEmitter {
   async listSessions(filter?: Partial<AgentSession>): Promise<AgentSession[]> {
     const sessions = Array.from(this.activeSessions.values())
     
-    if (!filter) return sessions
+    if (!filter) {return sessions}
     
     return sessions.filter(session => {
       return Object.entries(filter).every(([key, value]) => {
@@ -414,7 +414,7 @@ export class AgentOrchestrator extends EventEmitter {
 
   private async handleAgentCrash(sessionId: string): Promise<void> {
     const session = this.activeSessions.get(sessionId)
-    if (!session) return
+    if (!session) {return}
     
     this.logger.error(`💥 Handling agent crash: ${sessionId}`)
     
@@ -465,7 +465,7 @@ export class AgentOrchestrator extends EventEmitter {
   private async captureWorkspaceState(workspacePath: string): Promise<string[]> {
     try {
       const files = await fs.readdir(workspacePath, { recursive: true })
-      return files.filter(file => typeof file === 'string') as string[]
+      return files.filter(file => typeof file === 'string')
     } catch (error: unknown) {
       this.logger.warn(`Failed to capture workspace state: ${error}`)
       return []

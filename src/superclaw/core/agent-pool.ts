@@ -65,9 +65,9 @@ const TRUST_THRESHOLDS = {
 };
 
 function getTrustTier(score: number): TrustTier {
-  if (score >= TRUST_THRESHOLDS.trusted) return 'trusted';
-  if (score >= TRUST_THRESHOLDS.standard) return 'standard';
-  if (score >= TRUST_THRESHOLDS.probation) return 'probation';
+  if (score >= TRUST_THRESHOLDS.trusted) {return 'trusted';}
+  if (score >= TRUST_THRESHOLDS.standard) {return 'standard';}
+  if (score >= TRUST_THRESHOLDS.probation) {return 'probation';}
   return 'untrusted';
 }
 
@@ -203,7 +203,7 @@ export class AgentPool {
     let totalCost = 0;
 
     for (const agent of this.agents.values()) {
-      if (agent.busy) busy++;
+      if (agent.busy) {busy++;}
       totalCalls += agent.totalCalls;
       totalTokens.input += agent.totalTokens.input;
       totalTokens.output += agent.totalTokens.output;
@@ -403,7 +403,7 @@ export class AgentPool {
    */
   recordOutcome(agentId: string, outcome: 'allow' | 'deny'): void {
     const agent = this.agents.get(agentId);
-    if (!agent) return;
+    if (!agent) {return;}
 
     // Adjust trust score
     if (outcome === 'allow') {
@@ -439,7 +439,7 @@ export class AgentPool {
    */
   getRateMultiplier(agentId: string): number {
     const agent = this.agents.get(agentId);
-    if (!agent) return 1.0;
+    if (!agent) {return 1.0;}
     return TRUST_MULTIPLIERS[agent.trustTier];
   }
 
@@ -448,7 +448,7 @@ export class AgentPool {
    */
   checkTrust(agentId: string, requiredTier: TrustTier = 'standard'): boolean {
     const agent = this.agents.get(agentId);
-    if (!agent) return false;
+    if (!agent) {return false;}
 
     const tierOrder: TrustTier[] = ['untrusted', 'probation', 'standard', 'trusted'];
     const agentTierIndex = tierOrder.indexOf(agent.trustTier);

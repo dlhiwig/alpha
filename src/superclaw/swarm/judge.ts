@@ -135,7 +135,7 @@ class ConsensusJudge {
         });
         
       } catch (error: unknown) {
-        errors.push(`${provider}: ${error instanceof Error ? (error as Error).message : 'unknown error'}`);
+        errors.push(`${provider}: ${error instanceof Error ? (error).message : 'unknown error'}`);
       }
       
       // Cost check
@@ -216,7 +216,7 @@ class ConsensusJudge {
   ): string {
     const basePrompt = buildJudgePrompt(synthesis);
     
-    if (!personality) return basePrompt;
+    if (!personality) {return basePrompt;}
     
     const personalitySection = `## Your Role as Judge
 You are acting as: **${personality.role}**
@@ -269,10 +269,10 @@ When making your decision, consider your unique perspective and expertise.
     let score = consensusResult.confidence;
     
     // Bonus for unanimous consensus
-    if (consensusResult.method === 'unanimous') score *= 1.1;
+    if (consensusResult.method === 'unanimous') {score *= 1.1;}
     
     // Bonus for synthesis (multiple perspectives)
-    if (consensusResult.method === 'synthesis') score *= 1.05;
+    if (consensusResult.method === 'synthesis') {score *= 1.05;}
     
     // Penalty for conflicts
     if (consensusResult.conflicts && consensusResult.conflicts.length > 0) {

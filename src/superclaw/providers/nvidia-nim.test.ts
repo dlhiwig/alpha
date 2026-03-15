@@ -109,7 +109,7 @@ describe('createNVIDIANIMProvider factory', () => {
     expect(() => createNVIDIANIMProvider()).toThrow('NVIDIA NIM API key required');
     
     // Restore env vars
-    if (oldKey) process.env.NVIDIA_API_KEY = oldKey;
-    if (oldNIMKey) process.env.NVIDIA_NIM_API_KEY = oldNIMKey;
+    if (oldKey) {process.env.NVIDIA_API_KEY = oldKey;}
+    if (oldNIMKey) {process.env.NVIDIA_NIM_API_KEY = oldNIMKey;}
   });
 });

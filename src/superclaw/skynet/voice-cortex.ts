@@ -176,10 +176,10 @@ export class VoiceCortex {
   }): Promise<VoiceMemoryEntry[]> {
     const searchTerms = [];
     
-    if (criteria.speaker) searchTerms.push(`speaker:${criteria.speaker}`);
-    if (criteria.type) searchTerms.push(`type:${criteria.type}`);
-    if (criteria.location) searchTerms.push(`location:${criteria.location}`);
-    if (criteria.priority) searchTerms.push(`priority:${criteria.priority}`);
+    if (criteria.speaker) {searchTerms.push(`speaker:${criteria.speaker}`);}
+    if (criteria.type) {searchTerms.push(`type:${criteria.type}`);}
+    if (criteria.location) {searchTerms.push(`location:${criteria.location}`);}
+    if (criteria.priority) {searchTerms.push(`priority:${criteria.priority}`);}
 
     // @ts-expect-error - Post-Merge Reconciliation
     const results = await recall(searchTerms.join(' AND '), this.memoryNamespace);
@@ -299,7 +299,7 @@ export class VoiceCortex {
    */
   addToAudioContext(sessionId: string, utterance: string, speaker?: string): void {
     const context = this.activeContexts.get(sessionId);
-    if (!context) return;
+    if (!context) {return;}
 
     context.conversationThread.push(utterance);
     if (speaker && !context.participants.includes(speaker)) {
@@ -313,7 +313,7 @@ export class VoiceCortex {
    */
   async buildVoiceContext(sessionId: string, lookback: number = 10): Promise<string> {
     const context = this.activeContexts.get(sessionId);
-    if (!context) return '';
+    if (!context) {return '';}
 
     const recentUtterances = context.conversationThread.slice(-lookback);
     const voiceMemories = await this.recallVoiceMemories({
@@ -395,7 +395,7 @@ export class VoiceCortex {
   // ═══════════════════════════════════════════════════════════════
 
   private registerVoiceCommands(): void {
-    if (!this.voiceRouter) return;
+    if (!this.voiceRouter) {return;}
 
     // Register SKYNET-specific voice commands
     this.voiceRouter.registerCommand('cortex', async (params) => {

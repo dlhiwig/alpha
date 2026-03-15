@@ -196,7 +196,7 @@ function killProcessTree(pid: number, signal: NodeJS.Signals = 'SIGTERM'): void 
  * Record execution in history
  */
 function recordExecution(execution: ExecutionLog): void {
-  if (!SHELL_CONFIG.LOG_EXECUTIONS) return;
+  if (!SHELL_CONFIG.LOG_EXECUTIONS) {return;}
   
   executionHistory.push(execution);
   
@@ -295,7 +295,7 @@ export async function exec(options: ShellExecOptions): Promise<ShellExecResult> 
     
     // Handle stderr
     child.stderr?.on('data', (data: Buffer) => {
-      if (!opts.captureStderr) return;
+      if (!opts.captureStderr) {return;}
       
       const chunk = data.toString();
       if (outputSize + chunk.length > opts.maxOutputSize) {
@@ -374,7 +374,7 @@ export async function exec(options: ShellExecOptions): Promise<ShellExecResult> 
       };
       recordExecution(execution);
       
-      reject(new Error(`Failed to execute command: ${(error as Error).message}`));
+      reject(new Error(`Failed to execute command: ${(error).message}`));
     });
     
     // Send input if provided
@@ -402,7 +402,7 @@ export function killAllProcesses(): { killed: number; errors: Array<{ pid: numbe
     } catch (error: unknown) {
       errors.push({ 
         pid, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       });
     }
   }

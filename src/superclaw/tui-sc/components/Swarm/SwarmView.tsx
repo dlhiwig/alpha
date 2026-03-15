@@ -91,7 +91,7 @@ export const SwarmView: React.FC = () => {
 
   const startSwarm = () => {
     const selectedProviders = swarmState.providers.filter(p => p.selected);
-    if (selectedProviders.length === 0 || !swarmState.task.trim()) return;
+    if (selectedProviders.length === 0 || !swarmState.task.trim()) {return;}
 
     const mockProgress: SwarmProgressData = {
       startTime: new Date(),

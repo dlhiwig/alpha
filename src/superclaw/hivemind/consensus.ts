@@ -154,25 +154,25 @@ function scoreResponse(result: AgentResult, taskType: string): number {
   }
 
   // Reward completeness
-  if (content.length > 500) score *= 1.1;
-  if (content.length > 1500) score *= 1.1;
+  if (content.length > 500) {score *= 1.1;}
+  if (content.length > 1500) {score *= 1.1;}
 
   // Task-specific scoring
   if (taskType === 'code') {
     // Reward code blocks
     const codeBlocks = (content.match(/```[\s\S]*?```/g) || []).length;
-    if (codeBlocks > 0) score *= 1.2;
+    if (codeBlocks > 0) {score *= 1.2;}
     
     // Reward comments
-    if (content.includes('//') || content.includes('/*')) score *= 1.1;
+    if (content.includes('//') || content.includes('/*')) {score *= 1.1;}
   }
 
   if (taskType === 'reason' || taskType === 'research') {
     // Reward structure
-    if (content.includes('##') || content.includes('**')) score *= 1.1;
+    if (content.includes('##') || content.includes('**')) {score *= 1.1;}
     
     // Reward reasoning indicators
-    if (/\b(because|therefore|however|considering)\b/i.test(content)) score *= 1.1;
+    if (/\b(because|therefore|however|considering)\b/i.test(content)) {score *= 1.1;}
   }
 
   // Penalize truncated responses
@@ -323,13 +323,13 @@ function clusterResponses(results: AgentResult[]): { centroid: string; members: 
   const used = new Set<number>();
 
   for (let i = 0; i < results.length; i++) {
-    if (used.has(i)) continue;
+    if (used.has(i)) {continue;}
 
     const cluster = { centroid: results[i].response.content, members: [results[i]] };
     used.add(i);
 
     for (let j = i + 1; j < results.length; j++) {
-      if (used.has(j)) continue;
+      if (used.has(j)) {continue;}
 
       const sim = jaccardSimilarity(results[i].response.content, results[j].response.content);
       if (sim > 0.5) {

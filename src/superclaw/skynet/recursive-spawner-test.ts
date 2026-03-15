@@ -411,7 +411,7 @@ export class RecursiveSpawnerTestRunner {
       suite.results.push({
         testName,
         passed: false,
-        error: error instanceof Error ? (error as Error).message : String(error),
+        error: error instanceof Error ? (error).message : String(error),
         duration
       });
       

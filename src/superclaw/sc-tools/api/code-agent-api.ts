@@ -415,7 +415,7 @@ if __name__ == "__main__":
       
       return {
         success: false,
-        error: error instanceof Error ? (error as Error).message : 'Unknown execution error',
+        error: error instanceof Error ? (error).message : 'Unknown execution error',
         duration,
         metadata: {
           executionId,

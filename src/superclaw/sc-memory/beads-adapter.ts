@@ -305,9 +305,9 @@ export class BeadsMemory {
       
     } catch (error: unknown) {
       this.log('error', 'Failed to initialize BEADS memory', { 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`BEADS memory initialization failed: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`BEADS memory initialization failed: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -439,7 +439,7 @@ export class BeadsMemory {
       
     } catch (error: unknown) {
       this.log('error', 'Failed to create BEADS schema', { 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
       throw error
     }
@@ -466,7 +466,7 @@ export class BeadsMemory {
       
     } catch (error: unknown) {
       this.log('warn', 'Failed to setup git integration', { 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
       // Non-fatal - continue without git
     }
@@ -553,9 +553,9 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to create BEADS issue', { 
         title: issue.title, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to create issue: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to create issue: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -589,9 +589,9 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to get BEADS issue', { 
         id, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to get issue: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to get issue: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -648,9 +648,9 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to update BEADS issue', { 
         id, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to update issue: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to update issue: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -675,9 +675,9 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to tombstone BEADS issue', { 
         id, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to delete issue: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to delete issue: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -772,9 +772,9 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to query BEADS issues', { 
         query, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to query issues: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to query issues: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -829,9 +829,9 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to get ready work', { 
         options, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to get ready work: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to get ready work: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -869,9 +869,9 @@ export class BeadsMemory {
         sourceId, 
         targetId, 
         type,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to add dependency: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to add dependency: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -902,9 +902,9 @@ export class BeadsMemory {
         sourceId, 
         targetId, 
         type,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to remove dependency: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to remove dependency: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -933,9 +933,9 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to get dependencies', { 
         issueId, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to get dependencies: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to get dependencies: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -956,9 +956,9 @@ export class BeadsMemory {
       this.log('error', 'Failed to add label', { 
         issueId, 
         label,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to add label: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to add label: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -977,9 +977,9 @@ export class BeadsMemory {
       this.log('error', 'Failed to remove label', { 
         issueId, 
         label,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to remove label: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to remove label: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -997,9 +997,9 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to get labels', { 
         issueId, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to get labels: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to get labels: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -1030,9 +1030,9 @@ export class BeadsMemory {
       this.log('error', 'Failed to add comment', { 
         issueId, 
         author,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to add comment: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to add comment: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -1056,9 +1056,9 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to get comments', { 
         issueId, 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to get comments: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to get comments: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -1085,9 +1085,9 @@ export class BeadsMemory {
       this.log('error', 'Failed to update agent state', { 
         issueId, 
         state,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to update agent state: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to update agent state: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -1113,9 +1113,9 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to find stuck agents', { 
         timeoutMinutes,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to find stuck agents: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to find stuck agents: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -1154,16 +1154,16 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to compact memories', { 
         olderThanDays,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to compact memories: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to compact memories: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
   private async compactIssue(issueId: string): Promise<void> {
     try {
       const issue = await this.getIssue(issueId, true)
-      if (!issue) return
+      if (!issue) {return}
       
       // Calculate original size
       const originalSize = JSON.stringify(issue).length
@@ -1184,7 +1184,7 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to compact issue', { 
         issueId,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
     }
   }
@@ -1232,9 +1232,9 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to export to JSONL', { 
         outputPath,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to export to JSONL: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to export to JSONL: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -1260,7 +1260,7 @@ export class BeadsMemory {
         } catch (error: unknown) {
           this.log('warn', 'Failed to import issue from JSONL line', { 
             line: line.substring(0, 100),
-            error: error instanceof Error ? (error as Error).message : String(error) 
+            error: error instanceof Error ? (error).message : String(error) 
           })
         }
       }
@@ -1271,9 +1271,9 @@ export class BeadsMemory {
     } catch (error: unknown) {
       this.log('error', 'Failed to import from JSONL', { 
         inputPath,
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
-      throw new Error(`Failed to import from JSONL: ${error instanceof Error ? (error as Error).message : String(error)}`)
+      throw new Error(`Failed to import from JSONL: ${error instanceof Error ? (error).message : String(error)}`, { cause: error })
     }
   }
   
@@ -1458,7 +1458,7 @@ export class BeadsMemory {
         [issueId, eventType, actor, oldValue, newValue, comment]
       )
     } catch (error: unknown) {
-      this.log('warn', 'Failed to record event', { issueId, eventType, error: error instanceof Error ? (error as Error).message : String(error) })
+      this.log('warn', 'Failed to record event', { issueId, eventType, error: error instanceof Error ? (error).message : String(error) })
     }
   }
   
@@ -1498,7 +1498,7 @@ export class BeadsMemory {
       
     } catch (error: unknown) {
       this.log('error', 'Error during BeadsMemory destruction', { 
-        error: error instanceof Error ? (error as Error).message : String(error) 
+        error: error instanceof Error ? (error).message : String(error) 
       })
     }
   }

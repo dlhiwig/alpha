@@ -166,7 +166,7 @@ export const ConfigView: React.FC = () => {
   };
 
   useInput((input, key) => {
-    if (showSaved) return; // Ignore input while showing saved message
+    if (showSaved) {return;} // Ignore input while showing saved message
 
     if (isEditing) {
       const fieldType = getFieldType(currentField);

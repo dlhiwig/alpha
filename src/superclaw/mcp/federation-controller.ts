@@ -75,7 +75,7 @@ export class MCPFederationController implements SuperClawMCPBridge {
    * Stop the MCP federation server
    */
   async stop(): Promise<void> {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
 
     try {
       if (this.discoveryInterval) {
@@ -425,7 +425,7 @@ export class MCPFederationController implements SuperClawMCPBridge {
 
     // Execute tool
     server.post('/tools/call', async (request: FastifyRequest, reply: FastifyReply) => {
-      const body = request.body as any;
+      const body = request.body;
       const { name, arguments: args } = body.params || {};
       
       if (!name) {
@@ -454,7 +454,7 @@ export class MCPFederationController implements SuperClawMCPBridge {
         return this.createMCPError(
           body.id || 1,
           -32603,
-          error instanceof Error ? (error as Error).message : 'Internal error'
+          error instanceof Error ? (error).message : 'Internal error'
         );
       }
     });
@@ -547,7 +547,7 @@ export class MCPFederationController implements SuperClawMCPBridge {
     } catch (error: unknown) {
       return {
         success: false,
-        error: error instanceof Error ? (error as Error).message : String(error),
+        error: error instanceof Error ? (error).message : String(error),
         duration: Date.now() - startTime,
         serverId: 'local',
         requestId: call.context.requestId,
@@ -591,7 +591,7 @@ export class MCPFederationController implements SuperClawMCPBridge {
   }
 
   private async startDiscovery(): Promise<void> {
-    if (!this.config.discovery.enabled) return;
+    if (!this.config.discovery.enabled) {return;}
 
     const performDiscovery = async () => {
       for (const endpoint of this.config.discovery.endpoints) {

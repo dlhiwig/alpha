@@ -78,7 +78,7 @@ export async function writeRunRecord(
   rec: FallbackRunRecord,
   opts?: TelemetryOptions
 ): Promise<void> {
-  if (!opts?.enabled) return;
+  if (!opts?.enabled) {return;}
   
   try {
     const dir = opts.dir ?? getDefaultTelemetryDir();
@@ -107,8 +107,8 @@ export async function listRunRecords(
     const files = await fs.readdir(dir);
     const jsonFiles = files
       .filter(f => f.endsWith('.json'))
-      .sort()
-      .reverse()
+      .toSorted()
+      .toReversed()
       .slice(0, limit);
     
     const records: FallbackRunRecord[] = [];

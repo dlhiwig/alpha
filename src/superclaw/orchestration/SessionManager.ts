@@ -53,7 +53,7 @@ export class SessionManager extends EventEmitter {
   
   async updateSession(sessionId: string, updates: Partial<AgentSession>): Promise<void> {
     const session = this.sessions.get(sessionId)
-    if (!session) throw new Error(`Session ${sessionId} not found`)
+    if (!session) {throw new Error(`Session ${sessionId} not found`)}
     
     Object.assign(session, updates, { lastSeen: new Date() })
     await this.persistSessions()

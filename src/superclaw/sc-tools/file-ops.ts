@@ -61,7 +61,7 @@ function validatePath(filePath: string, config: FileOpsConfig): string {
   } catch (error: unknown) {
     throw new ToolExecutionError(
       ToolErrorType.INVALID_PARAMETERS,
-      `Invalid file path: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+      `Invalid file path: ${error instanceof Error ? (error).message : 'Unknown error'}`,
       'file_ops'
     );
   }
@@ -181,7 +181,7 @@ export class ReadFileTool implements ITool {
       
       return {
         success: false,
-        error: `Failed to read file: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        error: `Failed to read file: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         metadata: {
           timestamp: new Date().toISOString(),
           executionTime: Date.now() - startTime,
@@ -274,7 +274,7 @@ export class WriteFileTool implements ITool {
       
       return {
         success: false,
-        error: `Failed to write file: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        error: `Failed to write file: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         metadata: {
           timestamp: new Date().toISOString(),
           executionTime: Date.now() - startTime,
@@ -378,7 +378,7 @@ export class EditFileTool implements ITool {
       
       return {
         success: false,
-        error: `Failed to edit file: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        error: `Failed to edit file: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         metadata: {
           timestamp: new Date().toISOString(),
           executionTime: Date.now() - startTime,
@@ -453,13 +453,13 @@ export class ListDirectoryTool implements ITool {
       const files: any[] = [];
       
       async function listRecursive(currentPath: string, depth: number): Promise<void> {
-        if (depth > maxDepth) return;
+        if (depth > maxDepth) {return;}
         
         const entries = await fs.readdir(currentPath, { withFileTypes: true });
         
         for (const entry of entries) {
           // Skip hidden files unless requested
-          if (!showHidden && entry.name.startsWith('.')) continue;
+          if (!showHidden && entry.name.startsWith('.')) {continue;}
           
           const fullPath = path.join(currentPath, entry.name);
           const relativePath = path.relative(dirPath, fullPath);
@@ -520,7 +520,7 @@ export class ListDirectoryTool implements ITool {
       
       return {
         success: false,
-        error: `Failed to list directory: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`,
+        error: `Failed to list directory: ${error instanceof Error ? (error).message : 'Unknown error'}`,
         metadata: {
           timestamp: new Date().toISOString(),
           executionTime: Date.now() - startTime,

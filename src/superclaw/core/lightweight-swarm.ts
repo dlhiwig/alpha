@@ -106,7 +106,7 @@ async function decomposeTask(mainObjective: string): Promise<SubTask[]> {
     const { text } = await callLLM(system, prompt);
     // Extract JSON from response (handle potential markdown wrapping)
     const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error('No JSON array found in response');
+    if (!jsonMatch) {throw new Error('No JSON array found in response');}
     const tasks = JSON.parse(jsonMatch[0]) as SubTask[];
     
     // Validate task count against config
@@ -186,7 +186,7 @@ async function executeWithThrottle(
           executing[i].then(() => 'done'),
           Promise.resolve('pending'),
         ]);
-        if (status === 'done') executing.splice(i, 1);
+        if (status === 'done') {executing.splice(i, 1);}
       }
     }
   }
@@ -229,8 +229,8 @@ function logPerformance(
   finalOutput: string
 ): string {
   // Create directories if needed
-  if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
-  if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+  if (!fs.existsSync(LOG_DIR)) {fs.mkdirSync(LOG_DIR, { recursive: true });}
+  if (!fs.existsSync(OUTPUT_DIR)) {fs.mkdirSync(OUTPUT_DIR, { recursive: true });}
 
   const totalTokens = results.reduce(
     (acc, r) => ({

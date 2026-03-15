@@ -267,7 +267,7 @@ export class ModelRouter {
   } {
     const topAgents = Object.entries(this.costTracker.agentSpend)
       .map(([agentId, spent]) => ({ agentId, spent }))
-      .sort((a, b) => b.spent - a.spent)
+      .toSorted((a, b) => b.spent - a.spent)
       .slice(0, 5);
     
     const topProviders = Object.entries(this.costTracker.providerSpend)
@@ -276,7 +276,7 @@ export class ModelRouter {
         spent,
         calls: this.costTracker.callCounts[provider as ProviderName] || 0,
       }))
-      .sort((a, b) => b.spent - a.spent)
+      .toSorted((a, b) => b.spent - a.spent)
       .slice(0, 5);
     
     return {
@@ -440,7 +440,7 @@ export class ModelRouter {
         costEfficiency,
         totalScore,
       };
-    }).sort((a, b) => b.totalScore - a.totalScore);
+    }).toSorted((a, b) => b.totalScore - a.totalScore);
   }
   
   /**
@@ -598,22 +598,22 @@ export class ModelRouter {
     const capabilities = PROVIDER_CAPABILITIES[selected.provider];
     switch (role) {
       case 'implementer':
-        if (capabilities.coding >= 8) reasons.push('strong coding abilities');
+        if (capabilities.coding >= 8) {reasons.push('strong coding abilities');}
         break;
       case 'critic':
-        if (capabilities.reasoning >= 8) reasons.push('strong reasoning abilities');
+        if (capabilities.reasoning >= 8) {reasons.push('strong reasoning abilities');}
         break;
       case 'web':
-        if (capabilities.web >= 8) reasons.push('web search specialized');
+        if (capabilities.web >= 8) {reasons.push('web search specialized');}
         break;
       case 'vision':
-        if (capabilities.vision >= 8) reasons.push('vision specialized');
+        if (capabilities.vision >= 8) {reasons.push('vision specialized');}
         break;
       case 'longcontext':
-        if (capabilities.context >= 9) reasons.push('1M+ context support');
+        if (capabilities.context >= 9) {reasons.push('1M+ context support');}
         break;
       case 'agentic':
-        if (capabilities.agentic >= 8) reasons.push('multi-step agentic reasoning');
+        if (capabilities.agentic >= 8) {reasons.push('multi-step agentic reasoning');}
         break;
     }
     
@@ -707,7 +707,7 @@ export function estimateCost(
   outputTokens: number = 0
 ): number {
   const costs = PROVIDER_COSTS[provider];
-  if (!costs) return 0;
+  if (!costs) {return 0;}
   
   const inputCost = (inputTokens / 1000) * costs.input;
   const outputCost = (outputTokens / 1000) * costs.output;

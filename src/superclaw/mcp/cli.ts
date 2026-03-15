@@ -212,7 +212,7 @@ program
         process.exit(1);
       }
     } catch (error: unknown) {
-      console.error('❌ Connection failed:', error instanceof Error ? (error as Error).message : error);
+      console.error('❌ Connection failed:', error instanceof Error ? (error).message : error);
       process.exit(1);
     }
   });
@@ -270,7 +270,7 @@ program
         process.exit(1);
       }
     } catch (error: unknown) {
-      console.error('❌ Discovery failed:', error instanceof Error ? (error as Error).message : error);
+      console.error('❌ Discovery failed:', error instanceof Error ? (error).message : error);
       process.exit(1);
     }
   });

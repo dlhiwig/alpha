@@ -336,7 +336,7 @@ export class SmartRouter {
       throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json() as any;
+    const data = await response.json();
     const inputTokens = data.prompt_eval_count || this.estimateTokens(prompt);
     const outputTokens = data.eval_count || this.estimateTokens(data.response);
 
@@ -374,7 +374,7 @@ export class SmartRouter {
       for (const msg of request.sessionHistory.slice(-10)) {
         if (msg.role !== 'system') {
           messages.push({
-            role: msg.role as 'user' | 'assistant',
+            role: msg.role,
             content: msg.content
           });
         }
@@ -487,10 +487,10 @@ export class SmartRouter {
    */
   private async isProviderHealthy(provider: Provider): Promise<boolean> {
     const health = this.providerHealth.get(provider);
-    if (!health) return false;
+    if (!health) {return false;}
     
     // Consider unhealthy if more than 3 consecutive failures
-    if (health.consecutiveFailures > 3) return false;
+    if (health.consecutiveFailures > 3) {return false;}
     
     // Check if we need to test health
     const timeSinceCheck = Date.now() - health.lastCheck.getTime();
@@ -531,7 +531,7 @@ export class SmartRouter {
    */
   private updateHealthStatus(provider: Provider, success: boolean, latency: number): void {
     const health = this.providerHealth.get(provider);
-    if (!health) return;
+    if (!health) {return;}
     
     if (success) {
       health.status = 'healthy';
